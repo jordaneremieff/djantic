@@ -18,7 +18,7 @@ pip install pydantic-django
 
 **Requirements**: Python 3.7+, Django 3
 
-An example of basic serialization case:
+An example of basic [schema](https://pydantic-docs.helpmanual.io/usage/schema/) usage:
 
 ```python
 from users.models import User
@@ -33,7 +33,7 @@ class PydanticUser(PydanticDjangoModel):
 schema = PydanticUser.schema()
 ```
 
-A schema call would return something like this:
+Th schema call above would return something like this:
 
 ```python
 {
@@ -83,7 +83,7 @@ Or retrieve an existing one:
 pydantic_user = PydanticUser.get(id=user.id)
 ```
 
-The object in each case can be validated and export the values in the same way:
+The object in each case can be validated and [export](https://pydantic-docs.helpmanual.io/usage/exporting_models/) the values in the same way:
 
 ```python
 user_json = pydantic_user.json()
@@ -145,6 +145,7 @@ It can do a bit more than this, but you'll have to check out the testing applica
 - [x] Support basic field types
 - [x] Sub-model support for forward and reverse relations
 - [ ] Postgres field types
+- [ ] Look into custom validators and configurations
 - [ ] Support for multi-object querysets
 - [ ] More comprehensive support for Django features
 - [ ] HTML schema generation
