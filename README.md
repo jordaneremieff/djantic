@@ -93,14 +93,13 @@ To produce a result such as:
 It can also use standard Python type annotations in conjunction with the fields retrieved automatically from the database, and the configuration class supports `exclude` and `include` options:
 
 ```python
+class PydanticUser(PydanticDjangoModel):
+    first_name: Optional[str]
+    last_name: str
 
-    class PydanticUser(PydanticDjangoModel):
-        first_name: Optional[str]
-        last_name: str
-
-        class Config:
-            model = User
-            include = ["first_name", "last_name"]
+    class Config:
+        model = User
+        include = ["first_name", "last_name"]
 ```
 
 In this example, the first name and last name annotations override the fields that would normally be picked up from the Django model automatically, and the `include` list filters out the other fields from the schema definition.
