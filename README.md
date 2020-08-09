@@ -77,7 +77,7 @@ Or retrieve an existing one:
 pydantic_user = PydanticUser.get(id=user.id)
 ```
 
-The object in each case can validated and export the values in the same way:
+The object in each case can be validated and export the values in the same way:
 
 ```python
 user_json = pydantic_user.json()
@@ -95,16 +95,15 @@ It can do a bit more than this, but you'll have to check out the testing applica
 ## Roadmap
 
 - [x] Automatic schema generation from Django models
-- [x] Include & exclude field filtering
-- [~] Better support for relational fields
-- [ ] More comprehensive support for Django features
 - [x] Basic queryset interface for CRUD operations
-- [~] Support all basic field types
-- [ ] Postgres field types
+- [x] Include & exclude field filtering
 - [x] Default factory support
-- [x] Sub-model support
+- [x] Support basic field types
+- [x] Sub-model support for forward and reverse relations
+- [ ] Postgres field types
 - [ ] Support for multi-object querysets
+- [ ] More comprehensive support for Django features
 - [ ] HTML schema generation
 - [ ] Create a complete application example
-- [ ] More test coverage & type annotations
 - [ ] Look into performance & benchmarking
+- [ ] More test coverage & type annotations
