@@ -1,0 +1,9 @@
+django
+pytest
+pytest-django
+pydantic
+psycopg2
+codecov
+pytest-cov
+black
+mypy
