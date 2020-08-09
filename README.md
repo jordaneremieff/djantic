@@ -33,7 +33,7 @@ class PydanticUser(PydanticDjangoModel):
 schema = PydanticUser.schema()
 ```
 
-Th schema call above would return something like this:
+The schema call above would return something like this:
 
 ```python
 {
