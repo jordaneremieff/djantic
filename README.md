@@ -59,7 +59,9 @@ There are a few ways to populate the models with values, the first is using the 
 
 ```python
 user = User.objects.create(
-    first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
+    first_name="Jordan", 
+    last_name="Eremieff", 
+    email="jordan@eremieff.com"
 )
 
 pydantic_user = PydanticUser.from_django(user)
@@ -68,7 +70,11 @@ pydantic_user = PydanticUser.from_django(user)
 Alternatively, the Pydantic model can be used to create a new object:
 
 ```python
-pydantic_user = PydanticUser.create(first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com")
+pydantic_user = PydanticUser.create(
+    first_name="Jordan", 
+    last_name="Eremieff", 
+    email="jordan@eremieff.com"
+)
 ```
 
 Or retrieve an existing one:
@@ -86,8 +92,17 @@ user_json = pydantic_user.json()
 To produce a result such as:
 
 ```json
-{"profile": null, "messages": [], "id": 1, "first_name": "Jordan", "last_name": "Eremieff", "email": "jordan@eremieff.com", "created_at": "2020-08-09T13:45:04.395787+00:00",
-"updated_at": "2020-08-09T13:45:04.395828+00:00", "groups": []}
+{
+    "profile": null, 
+    "messages": [], 
+    "id": 1, 
+    "first_name": "Jordan", 
+    "last_name": "Eremieff", 
+    "email": "jordan@eremieff.com", 
+    "created_at": "2020-08-09T13:45:04.395787+00:00",
+    "updated_at": "2020-08-09T13:45:04.395828+00:00", 
+    "groups": []
+}
 ```
 
 It can also use standard Python type annotations in conjunction with the fields retrieved automatically from the database, and the configuration class supports `exclude` and `include` options:
@@ -107,12 +122,16 @@ In this example, the first name and last name annotations override the fields th
 The `first_name` field here is required in the database and the `last_name` field is optional, but using the type annotations this can be determined for the specific schema:
 
 ```python
-{'description': 'A user of the application.',
- 'properties': {'first_name': {'title': 'First Name', 'type': 'string'},
-                'last_name': {'title': 'Last Name', 'type': 'string'}},
- 'required': ['last_name'],
- 'title': 'PydanticUser',
- 'type': 'object'}
+{
+    'description': 'A user of the application.',
+    'properties': {
+            'first_name': {'title': 'First Name', 'type': 'string'},
+            'last_name': {'title': 'Last Name', 'type': 'string'}
+            },
+    'required': ['last_name'],
+    'title': 'PydanticUser',
+    'type': 'object'
+}
 ```
         
 It can do a bit more than this, but you'll have to check out the testing application and test cases as a reference for now.
