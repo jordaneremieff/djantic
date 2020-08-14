@@ -1,6 +1,6 @@
 import pytest
 
-from testapp.models import User, Profile
+from testapp.models import User, Profile, Group
 
 from pydantic_django import PydanticDjangoModel
 
@@ -152,3 +152,50 @@ def test_instance_delete():
     assert pydantic_user.dict()["id"] == user.id
     pydantic_user.delete()
     assert not pydantic_user.dict()
+
+
+@pytest.mark.django_db
+def test_queryset():
+
+    group = Group.objects.create(title="user-group-1")
+    user = User.objects.create(
+        first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
+    )
+    user2 = User.objects.create(
+        first_name="Jordan2", last_name="Eremieff2", email="jordan2@eremieff.com"
+    )
+
+    groups = [group]
+    user.groups.set(groups)
+    user2.groups.set(groups)
+
+    class PydanticUser(PydanticDjangoModel):
+        class Config:
+            model = User
+            exclude = ["created_at", "updated_at"]
+
+    users = User.objects.all()
+    pydantic_user = PydanticUser.from_django(users, many=True)
+
+    assert pydantic_user.dict() == {
+        "users": [
+            {
+                "profile": None,
+                "messages": [],
+                "id": 1,
+                "first_name": "Jordan",
+                "last_name": "Eremieff",
+                "email": "jordan@eremieff.com",
+                "groups": [1],
+            },
+            {
+                "profile": None,
+                "messages": [],
+                "id": 2,
+                "first_name": "Jordan2",
+                "last_name": "Eremieff2",
+                "email": "jordan2@eremieff.com",
+                "groups": [1],
+            },
+        ]
+    }

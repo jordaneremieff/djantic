@@ -1,8 +1,8 @@
 from itertools import chain
-from typing import Type, Optional
+from typing import Type, Optional, Union, List
 
 import django
-from pydantic import BaseModel, create_model, validate_model
+from pydantic import BaseModel, create_model, validate_model, Field
 from pydantic.main import ModelMetaclass
 
 from .types import DjangoField
@@ -150,33 +150,7 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
         return cls.from_django(instance)
 
     @classmethod
-    def from_django_qs(
-        cls: Type["PydanticDjangoModel"], instance: django.db.models.query.QuerySet
-    ) -> Type["PydanticDjangoModel"]:
-        raise NotImplementedError("TODO...")
-
-    @classmethod
-    def from_django(
-        cls: Type["PydanticDjangoModel"],
-        instance: django.db.models.Model,
-        cache: bool = True,
-        save: bool = False,
-    ) -> Type["PydanticDjangoModel"]:
-
-        obj_data = {}
-        for field in instance._meta.get_fields():
-            if not field.concrete and field.auto_created:
-                accessor_name = field.get_accessor_name()
-                if field.one_to_many:
-                    obj_data[accessor_name] = list(
-                        getattr(instance, accessor_name).all().values("pk")
-                    )
-                elif field.one_to_one:
-                    _obj = getattr(instance, accessor_name, None)
-                    if _obj:
-                        obj_data[accessor_name] = _obj.pk
-            else:
-                obj_data[field.name] = field.value_from_object(instance)
+    def get_object_model(cls, obj_data):
 
         values, fields_set, validation_error = validate_model(cls, obj_data)
         if validation_error:
@@ -186,12 +160,67 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
         object.__setattr__(p_model, "__dict__", values)
         object.__setattr__(p_model, "__fields_set__", fields_set)
 
-        if save:
-            instance.save()
-        if cache:
-            cls.instance = instance
-
         return p_model
+
+    @classmethod
+    def from_django(
+        cls: Type["PydanticDjangoModel"],
+        instance: Union[django.db.models.Model, django.db.models.QuerySet],
+        many: bool = False,
+        cache: bool = True,
+        save: bool = False,
+    ) -> Union[Type["PydanticDjangoModel"], Type["PydanticDjangoModelQuerySet"]]:
+
+        if not many:
+            obj_data = {}
+            for field in instance._meta.get_fields():
+
+                if not field.concrete and field.auto_created:
+                    accessor_name = field.get_accessor_name()
+                    if field.one_to_many:
+                        obj_data[accessor_name] = list(
+                            getattr(instance, accessor_name).all().values("pk")
+                        )
+                    elif field.one_to_one:
+                        _obj = getattr(instance, accessor_name, None)
+                        if _obj:
+                            obj_data[accessor_name] = _obj.pk
+
+                elif field.one_to_many or field.many_to_many:
+                    obj_data[field.name] = [
+                        _obj.pk for _obj in field.value_from_object(instance)
+                    ]
+
+                else:
+
+                    obj_data[field.name] = field.value_from_object(instance)
+
+            p_model = cls.get_object_model(obj_data)
+
+            if save:
+                instance.save()
+            if cache:
+                cls.instance = instance
+
+            return p_model
+
+        p_model_list = []
+        for obj in instance:
+            p_model = cls.from_django(obj, cache=False, many=False, save=False)
+            p_model_list.append(p_model)
+
+        model_name = p_model.__config__.model._meta.model_name
+        model_name_plural = f"{model_name}s"
+
+        fields = {model_name_plural: (list, Field(None, title=f"{model_name_plural}"))}
+        p_model_qs = create_model(
+            "PydanticDjangoModelQuerySet",
+            __base__=BaseModel,
+            __module__=cls.__module__,
+            **fields,
+        )
+
+        return p_model_qs(**{model_name_plural: p_model_list})
 
 
 _is_base_model_class_defined = True

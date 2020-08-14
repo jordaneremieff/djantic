@@ -7,6 +7,7 @@ from ipaddress import _BaseAddress, IPv4Address, IPv6Address
 from pydantic import errors, IPvAnyAddress, Json
 from pydantic.fields import FieldInfo
 
+from rich import print
 
 INT_TYPES = [
     "AutoField",
@@ -123,8 +124,12 @@ def DjangoField(field):
 
         elif internal_type in INT_TYPES:
             python_type = int
-        else:
+        elif internal_type in FIELD_TYPES:
             python_type = FIELD_TYPES[internal_type]
+        else:
+            # TODO: Look into this further, probably some other cases where this breaks.
+            base_internal_type = field.__class__.__base__().get_internal_type()
+            python_type = FIELD_TYPES[base_internal_type]
 
         deconstructed = field.deconstruct()
         field_options = deconstructed[3] or {}

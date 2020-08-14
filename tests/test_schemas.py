@@ -192,7 +192,7 @@ def test_annotations():
     assert props["email"]["default"] == "jordan@eremieff.com"
     assert props["first_name"]["default"] == "Hello"
     assert props["updated_at"]["default"] == updated_at_dt.strftime("%Y-%m-%dT00:00:00")
-    assert set(schema["required"]) == set(["groups", "last_name"])
+    assert set(schema["required"]) == set(["last_name"])
 
 
 @pytest.mark.django_db

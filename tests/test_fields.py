@@ -1,14 +1,36 @@
 import pytest
 
-from testapp.models import Configuration
-
+from testapp.models import Record, Configuration
 from pydantic_django import PydanticDjangoModel
 
 
 @pytest.mark.django_db
-def test_json_field():
+def test_custom_field():
     """
-    Test generating a schema for multiple JSONField types.
+    Test a model using custom field subclasses.
+    """
+
+    class PydanticRecord(PydanticDjangoModel):
+        class Config:
+            model = Record
+
+    assert PydanticRecord.schema() == {
+        "title": "PydanticRecord",
+        "description": "A generic record model.",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "type": "integer"},
+            "title": {"title": "Title", "maxLength": 20, "type": "string"},
+            "items": {"title": "Items", "type": "string", "format": "json-string"},
+        },
+        "required": ["title"],
+    }
+
+
+@pytest.mark.django_db
+def test_postgres_json_field():
+    """
+    Test generating a schema for multiple Postgres JSON fields.
     """
 
     class PydanticConfiguration(PydanticDjangoModel):

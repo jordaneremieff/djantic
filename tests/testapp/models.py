@@ -4,13 +4,15 @@ from django.db import models
 from django.utils.text import slugify
 from django.contrib.postgres.fields import JSONField
 
+from .fields import ListField, NotNullRestrictedCharField
+
 
 class Group(models.Model):
     """
     A group of users.
     """
 
-    description = models.TextField()
+    title = models.TextField()
     slug = models.SlugField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -28,7 +30,7 @@ class User(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50, blank=True)
     email = models.EmailField(unique=True)
-    groups = models.ManyToManyField(Group)
+    groups = models.ManyToManyField(Group, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -84,3 +86,12 @@ class RequestLog(models.Model):
     host_ipv4_address = models.GenericIPAddressField(protocol="ipv4", blank=True)
     host_ipv6_address = models.GenericIPAddressField(protocol="ipv6", blank=True)
     metadata = JSONField(blank=True)
+
+
+class Record(models.Model):
+    """
+    A generic record model.
+    """
+
+    title = NotNullRestrictedCharField()
+    items = ListField()
