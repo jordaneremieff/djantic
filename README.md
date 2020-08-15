@@ -16,42 +16,41 @@ pip install pydantic-django
 
 ## Usage
 
-**Requirements**: Python 3.7+, Django 3
+**Requirements**: Python 3.7+, Django 2+
 
 An example of basic [schema](https://pydantic-docs.helpmanual.io/usage/schema/) usage:
 
 ```python
-from users.models import User
-from pydantic_django import PydanticDjangoModel
-
-class PydanticUser(PydanticDjangoModel):
-    """An example user schema."""
-
+class UserSchema(PydanticDjangoModel):
     class Config:
         model = User
-
-schema = PydanticUser.schema()
 ```
 
 The schema call above would return something like this:
 
 ```python
 {
-    'description': 'An example user schema.',
-    'properties': {
-        'created_at': {'format': 'date-time', 'title': 'Created At', 'type': 'string'},
-        'email': {'maxLength': 254, 'title': 'Email', 'type': 'string'},
-        'first_name': {'maxLength': 50, 'title': 'First Name', 'type': 'string'},
-        'groups': {'items': {'type': 'integer'}, 'title': 'Id', 'type': 'array'},
-        'id': {'title': 'Id', 'type': 'integer'},
-        'last_name': {'maxLength': 50, 'title': 'Last Name', 'type': 'string'},
-        'messages': {'items': {'type': 'integer'}, 'title': 'Id', 'type': 'array'},
-        'profile': {'title': 'Id', 'type': 'integer'},
-        'updated_at': {'format': 'date-time', 'title': 'Updated At', 'type': 'string'},
+    "title": "UserSchema",
+    "description": "A user of the application.",
+    "type": "object",
+    "properties": {
+        "profile": {"title": "Profile", "type": "integer"},
+        "id": {"title": "Id", "type": "integer"},
+        "first_name": {"title": "First Name", "maxLength": 50, "type": "string"},
+        "last_name": {"title": "Last Name", "maxLength": 50, "type": "string"},
+        "email": {"title": "Email", "maxLength": 254, "type": "string"},
+        "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time",
+        },
+        "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time",
+        },
     },
-    'required': ['first_name', 'email', 'created_at', 'updated_at', 'groups'],
-    'title': 'PydanticUser',
-    'type': 'object',
+    "required": ["first_name", "email", "created_at", "updated_at"],
 }
 ```
 
@@ -64,13 +63,13 @@ user = User.objects.create(
     email="jordan@eremieff.com"
 )
 
-pydantic_user = PydanticUser.from_django(user)
+user_schema = UserSchema.from_django(user)
 ```
 
 Alternatively, the Pydantic model can be used to create a new object:
 
 ```python
-pydantic_user = PydanticUser.create(
+user_schema = UserSchema.create(
     first_name="Jordan", 
     last_name="Eremieff", 
     email="jordan@eremieff.com"
@@ -80,35 +79,33 @@ pydantic_user = PydanticUser.create(
 Or retrieve an existing one:
 
 ```python
-pydantic_user = PydanticUser.get(id=user.id)
+user_schema = UserSchema.get(id=user.id)
 ```
 
 The object in each case can be validated and [export](https://pydantic-docs.helpmanual.io/usage/exporting_models/) the values in the same way:
 
 ```python
-user_json = pydantic_user.json()
+user_json = user_schema.json()
 ```
 
 To produce a result such as:
 
 ```json
 {
-    "profile": null, 
-    "messages": [], 
-    "id": 1, 
-    "first_name": "Jordan", 
-    "last_name": "Eremieff", 
-    "email": "jordan@eremieff.com", 
-    "created_at": "2020-08-09T13:45:04.395787+00:00",
-    "updated_at": "2020-08-09T13:45:04.395828+00:00", 
-    "groups": []
+    "profile": null,
+    "id": 1,
+    "first_name": "Jordan",
+    "last_name": "Eremieff",
+    "email": "jordan@eremieff.com",
+    "created_at": "2020-08-15T16:50:30.606345+00:00",
+    "updated_at": "2020-08-15T16:50:30.606452+00:00"
 }
 ```
 
 It can also use standard Python type annotations in conjunction with the fields retrieved automatically from the database, and the configuration class supports `exclude` and `include` options:
 
 ```python
-class PydanticUser(PydanticDjangoModel):
+class UserSchema(PydanticDjangoModel):
     first_name: Optional[str]
     last_name: str
 
@@ -129,7 +126,7 @@ The `first_name` field here is required in the database and the `last_name` fiel
             'last_name': {'title': 'Last Name', 'type': 'string'}
             },
     'required': ['last_name'],
-    'title': 'PydanticUser',
+    'title': 'UserSchema',
     'type': 'object'
 }
 ```
@@ -144,9 +141,11 @@ It can do a bit more than this, but you'll have to check out the testing applica
 - [x] Default factory support
 - [x] Support basic field types
 - [x] Sub-model support for forward and reverse relations
+- [x] JSON field types
+- [x] Support for multi-object querysets
+- [x] Support generic relations
 - [ ] Postgres field types
 - [ ] Look into custom validators and configurations
-- [ ] Support for multi-object querysets
 - [ ] More comprehensive support for Django features
 - [ ] HTML schema generation
 - [ ] Create a complete application example
