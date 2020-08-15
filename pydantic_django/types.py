@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional, List, Union
 from decimal import Decimal
 from datetime import date, time, datetime, timedelta
 from uuid import UUID
@@ -78,7 +78,7 @@ FIELD_TYPES = {
     "DecimalField": Decimal,
     "FloatField": float,
     "UUIDField": UUID,
-    "JSONField": Json,
+    "JSONField": Union[Json, dict, list],  # TODO: Configure this using default
     # "ArrayField",
     # "BigIntegerRangeField",
     # "CICharField",

@@ -8,7 +8,7 @@ from pydantic.main import ModelMetaclass
 
 from .types import DjangoField
 
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.fields import GenericRelation
 
 
 class PydanticDjangoError(Exception):

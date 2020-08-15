@@ -21,7 +21,14 @@ def test_custom_field():
         "properties": {
             "id": {"title": "Id", "type": "integer"},
             "title": {"title": "Title", "maxLength": 20, "type": "string"},
-            "items": {"title": "Items", "type": "string", "format": "json-string"},
+            "items": {
+                "title": "Items",
+                "anyOf": [
+                    {"type": "string", "format": "json-string"},
+                    {"type": "object"},
+                    {"type": "array", "items": {}},
+                ],
+            },
         },
         "required": ["title"],
     }
@@ -39,24 +46,33 @@ def test_postgres_json_field():
             include = ["permissions", "changelog", "metadata"]
 
     assert ConfigurationSchema.schema() == {
+        "title": "ConfigurationSchema",
         "description": "A configuration container.",
+        "type": "object",
         "properties": {
+            "permissions": {
+                "title": "Permissions",
+                "anyOf": [
+                    {"type": "string", "format": "json-string"},
+                    {"type": "object"},
+                    {"type": "array", "items": {}},
+                ],
+            },
             "changelog": {
-                "format": "json-string",
                 "title": "Changelog",
-                "type": "string",
+                "anyOf": [
+                    {"type": "string", "format": "json-string"},
+                    {"type": "object"},
+                    {"type": "array", "items": {}},
+                ],
             },
             "metadata": {
-                "format": "json-string",
                 "title": "Metadata",
-                "type": "string",
-            },
-            "permissions": {
-                "format": "json-string",
-                "title": "Permissions",
-                "type": "string",
+                "anyOf": [
+                    {"type": "string", "format": "json-string"},
+                    {"type": "object"},
+                    {"type": "array", "items": {}},
+                ],
             },
         },
-        "title": "ConfigurationSchema",
-        "type": "object",
     }
