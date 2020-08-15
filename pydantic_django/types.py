@@ -108,12 +108,15 @@ def DjangoField(field):
     python_type = None
 
     if field.is_relation:
-        internal_type = field.related_model._meta.pk.get_internal_type()
-        if not field.concrete and field.auto_created:  # Reverse relation
+        if not field.related_model:
+            internal_type = field.model._meta.pk.get_internal_type()
 
-            default = None
-        elif field.null:
-            default = None
+        else:
+            internal_type = field.related_model._meta.pk.get_internal_type()
+            if not field.concrete and field.auto_created:
+                default = None
+            elif field.null:
+                default = None
 
         pk_type = FIELD_TYPES.get(internal_type, int)
         if field.one_to_many or field.many_to_many:
@@ -121,7 +124,8 @@ def DjangoField(field):
         else:
             python_type = pk_type
 
-        field = field.target_field
+        if field.related_model:
+            field = field.target_field
 
     else:
         internal_type = field.get_internal_type()

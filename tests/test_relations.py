@@ -2,7 +2,18 @@ from typing import List
 
 import pytest
 
-from testapp.models import User, Profile, Thread, Message, Publication, Article
+from testapp.models import (
+    User,
+    Profile,
+    Thread,
+    Message,
+    Publication,
+    Article,
+    Item,
+    ItemList,
+    Tagged,
+    Bookmark,
+)
 
 from pydantic_django import PydanticDjangoModel
 
@@ -423,6 +434,132 @@ def test_one_to_one_reverse():
                     },
                 },
                 "required": ["user"],
+            }
+        },
+    }
+
+
+@pytest.mark.django_db
+def test_generic_relation():
+    """
+    Test generic foreign-key relationships.
+    """
+
+    class TaggedSchema(PydanticDjangoModel):
+        class Config:
+            model = Tagged
+
+    assert TaggedSchema.schema() == {
+        "title": "TaggedSchema",
+        "description": "Tagged(id, slug, content_type, object_id)",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "type": "integer"},
+            "slug": {"title": "Slug", "maxLength": 50, "type": "string"},
+            "content_type": {"title": "Content Type", "type": "integer"},
+            "object_id": {"title": "Object Id", "type": "integer"},
+            "content_object": {"title": "Content Object", "type": "integer"},
+        },
+        "required": ["slug", "content_type", "object_id", "content_object"],
+    }
+
+    class BookmarkSchema(PydanticDjangoModel):
+        class Config:
+            model = Bookmark
+
+    assert BookmarkSchema.schema() == {
+        "title": "BookmarkSchema",
+        "description": "Bookmark(id, url)",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "type": "integer"},
+            "url": {"title": "Url", "maxLength": 200, "type": "string"},
+            "tags": {
+                "title": "Tags",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": {"type": "integer"},
+                },
+            },
+        },
+        "required": ["url", "tags"],
+    }
+
+    class BookmarkWithTaggedSchema(PydanticDjangoModel):
+
+        tags: List[TaggedSchema]
+
+        class Config:
+            model = Bookmark
+
+    assert BookmarkWithTaggedSchema.schema() == {
+        "title": "BookmarkWithTaggedSchema",
+        "description": "Bookmark(id, url)",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "type": "integer"},
+            "url": {"title": "Url", "maxLength": 200, "type": "string"},
+            "tags": {
+                "title": "Tags",
+                "type": "array",
+                "items": {"$ref": "#/definitions/TaggedSchema"},
+            },
+        },
+        "required": ["url", "tags"],
+        "definitions": {
+            "TaggedSchema": {
+                "title": "TaggedSchema",
+                "description": "Tagged(id, slug, content_type, object_id)",
+                "type": "object",
+                "properties": {
+                    "id": {"title": "Id", "type": "integer"},
+                    "slug": {"title": "Slug", "maxLength": 50, "type": "string"},
+                    "content_type": {"title": "Content Type", "type": "integer"},
+                    "object_id": {"title": "Object Id", "type": "integer"},
+                    "content_object": {"title": "Content Object", "type": "integer"},
+                },
+                "required": ["slug", "content_type", "object_id", "content_object"],
+            }
+        },
+    }
+
+    class ItemSchema(PydanticDjangoModel):
+
+        tags: List[TaggedSchema]
+
+        class Config:
+            model = Item
+
+    # Test without defining a GenericRelation on the model.
+    assert ItemSchema.schema() == {
+        "title": "ItemSchema",
+        "description": "Item(id, name, item_list)",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "type": "integer"},
+            "name": {"title": "Name", "maxLength": 100, "type": "string"},
+            "item_list": {"title": "Item List", "type": "integer"},
+            "tags": {
+                "title": "Tags",
+                "type": "array",
+                "items": {"$ref": "#/definitions/TaggedSchema"},
+            },
+        },
+        "required": ["name", "item_list", "tags"],
+        "definitions": {
+            "TaggedSchema": {
+                "title": "TaggedSchema",
+                "description": "Tagged(id, slug, content_type, object_id)",
+                "type": "object",
+                "properties": {
+                    "id": {"title": "Id", "type": "integer"},
+                    "slug": {"title": "Slug", "maxLength": 50, "type": "string"},
+                    "content_type": {"title": "Content Type", "type": "integer"},
+                    "object_id": {"title": "Object Id", "type": "integer"},
+                    "content_object": {"title": "Content Object", "type": "integer"},
+                },
+                "required": ["slug", "content_type", "object_id", "content_object"],
             }
         },
     }

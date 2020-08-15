@@ -2,7 +2,7 @@ from typing import List
 
 import pytest
 
-from testapp.models import User, Profile, Thread, Message
+from testapp.models import User, Profile, Thread, Message, Tagged, Bookmark, Item
 
 from pydantic_django import PydanticDjangoModel
 
@@ -68,6 +68,32 @@ def test_get_instance():
         == user_schema.dict()
         == {"first_name": "Jordan", "id": 1}
     )
+
+
+@pytest.mark.django_db
+def test_get_instance_with_generic_foreign_key():
+
+    bookmark = Bookmark.objects.create(url="https://www.djangoproject.com/")
+    Tagged.objects.create(content_object=bookmark, slug="django")
+
+    class TaggedSchema(PydanticDjangoModel):
+        class Config:
+            model = Tagged
+
+    class BookmarkWithTaggedSchema(PydanticDjangoModel):
+
+        tags: List[TaggedSchema]
+
+        class Config:
+            model = Bookmark
+
+    bookmark_with_tagged_schema = BookmarkWithTaggedSchema.from_django(bookmark)
+
+    assert bookmark_with_tagged_schema.dict() == {
+        "id": 1,
+        "tags": [{"content_type": 20, "id": 1, "object_id": 1, "slug": "django"}],
+        "url": "https://www.djangoproject.com/",
+    }
 
 
 @pytest.mark.django_db

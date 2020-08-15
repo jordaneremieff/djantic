@@ -8,6 +8,8 @@ from pydantic.main import ModelMetaclass
 
 from .types import DjangoField
 
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+
 
 class PydanticDjangoError(Exception):
     """
@@ -25,7 +27,9 @@ class PydanticDjangoModelMetaclass(ModelMetaclass):
         bases: tuple,
         namespace: dict,
     ) -> "PydanticDjangoModelMetaclass":
+
         cls = super().__new__(mcs, name, bases, namespace)
+
         for base in reversed(bases):
             if (
                 _is_base_model_class_defined
@@ -54,6 +58,7 @@ class PydanticDjangoModelMetaclass(ModelMetaclass):
                 _seen = set()
 
                 for field in chain(fields, annotations.copy()):
+
                     field_name = getattr(
                         field, "name", getattr(field, "related_name", field)
                     )
@@ -70,6 +75,7 @@ class PydanticDjangoModelMetaclass(ModelMetaclass):
                     python_type = None
                     pydantic_field = None
                     if field_name in annotations and field_name in namespace:
+
                         python_type = annotations.pop(field_name)
                         pydantic_field = namespace[field_name]
                         if (
@@ -82,6 +88,7 @@ class PydanticDjangoModelMetaclass(ModelMetaclass):
                         pydantic_field = (
                             None if Optional[python_type] == python_type else Ellipsis
                         )
+
                     else:
                         python_type, pydantic_field = DjangoField(field)
 
@@ -158,16 +165,16 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
                 "A valid Django model class must be set on `Config.model`."
             )
 
-        if cls.__config__.include:
+        if hasattr(cls.__config__, "include"):
             fields = cls.__config__.include
-        elif cls.__config__.exclude:
+        elif hasattr(cls.__config__, "exclude"):
             fields = [
-                field
+                field.name
                 for field in cls.__config__.model._meta.get_fields()
                 if field not in cls.__config__.exclude
             ]
         else:
-            fields = cls.__config__.model._meta.get_fields()
+            fields = [field.name for field in cls.__config__.model._meta.get_fields()]
 
         return fields
 
@@ -244,9 +251,37 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
                     obj_data[accessor_name] = related_obj_data
 
                 elif field.one_to_many or field.many_to_many:
-                    obj_data[field.name] = [
-                        _obj.pk for _obj in field.value_from_object(instance)
-                    ]
+
+                    if isinstance(field, GenericRelation):
+
+                        related_qs = getattr(instance, field.name)
+                        related_fields = [
+                            field
+                            for field in model_cls.get_fields()
+                            if field != "content_object"
+                        ]
+
+                        if model_cls:
+
+                            f = model_cls.get_fields()
+                            k = {}
+                            for i in f:
+                                k[i] = related_qs
+
+                            related_obj_data = [
+                                model_cls.construct(**obj_vals)
+                                for obj_vals in related_qs.values(*related_fields)
+                            ]
+
+                        else:
+                            related_obj_data = list(related_obj.all().values("id"))
+
+                        obj_data[field.name] = related_obj_data
+                    else:
+
+                        obj_data[field.name] = [
+                            _obj.pk for _obj in field.value_from_object(instance)
+                        ]
                 else:
                     obj_data[field.name] = field.value_from_object(instance)
 
