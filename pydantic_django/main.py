@@ -263,11 +263,6 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
 
                         if model_cls:
 
-                            f = model_cls.get_fields()
-                            k = {}
-                            for i in f:
-                                k[i] = related_qs
-
                             related_obj_data = [
                                 model_cls.construct(**obj_vals)
                                 for obj_vals in related_qs.values(*related_fields)
