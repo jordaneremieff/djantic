@@ -255,13 +255,13 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
                     if isinstance(field, GenericRelation):
 
                         related_qs = getattr(instance, field.name)
-                        related_fields = [
-                            field
-                            for field in model_cls.get_fields()
-                            if field != "content_object"
-                        ]
 
                         if model_cls:
+                            related_fields = [
+                                field
+                                for field in model_cls.get_fields()
+                                if field != "content_object"
+                            ]
 
                             related_obj_data = [
                                 model_cls.construct(**obj_vals)
@@ -269,7 +269,7 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
                             ]
 
                         else:
-                            related_obj_data = list(related_obj.all().values("id"))
+                            related_obj_data = list(related_qs.values())
 
                         obj_data[field.name] = related_obj_data
                     else:
