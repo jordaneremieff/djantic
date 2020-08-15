@@ -7,7 +7,7 @@ def get_long_description():
 
 setup(
     name="pydantic-django",
-    version="0.0.1",
+    version="0.0.2",
     packages=find_packages(),
     license="MIT",
     url="https://github.com/jordaneremieff/pydantic-django/",

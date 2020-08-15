@@ -7,7 +7,12 @@ from ipaddress import _BaseAddress, IPv4Address, IPv6Address
 from pydantic import errors, IPvAnyAddress, Json
 from pydantic.fields import FieldInfo
 
-from rich import print
+
+class FieldNotFoundError(Exception):
+    """
+    Raised when a field lookup fails when generating the Pydantic model.
+    """
+
 
 INT_TYPES = [
     "AutoField",
@@ -91,8 +96,6 @@ FIELD_TYPES = {
     # "RangeOperators",
 }
 
-# ForeignKey", "ManyToManyField", "OneToOneField"
-
 
 def DjangoField(field):
     default = ...
@@ -101,6 +104,9 @@ def DjangoField(field):
     title = None
     max_length = None
     # min_length = None
+
+    python_type = None
+
     if field.is_relation:
         internal_type = field.related_model._meta.pk.get_internal_type()
         if not field.concrete and field.auto_created:  # Reverse relation
@@ -109,10 +115,11 @@ def DjangoField(field):
         elif field.null:
             default = None
 
-        python_type = FIELD_TYPES.get(internal_type, int)
-
+        pk_type = FIELD_TYPES.get(internal_type, int)
         if field.one_to_many or field.many_to_many:
-            python_type = List[python_type]
+            python_type = List[Dict[str, pk_type]]
+        else:
+            python_type = pk_type
 
         field = field.target_field
 
@@ -127,9 +134,14 @@ def DjangoField(field):
         elif internal_type in FIELD_TYPES:
             python_type = FIELD_TYPES[internal_type]
         else:
-            # TODO: Look into this further, probably some other cases where this breaks.
-            base_internal_type = field.__class__.__base__().get_internal_type()
-            python_type = FIELD_TYPES[base_internal_type]
+            for field_class in type(field).__mro__:
+                _internal_type = field_class().get_internal_type()
+                if _internal_type in FIELD_TYPES:
+                    python_type = FIELD_TYPES[_internal_type]
+                    break
+
+        if not python_type:
+            raise FieldNotFoundError(f"Could not find {internal_type}")
 
         deconstructed = field.deconstruct()
         field_options = deconstructed[3] or {}
@@ -143,8 +155,8 @@ def DjangoField(field):
         elif field.primary_key or blank or null:
             default = None
 
-    description = field.help_text
-    title = field.verbose_name.title()
+        description = field.help_text
+        title = field.verbose_name.title()
 
     return (
         python_type,

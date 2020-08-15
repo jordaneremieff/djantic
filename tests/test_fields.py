@@ -10,12 +10,12 @@ def test_custom_field():
     Test a model using custom field subclasses.
     """
 
-    class PydanticRecord(PydanticDjangoModel):
+    class RecordSchema(PydanticDjangoModel):
         class Config:
             model = Record
 
-    assert PydanticRecord.schema() == {
-        "title": "PydanticRecord",
+    assert RecordSchema.schema() == {
+        "title": "RecordSchema",
         "description": "A generic record model.",
         "type": "object",
         "properties": {
@@ -33,12 +33,12 @@ def test_postgres_json_field():
     Test generating a schema for multiple Postgres JSON fields.
     """
 
-    class PydanticConfiguration(PydanticDjangoModel):
+    class ConfigurationSchema(PydanticDjangoModel):
         class Config:
             model = Configuration
             include = ["permissions", "changelog", "metadata"]
 
-    assert PydanticConfiguration.schema() == {
+    assert ConfigurationSchema.schema() == {
         "description": "A configuration container.",
         "properties": {
             "changelog": {
@@ -57,6 +57,6 @@ def test_postgres_json_field():
                 "type": "string",
             },
         },
-        "title": "PydanticConfiguration",
+        "title": "ConfigurationSchema",
         "type": "object",
     }

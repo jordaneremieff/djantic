@@ -1,6 +1,8 @@
+from typing import List
+
 import pytest
 
-from testapp.models import User, Profile, Group
+from testapp.models import User, Profile, Thread, Message
 
 from pydantic_django import PydanticDjangoModel
 
@@ -8,194 +10,285 @@ from pydantic_django import PydanticDjangoModel
 @pytest.mark.django_db
 def test_query_create():
     """
-    Test creating and saving an object to populate a new model.
+    Test creating and saving a Django object to populate the schema model.
     """
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         class Config:
             model = User
-            include = ["id", "first_name", "last_name", "email"]
+            include = ["id", "email"]
 
-    pydantic_user = PydanticUser.create(
+    user_schema = UserSchema.create(
         first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
     )
 
     assert (
-        pydantic_user.schema()
+        user_schema.schema()
         == {
-            "title": "PydanticUser",
             "description": "A user of the application.",
-            "type": "object",
             "properties": {
+                "email": {"maxLength": 254, "title": "Email", "type": "string"},
                 "id": {"title": "Id", "type": "integer"},
-                "first_name": {
-                    "title": "First Name",
-                    "maxLength": 50,
-                    "type": "string",
-                },
-                "last_name": {"title": "Last Name", "maxLength": 50, "type": "string"},
-                "email": {"title": "Email", "maxLength": 254, "type": "string"},
             },
-            "required": ["first_name", "email"],
+            "required": ["email"],
+            "title": "UserSchema",
+            "type": "object",
         }
-        == PydanticUser.schema()
+        == UserSchema.schema()
     )
-    assert pydantic_user.dict() == {
-        "email": "jordan@eremieff.com",
-        "first_name": "Jordan",
-        "id": 1,
-        "last_name": "Eremieff",
-    }
 
-    user = User.objects.get(id=pydantic_user.instance.id)
-    assert PydanticUser.from_django(user).dict() == pydantic_user.dict()
+    user = User.objects.get(id=user_schema.instance.id)
+
+    assert (
+        UserSchema.from_django(user).dict()
+        == user_schema.dict()
+        == {"email": "jordan@eremieff.com", "id": 1}
+    )
 
 
 @pytest.mark.django_db
-def test_query_get():
+def test_get_instance():
     """
-    Test retrieving an existing object to populate a new model.
+    Test retrieving an existing Django object to populate the schema model.
     """
 
     user = User.objects.create(
         first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
     )
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         class Config:
             model = User
             include = ["id", "first_name"]
 
-    pydantic_user = PydanticUser.get(id=user.id)
-    assert pydantic_user.schema() == {
-        "title": "PydanticUser",
-        "description": "A user of the application.",
-        "type": "object",
-        "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "first_name": {"title": "First Name", "maxLength": 50, "type": "string"},
-        },
-        "required": ["first_name"],
-    }
-    assert pydantic_user.dict() == {"first_name": "Jordan", "id": 1}
+    user_schema = UserSchema.get(id=user.id)
+
+    assert (
+        UserSchema.from_django(user).dict()
+        == user_schema.dict()
+        == {"first_name": "Jordan", "id": 1}
+    )
 
 
 @pytest.mark.django_db
-def test_query_save():
+def test_save_instance():
     """
-    Test saving changes to an instance and updating the model.
+    Test updating and saving a Django object and updating the schema model.
     """
     user = User.objects.create(
         first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
     )
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         class Config:
             model = User
             include = ["id", "first_name", "last_name"]
 
-    pydantic_user = PydanticUser.get(id=user.id)
-    pydantic_user.instance.last_name = "Test"
-    pydantic_user.save()
-    assert pydantic_user.dict() == {
-        "first_name": "Jordan",
-        "id": 1,
-        "last_name": "Test",
-    }
+    user_schema = UserSchema.get(id=user.id)
+    user_schema.instance.last_name = "Lastname"
+    user_schema.save()
+
+    user_values_from_db = dict(
+        User.objects.filter(id=user.id).values("id", "first_name", "last_name")[0]
+    )
+    assert (
+        user_schema.dict()
+        == {"first_name": "Jordan", "id": 1, "last_name": "Lastname"}
+        == user_values_from_db
+    )
 
 
 @pytest.mark.django_db
-def test_instance_refresh():
+def test_refresh_instance():
     """
-    Test refreshing an instance from the database and updating the model.
+    Test refreshing a Django object from the database and updating the schema model.
     """
     user = User.objects.create(
         first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
     )
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         class Config:
             model = User
             include = ["id", "email", "profile"]
 
-    pydantic_user = PydanticUser.get(id=user.id)
+    user_schema = UserSchema.get(id=user.id)
+    user_schema_values = user_schema.dict()
 
-    assert not pydantic_user.dict()["profile"]
-    assert pydantic_user.dict()["email"] == "jordan@eremieff.com"
+    assert not user_schema_values["profile"]
+    assert user_schema_values["email"] == "jordan@eremieff.com"
 
     profile = Profile.objects.create(
         user=user, website="https://github.com/jordaneremieff", location="Australia"
     )
-    user.email = "hello@example.com"
+    user.email = "hello@eremieff.com"
     user.save()
 
-    pydantic_user.refresh()
+    user_schema.refresh()
 
-    assert pydantic_user.dict()["profile"] == profile.pk
-    assert pydantic_user.dict()["email"] == "hello@example.com"
+    user_schema_values = user_schema.dict()
+
+    assert user_schema_values["profile"] == profile.pk
+    assert user_schema_values["email"] == "hello@eremieff.com"
 
 
 @pytest.mark.django_db
-def test_instance_delete():
+def test_delete_instance():
     """
-    Test deleting an instance and clearing the model.
+    Test deleting a Django object and clearing the schema model.
     """
     user = User.objects.create(
         first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
     )
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         class Config:
             model = User
 
-    pydantic_user = PydanticUser.get(id=user.id)
-    assert pydantic_user.dict()["id"] == user.id
-    pydantic_user.delete()
-    assert not pydantic_user.dict()
+    user_schema = UserSchema.get(id=user.id)
+    assert user_schema.dict()["id"] == user.id
+
+    user_schema.delete()
+    assert not user_schema.dict()
 
 
 @pytest.mark.django_db
-def test_queryset():
+def test_get_queryset_with_reverse_one_to_one():
+    """
+    Test retrieving a Django queryset with reverse one-to-one relationships.
+    """
+    user_data = [
+        {"first_name": "Jordan", "email": "jordan@eremieff.com"},
+        {"first_name": "Sara", "email": "sara@example.com"},
+    ]
+    for kwargs in user_data:
+        user = User.objects.create(**kwargs)
+        Profile.objects.create(user=user, location="Australia")
 
-    group = Group.objects.create(title="user-group-1")
-    user = User.objects.create(
-        first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
-    )
-    user2 = User.objects.create(
-        first_name="Jordan2", last_name="Eremieff2", email="jordan2@eremieff.com"
-    )
-
-    groups = [group]
-    user.groups.set(groups)
-    user2.groups.set(groups)
-
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         class Config:
             model = User
-            exclude = ["created_at", "updated_at"]
+            include = ["id", "email", "first_name", "profile"]
 
     users = User.objects.all()
-    pydantic_user = PydanticUser.from_django(users, many=True)
-
-    assert pydantic_user.dict() == {
+    user_schema_qs = UserSchema.from_django(users, many=True)
+    assert user_schema_qs.dict() == {
         "users": [
             {
-                "profile": None,
-                "messages": [],
-                "id": 1,
-                "first_name": "Jordan",
-                "last_name": "Eremieff",
                 "email": "jordan@eremieff.com",
-                "groups": [1],
+                "first_name": "Jordan",
+                "id": 1,
+                "profile": 1,
+            },
+            {"email": "sara@example.com", "first_name": "Sara", "id": 2, "profile": 2},
+        ]
+    }
+
+    # Test when using a declared sub-model
+    class ProfileSchema(PydanticDjangoModel):
+        class Config:
+            model = Profile
+            include = ["id", "location"]
+
+    class UserWithProfileSchema(PydanticDjangoModel):
+
+        profile: ProfileSchema
+
+        class Config:
+            model = User
+            exclude = ["created_at", "updated_at", "last_name"]
+
+    users = User.objects.all()
+
+    user_with_profile_schema_qs = UserWithProfileSchema.from_django(users, many=True)
+    assert user_with_profile_schema_qs.dict() == {
+        "users": [
+            {
+                "email": "jordan@eremieff.com",
+                "first_name": "Jordan",
+                "id": 1,
+                "profile": {"id": 1, "location": "Australia"},
             },
             {
-                "profile": None,
-                "messages": [],
+                "email": "sara@example.com",
+                "first_name": "Sara",
                 "id": 2,
-                "first_name": "Jordan2",
-                "last_name": "Eremieff2",
-                "email": "jordan2@eremieff.com",
-                "groups": [1],
+                "profile": {"id": 2, "location": "Australia"},
+            },
+        ]
+    }
+
+
+@pytest.mark.django_db
+def test_get_queryset_with_reverse_foreign_key():
+    """
+    Test retrieving a Django queryset with reverse foreign-key relationships.
+    """
+
+    thread = Thread.objects.create(title="My thread topic")
+    thread2 = Thread.objects.create(title="Another topic")
+    for content in ("I agree.", "I disagree!", "lol"):
+        Message.objects.create(content=content, thread=thread)
+        Message.objects.create(content=content, thread=thread2)
+
+    threads = Thread.objects.all()
+
+    class MessageSchema(PydanticDjangoModel):
+        class Config:
+            model = Message
+            include = ["id", "content"]
+
+    class ThreadSchema(PydanticDjangoModel):
+        class Config:
+            model = Thread
+
+    thread_schema_qs = ThreadSchema.from_django(threads, many=True)
+    assert thread_schema_qs.dict() == {
+        "threads": [
+            {
+                "messages": [{"id": 2}, {"id": 4}, {"id": 6}],
+                "id": 2,
+                "title": "Another topic",
+            },
+            {
+                "messages": [{"id": 1}, {"id": 3}, {"id": 5}],
+                "id": 1,
+                "title": "My thread topic",
+            },
+        ]
+    }
+
+    # Test when using a declared sub-model
+    class ThreadWithMessageListSchema(PydanticDjangoModel):
+        messages: List[MessageSchema]
+
+        class Config:
+            model = Thread
+            exclude = ["created_at", "updated_at"]
+
+    thread_with_message_list_schema_qs = ThreadWithMessageListSchema.from_django(
+        threads, many=True
+    )
+
+    assert thread_with_message_list_schema_qs.dict() == {
+        "threads": [
+            {
+                "messages": [
+                    {"id": 2, "content": "I agree."},
+                    {"id": 4, "content": "I disagree!"},
+                    {"id": 6, "content": "lol"},
+                ],
+                "id": 2,
+                "title": "Another topic",
+            },
+            {
+                "messages": [
+                    {"id": 1, "content": "I agree."},
+                    {"id": 3, "content": "I disagree!"},
+                    {"id": 5, "content": "lol"},
+                ],
+                "id": 1,
+                "title": "My thread topic",
             },
         ]
     }

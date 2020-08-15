@@ -15,7 +15,7 @@ def test_description():
     Test setting the schema description to the docstring of the Pydantic model.
     """
 
-    class PydanticProfile(PydanticDjangoModel):
+    class ProfileSchema(PydanticDjangoModel):
         """
         Pydantic profile docstring.
         """
@@ -23,9 +23,9 @@ def test_description():
         class Config:
             model = Profile
 
-    assert PydanticProfile.schema()["description"] == "Pydantic profile docstring."
+    assert ProfileSchema.schema()["description"] == "Pydantic profile docstring."
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         """
         Pydantic user docstring.
         """
@@ -33,14 +33,14 @@ def test_description():
         class Config:
             model = User
 
-    assert PydanticUser.schema()["description"] == "Pydantic user docstring."
+    assert UserSchema.schema()["description"] == "Pydantic user docstring."
 
     # Default will be the model docstring
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         class Config:
             model = User
 
-    assert PydanticUser.schema()["description"] == "A user of the application."
+    assert UserSchema.schema()["description"] == "A user of the application."
 
 
 @pytest.mark.django_db
@@ -49,13 +49,13 @@ def test_cache():
     Test the schema cache.
     """
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         class Config:
             model = User
             include = ["id", "first_name"]
 
     expected = {
-        "title": "PydanticUser",
+        "title": "UserSchema",
         "description": "A user of the application.",
         "type": "object",
         "properties": {
@@ -65,23 +65,23 @@ def test_cache():
         "required": ["first_name"],
     }
 
-    assert True not in PydanticUser.__schema_cache__
-    assert False not in PydanticUser.__schema_cache__
-    assert PydanticUser.schema() == expected
-    assert True in PydanticUser.__schema_cache__
-    assert False not in PydanticUser.__schema_cache__
-    assert PydanticUser.schema() == expected
+    assert True not in UserSchema.__schema_cache__
+    assert False not in UserSchema.__schema_cache__
+    assert UserSchema.schema() == expected
+    assert True in UserSchema.__schema_cache__
+    assert False not in UserSchema.__schema_cache__
+    assert UserSchema.schema() == expected
 
 
 @pytest.mark.django_db
-def test_fields():
+def test_include_exclude():
     """
     Test include and exclude rules in the model config.
     """
 
     all_user_fields = [field.name for field in User._meta.get_fields()]
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         """
         All fields are included by default.
         """
@@ -89,9 +89,9 @@ def test_fields():
         class Config:
             model = User
 
-    assert set(PydanticUser.schema()["properties"].keys()) == set(all_user_fields)
+    assert set(UserSchema.schema()["properties"].keys()) == set(all_user_fields)
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         """
         All fields are included explicitly.
         """
@@ -99,9 +99,9 @@ def test_fields():
         class Config:
             model = User
 
-    assert set(PydanticUser.schema()["properties"].keys()) == set(all_user_fields)
+    assert set(UserSchema.schema()["properties"].keys()) == set(all_user_fields)
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         """
         Only 'first_name' and 'email' are included.
         """
@@ -112,11 +112,11 @@ def test_fields():
             model = User
             include = ["first_name", "email"]
 
-    included = PydanticUser.schema()["properties"].keys()
-    assert set(included) == set(PydanticUser.__config__.include)
+    included = UserSchema.schema()["properties"].keys()
+    assert set(included) == set(UserSchema.__config__.include)
     assert set(included) == set(["first_name", "email"])
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         """
         Only 'id' and 'profile' are not excluded.
         """
@@ -126,24 +126,17 @@ def test_fields():
 
         class Config:
             model = User
-            exclude = [
-                "first_name",
-                "last_name",
-                "email",
-                "created_at",
-                "updated_at",
-                "groups",
-            ]
+            exclude = ["first_name", "last_name", "email", "created_at", "updated_at"]
 
-    not_excluded = PydanticUser.schema()["properties"].keys()
+    not_excluded = UserSchema.schema()["properties"].keys()
     assert set(not_excluded) == set(
         [
             field
             for field in all_user_fields
-            if field not in PydanticUser.__config__.exclude
+            if field not in UserSchema.__config__.exclude
         ]
     )
-    assert set(not_excluded) == set(["profile", "messages", "id"])
+    assert set(not_excluded) == set(["profile", "id"])
 
 
 @pytest.mark.django_db
@@ -152,7 +145,7 @@ def test_annotations():
     Test annotating fields.
     """
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         """
         Test required, optional, and function fields.
 
@@ -167,11 +160,11 @@ def test_annotations():
             model = User
             include = ["first_name", "last_name"]
 
-    assert PydanticUser.schema()["required"] == ["last_name"]
+    assert UserSchema.schema()["required"] == ["last_name"]
 
     updated_at_dt = datetime.datetime(2020, 12, 31, 0, 0)
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         """
         Test field functions and factory defaults.
         """
@@ -185,7 +178,7 @@ def test_annotations():
         class Config:
             model = User
 
-    schema = PydanticUser.schema()
+    schema = UserSchema.schema()
 
     props = schema["properties"]
     assert "default" in props["created_at"]
@@ -197,7 +190,7 @@ def test_annotations():
 
 @pytest.mark.django_db
 def test_json():
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         """
         Test JSON schema.
         """
@@ -207,7 +200,7 @@ def test_json():
             include = ["id", "first_name", "last_name"]
 
     expected = """{
-  "title": "PydanticUser",
+  "title": "UserSchema",
   "description": "Test JSON schema.",
   "type": "object",
   "properties": {
@@ -230,11 +223,11 @@ def test_json():
     "first_name"
   ]
 }"""
-    assert expected == PydanticUser.schema_json(indent=2)
+    assert expected == UserSchema.schema_json(indent=2)
 
 
 def test_by_alias_generator():
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         """
         Test alias generator.
         """
@@ -247,8 +240,8 @@ def test_by_alias_generator():
             def alias_generator(x):
                 return x.upper()
 
-    assert PydanticUser.schema() == {
-        "title": "PydanticUser",
+    assert UserSchema.schema() == {
+        "title": "UserSchema",
         "description": "Test alias generator.",
         "type": "object",
         "properties": {
@@ -257,10 +250,10 @@ def test_by_alias_generator():
         },
         "required": ["FIRST_NAME"],
     }
-    assert set(PydanticUser.schema()["properties"].keys()) == set(
+    assert set(UserSchema.schema()["properties"].keys()) == set(
         ["FIRST_NAME", "LAST_NAME"]
     )
-    assert set(PydanticUser.schema(by_alias=False)["properties"].keys()) == set(
+    assert set(UserSchema.schema(by_alias=False)["properties"].keys()) == set(
         ["first_name", "last_name"]
     )
 
@@ -277,7 +270,7 @@ def test_sub_model():
 
         referral_code: Optional[str]
 
-    class PydanticProfile(PydanticDjangoModel):
+    class ProfileSchema(PydanticDjangoModel):
         """
         Django model relation as a sub-model.
         """
@@ -286,16 +279,16 @@ def test_sub_model():
             model = Profile
             include = ["id"]
 
-    class PydanticUser(PydanticDjangoModel):
+    class UserSchema(PydanticDjangoModel):
         sign_up: SignUp
-        profile: PydanticProfile
+        profile: ProfileSchema
 
         class Config:
             model = User
             include = ["id", "sign_up", "profile"]
 
-    assert set(PydanticUser.schema()["definitions"].keys()) == set(
-        ["PydanticProfile", "SignUp"]
+    assert set(UserSchema.schema()["definitions"].keys()) == set(
+        ["ProfileSchema", "SignUp"]
     )
 
     class Notification(BaseModel):
@@ -303,7 +296,7 @@ def test_sub_model():
         Pydantic model as the main model.
         """
 
-        user: PydanticUser
+        user: UserSchema
         content: str
         sent_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
@@ -311,5 +304,5 @@ def test_sub_model():
         ["user", "content", "sent_at"]
     )
     assert set(Notification.schema()["definitions"].keys()) == set(
-        ["PydanticProfile", "SignUp", "PydanticUser"]
+        ["ProfileSchema", "SignUp", "UserSchema"]
     )

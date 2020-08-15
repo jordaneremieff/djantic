@@ -7,6 +7,65 @@ from django.contrib.postgres.fields import JSONField
 from .fields import ListField, NotNullRestrictedCharField
 
 
+class Thread(models.Model):
+    """
+    A thread of messages.
+    """
+
+    title = models.CharField(max_length=30)
+
+    class Meta:
+        ordering = ["title"]
+
+    def __str__(self):
+        return self.title
+
+
+class Message(models.Model):
+    """
+    A message posted in a thread.
+    """
+
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    thread = models.ForeignKey(
+        Thread, on_delete=models.CASCADE, related_name="messages"
+    )
+
+    def __str__(self):
+        return f"Message created in {self.thread} @ {self.created_at.isoformat()}"
+
+
+class Publication(models.Model):
+    """
+    A news publication.
+    """
+
+    title = models.CharField(max_length=30)
+
+    class Meta:
+        ordering = ["title"]
+
+    def __str__(self):
+        return self.title
+
+
+class Article(models.Model):
+    """
+    A news article.
+    """
+
+    headline = models.CharField(max_length=100)
+    pub_date = models.DateField()
+    publications = models.ManyToManyField(Publication)
+
+    class Meta:
+        ordering = ["headline"]
+
+    def __str__(self):
+        return self.headline
+
+
 class Group(models.Model):
     """
     A group of users.
@@ -28,9 +87,8 @@ class User(models.Model):
     """
 
     first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50, blank=True)
+    last_name = models.CharField(max_length=50, null=True, blank=True)
     email = models.EmailField(unique=True)
-    groups = models.ManyToManyField(Group, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -43,23 +101,6 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     website = models.URLField(default="", blank=True)
     location = models.CharField(max_length=100, default="", blank=True)
-
-
-class Message(models.Model):
-    """
-    A message created by a user.
-    """
-
-    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="messages")
-    content = models.TextField()
-    is_flagged = models.BooleanField(
-        default=False, help_text="Review status of the message"
-    )
-    flagged_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="When the message was flagged for review (if applicable)",
-    )
 
 
 class Configuration(models.Model):

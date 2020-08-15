@@ -1,5 +1,6 @@
+from inspect import isclass
 from itertools import chain
-from typing import Type, Optional, Union, List
+from typing import Type, Optional, Union
 
 import django
 from pydantic import BaseModel, create_model, validate_model, Field
@@ -56,6 +57,7 @@ class PydanticDjangoModelMetaclass(ModelMetaclass):
                     field_name = getattr(
                         field, "name", getattr(field, "related_name", field)
                     )
+
                     if (
                         field_name in _seen
                         or (include and field_name not in include)
@@ -150,6 +152,26 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
         return cls.from_django(instance)
 
     @classmethod
+    def get_fields(cls):
+        if not cls.__config__.model:
+            raise PydanticDjangoError(
+                "A valid Django model class must be set on `Config.model`."
+            )
+
+        if cls.__config__.include:
+            fields = cls.__config__.include
+        elif cls.__config__.exclude:
+            fields = [
+                field
+                for field in cls.__config__.model._meta.get_fields()
+                if field not in cls.__config__.exclude
+            ]
+        else:
+            fields = cls.__config__.model._meta.get_fields()
+
+        return fields
+
+    @classmethod
     def get_object_model(cls, obj_data):
 
         values, fields_set, validation_error = validate_model(cls, obj_data)
@@ -173,26 +195,60 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
 
         if not many:
             obj_data = {}
+            from rich import print
+
+            annotations = cls.__annotations__
+
             for field in instance._meta.get_fields():
+                model_cls = None
+
+                if (
+                    field.name in annotations
+                    and isclass(cls.__fields__[field.name].type_)
+                    and issubclass(
+                        cls.__fields__[field.name].type_, PydanticDjangoModel
+                    )
+                ):
+                    model_cls = cls.__fields__[field.name].type_
 
                 if not field.concrete and field.auto_created:
                     accessor_name = field.get_accessor_name()
-                    if field.one_to_many:
-                        obj_data[accessor_name] = list(
-                            getattr(instance, accessor_name).all().values("pk")
-                        )
+                    related_obj = getattr(instance, accessor_name, None)
+                    if not related_obj:
+                        related_obj_data = None
+                    elif field.one_to_many:
+                        related_qs = related_obj.all()
+
+                        if model_cls:
+                            related_obj_data = [
+                                model_cls.construct(**obj_vals)
+                                for obj_vals in related_qs.values(
+                                    *model_cls.get_fields()
+                                )
+                            ]
+
+                        else:
+                            related_obj_data = list(related_obj.all().values("id"))
+
                     elif field.one_to_one:
-                        _obj = getattr(instance, accessor_name, None)
-                        if _obj:
-                            obj_data[accessor_name] = _obj.pk
+                        if model_cls:
+                            related_obj_data = model_cls.construct(
+                                **{
+                                    _field: getattr(related_obj, _field)
+                                    for _field in model_cls.get_fields()
+                                }
+                            )
+
+                        else:
+                            related_obj_data = related_obj.pk
+
+                    obj_data[accessor_name] = related_obj_data
 
                 elif field.one_to_many or field.many_to_many:
                     obj_data[field.name] = [
                         _obj.pk for _obj in field.value_from_object(instance)
                     ]
-
                 else:
-
                     obj_data[field.name] = field.value_from_object(instance)
 
             p_model = cls.get_object_model(obj_data)

@@ -16,7 +16,7 @@ def test_config_errors():
         PydanticDjangoError, match="(Is `Config.model` a valid Django model class?)"
     ):
 
-        class PydanticBadModel(PydanticDjangoModel):
+        class InvalidModelErrorSchema(PydanticDjangoModel):
             class Config:
                 model = "Ok"
 
@@ -25,7 +25,7 @@ def test_config_errors():
         match="Only one of 'include' or 'exclude' should be set in configuration.",
     ):
 
-        class PydanticIncludeExclude(PydanticDjangoModel):
+        class IncludeExcludeErrorSchema(PydanticDjangoModel):
             class Config:
                 model = User
                 include = ["id"]

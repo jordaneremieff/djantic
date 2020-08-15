@@ -2,7 +2,7 @@ from typing import List
 
 import pytest
 
-from testapp.models import User, Profile, Group, Message
+from testapp.models import User, Profile, Thread, Message, Publication, Article
 
 from pydantic_django import PydanticDjangoModel
 
@@ -13,55 +13,76 @@ def test_m2m():
     Test forward m2m relationships.
     """
 
-    class PydanticUser(PydanticDjangoModel):
+    class ArticleSchema(PydanticDjangoModel):
         class Config:
-            model = User
-            include = ["id", "groups"]
+            model = Article
 
-    assert PydanticUser.schema()["properties"]["groups"] == {
-        "items": {"type": "integer"},
-        "title": "Id",
-        "type": "array",
+    assert ArticleSchema.schema() == {
+        "title": "ArticleSchema",
+        "description": "A news article.",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "type": "integer"},
+            "headline": {"title": "Headline", "maxLength": 100, "type": "string"},
+            "pub_date": {"title": "Pub Date", "type": "string", "format": "date"},
+            "publications": {
+                "title": "Publications",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": {"type": "integer"},
+                },
+            },
+        },
+        "required": ["headline", "pub_date", "publications"],
     }
 
-    class PydanticGroup(PydanticDjangoModel):
+    class PublicationSchema(PydanticDjangoModel):
         class Config:
-            model = Group
-            include = ["id", "slug"]
+            model = Publication
 
-    class PydanticUser(PydanticDjangoModel):
+    class ArticleWithPublicationListSchema(PydanticDjangoModel):
 
-        groups: List[PydanticGroup]
+        publications: List[PublicationSchema]
 
         class Config:
-            model = User
-            include = ["id", "groups"]
+            model = Article
 
-    assert PydanticUser.schema() == {
+    assert ArticleWithPublicationListSchema.schema() == {
+        "title": "ArticleWithPublicationListSchema",
+        "description": "A news article.",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "type": "integer"},
+            "headline": {"title": "Headline", "maxLength": 100, "type": "string"},
+            "pub_date": {"title": "Pub Date", "type": "string", "format": "date"},
+            "publications": {
+                "title": "Publications",
+                "type": "array",
+                "items": {"$ref": "#/definitions/PublicationSchema"},
+            },
+        },
+        "required": ["headline", "pub_date", "publications"],
         "definitions": {
-            "PydanticGroup": {
-                "description": "A group of users.",
-                "properties": {
-                    "id": {"title": "Id", "type": "integer"},
-                    "slug": {"maxLength": 50, "title": "Slug", "type": "string"},
-                },
-                "required": ["slug"],
-                "title": "PydanticGroup",
+            "PublicationSchema": {
+                "title": "PublicationSchema",
+                "description": "A news publication.",
                 "type": "object",
+                "properties": {
+                    "article": {
+                        "title": "Article",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {"type": "integer"},
+                        },
+                    },
+                    "id": {"title": "Id", "type": "integer"},
+                    "title": {"title": "Title", "maxLength": 30, "type": "string"},
+                },
+                "required": ["title"],
             }
         },
-        "description": "A user of the application.",
-        "properties": {
-            "groups": {
-                "items": {"$ref": "#/definitions/PydanticGroup"},
-                "title": "Groups",
-                "type": "array",
-            },
-            "id": {"title": "Id", "type": "integer"},
-        },
-        "required": ["groups"],
-        "title": "PydanticUser",
-        "type": "object",
     }
 
 
@@ -71,63 +92,73 @@ def test_foreign_key():
     Test forward foreign-key relationships.
     """
 
-    class PydanticUser(PydanticDjangoModel):
-        """
-        Related model for foreign-key relationship.
-        """
-
+    class ThreadSchema(PydanticDjangoModel):
         class Config:
-            model = User
-            include = ["id"]
+            model = Thread
 
-    class PydanticMessage(PydanticDjangoModel):
-        """
-        Model with a forward foreign-key relationship.
-        """
-
+    class MessageSchema(PydanticDjangoModel):
         class Config:
             model = Message
-            include = ["id", "user"]
 
-    assert PydanticMessage.schema() == {
-        "description": "Model with a forward foreign-key relationship.",
+    assert MessageSchema.schema() == {
+        "title": "MessageSchema",
+        "description": "A message posted in a thread.",
+        "type": "object",
         "properties": {
             "id": {"title": "Id", "type": "integer"},
-            "user": {"title": "Id", "type": "integer"},
+            "content": {"title": "Content", "type": "string"},
+            "created_at": {
+                "title": "Created At",
+                "type": "string",
+                "format": "date-time",
+            },
+            "thread": {"title": "Thread", "type": "integer"},
         },
-        "required": ["user"],
-        "title": "PydanticMessage",
-        "type": "object",
+        "required": ["content", "created_at", "thread"],
     }
 
-    class PydanticMessage(PydanticDjangoModel):
-        """
-        Model with a forward foreign-key relationship and sub-model definition.
-        """
+    class MessageWithThreadSchema(PydanticDjangoModel):
 
-        user: PydanticUser
+        thread: ThreadSchema
 
         class Config:
             model = Message
-            include = ["id", "user"]
 
-    assert PydanticMessage.schema() == {
-        "definitions": {
-            "PydanticUser": {
-                "description": "Related model for foreign-key relationship.",
-                "properties": {"id": {"title": "Id", "type": "integer"}},
-                "title": "PydanticUser",
-                "type": "object",
-            }
-        },
-        "description": "Model with a forward foreign-key relationship and sub-model definition.",
+    assert MessageWithThreadSchema.schema() == {
+        "title": "MessageWithThreadSchema",
+        "description": "A message posted in a thread.",
+        "type": "object",
         "properties": {
             "id": {"title": "Id", "type": "integer"},
-            "user": {"$ref": "#/definitions/PydanticUser"},
+            "content": {"title": "Content", "type": "string"},
+            "created_at": {
+                "title": "Created At",
+                "type": "string",
+                "format": "date-time",
+            },
+            "thread": {"$ref": "#/definitions/ThreadSchema"},
         },
-        "required": ["user"],
-        "title": "PydanticMessage",
-        "type": "object",
+        "required": ["content", "created_at", "thread"],
+        "definitions": {
+            "ThreadSchema": {
+                "title": "ThreadSchema",
+                "description": "A thread of messages.",
+                "type": "object",
+                "properties": {
+                    "messages": {
+                        "title": "Messages",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {"type": "integer"},
+                        },
+                    },
+                    "id": {"title": "Id", "type": "integer"},
+                    "title": {"title": "Title", "maxLength": 30, "type": "string"},
+                },
+                "required": ["title"],
+            }
+        },
     }
 
 
@@ -137,66 +168,71 @@ def test_foreign_key_reverse():
     Test reverse foreign-key relationships.
     """
 
-    class PydanticMessage(PydanticDjangoModel):
-        """
-        Related model for foreign-key relationship.
-        """
-
+    class MessageSchema(PydanticDjangoModel):
         class Config:
             model = Message
-            include = ["id"]
 
-    class PydanticUser(PydanticDjangoModel):
-        """
-        Model with a reverse foreign-key relationship.
-        """
-
+    class ThreadSchema(PydanticDjangoModel):
         class Config:
-            model = User
-            include = ["id", "messages"]
+            model = Thread
 
-    assert PydanticUser.schema() == {
-        "description": "Model with a reverse foreign-key relationship.",
-        "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "messages": {"items": {"type": "integer"}, "title": "Id", "type": "array"},
-        },
-        "title": "PydanticUser",
+    assert ThreadSchema.schema() == {
+        "title": "ThreadSchema",
+        "description": "A thread of messages.",
         "type": "object",
-    }
-
-    class PydanticUser(PydanticDjangoModel):
-        """
-        Model with a reverse foreign-key relationship and sub-model definition.
-        """
-
-        messages: List[PydanticMessage]
-
-        class Config:
-            model = User
-            include = ["id", "messages"]
-
-    assert PydanticUser.schema() == {
-        "definitions": {
-            "PydanticMessage": {
-                "description": "Related model for foreign-key relationship.",
-                "properties": {"id": {"title": "Id", "type": "integer"}},
-                "title": "PydanticMessage",
-                "type": "object",
-            }
-        },
-        "description": "Model with a reverse foreign-key relationship and sub-model definition.",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
             "messages": {
-                "items": {"$ref": "#/definitions/PydanticMessage"},
                 "title": "Messages",
                 "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": {"type": "integer"},
+                },
             },
+            "id": {"title": "Id", "type": "integer"},
+            "title": {"title": "Title", "maxLength": 30, "type": "string"},
         },
-        "required": ["messages"],
-        "title": "PydanticUser",
+        "required": ["title"],
+    }
+
+    class ThreadWithMessageListSchema(PydanticDjangoModel):
+        messages: List[MessageSchema]
+
+        class Config:
+            model = Thread
+
+    assert ThreadWithMessageListSchema.schema() == {
+        "title": "ThreadWithMessageListSchema",
+        "description": "A thread of messages.",
         "type": "object",
+        "properties": {
+            "messages": {
+                "title": "Messages",
+                "type": "array",
+                "items": {"$ref": "#/definitions/MessageSchema"},
+            },
+            "id": {"title": "Id", "type": "integer"},
+            "title": {"title": "Title", "maxLength": 30, "type": "string"},
+        },
+        "required": ["messages", "title"],
+        "definitions": {
+            "MessageSchema": {
+                "title": "MessageSchema",
+                "description": "A message posted in a thread.",
+                "type": "object",
+                "properties": {
+                    "id": {"title": "Id", "type": "integer"},
+                    "content": {"title": "Content", "type": "string"},
+                    "created_at": {
+                        "title": "Created At",
+                        "type": "string",
+                        "format": "date-time",
+                    },
+                    "thread": {"title": "Thread", "type": "integer"},
+                },
+                "required": ["content", "created_at", "thread"],
+            }
+        },
     }
 
 
@@ -206,65 +242,97 @@ def test_one_to_one():
     Test forward one-to-one relationships.
     """
 
-    class PydanticUser(PydanticDjangoModel):
-        """
-        Related model for one-to-one relationship.
-        """
-
+    class UserSchema(PydanticDjangoModel):
         class Config:
             model = User
-            include = ["id", "first_name", "email"]
 
-    class PydanticProfile(PydanticDjangoModel):
-        """
-        Model with a forward one-to-one relationship.
-        """
-
+    class ProfileSchema(PydanticDjangoModel):
         class Config:
             model = Profile
-            include = ["id"]
 
-    assert PydanticProfile.schema() == {
-        "description": "Model with a forward one-to-one relationship.",
-        "properties": {"id": {"title": "Id", "type": "integer"}},
-        "title": "PydanticProfile",
+    assert ProfileSchema.schema() == {
+        "title": "ProfileSchema",
+        "description": "A user's profile.",
         "type": "object",
+        "properties": {
+            "id": {"title": "Id", "type": "integer"},
+            "user": {"title": "User", "type": "integer"},
+            "website": {
+                "title": "Website",
+                "default": "",
+                "maxLength": 200,
+                "type": "string",
+            },
+            "location": {
+                "title": "Location",
+                "default": "",
+                "maxLength": 100,
+                "type": "string",
+            },
+        },
+        "required": ["user"],
     }
 
-    class PydanticProfile(PydanticDjangoModel):
-        """
-        Model with a forward one-to-one relationship and sub-model definition.
-        """
-
-        user: PydanticUser
+    class ProfileWithUserSchema(PydanticDjangoModel):
+        user: UserSchema
 
         class Config:
             model = Profile
-            include = ["user"]
 
-    assert PydanticProfile.schema() == {
+    assert ProfileWithUserSchema.schema() == {
+        "title": "ProfileWithUserSchema",
+        "description": "A user's profile.",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "type": "integer"},
+            "user": {"$ref": "#/definitions/UserSchema"},
+            "website": {
+                "title": "Website",
+                "default": "",
+                "maxLength": 200,
+                "type": "string",
+            },
+            "location": {
+                "title": "Location",
+                "default": "",
+                "maxLength": 100,
+                "type": "string",
+            },
+        },
+        "required": ["user"],
         "definitions": {
-            "PydanticUser": {
-                "description": "Related model for one-to-one relationship.",
+            "UserSchema": {
+                "title": "UserSchema",
+                "description": "A user of the application.",
+                "type": "object",
                 "properties": {
-                    "email": {"maxLength": 254, "title": "Email", "type": "string"},
+                    "profile": {"title": "Profile", "type": "integer"},
+                    "id": {"title": "Id", "type": "integer"},
                     "first_name": {
-                        "maxLength": 50,
                         "title": "First Name",
+                        "maxLength": 50,
                         "type": "string",
                     },
-                    "id": {"title": "Id", "type": "integer"},
+                    "last_name": {
+                        "title": "Last Name",
+                        "maxLength": 50,
+                        "type": "string",
+                    },
+                    "email": {"title": "Email", "maxLength": 254, "type": "string"},
+                    "created_at": {
+                        "title": "Created At",
+                        "type": "string",
+                        "format": "date-time",
+                    },
+                    "updated_at": {
+                        "title": "Updated At",
+                        "type": "string",
+                        "format": "date-time",
+                    },
                 },
-                "required": ["first_name", "email"],
-                "title": "PydanticUser",
-                "type": "object",
+                "required": ["first_name", "email", "created_at", "updated_at"],
             }
         },
-        "description": "Model with a forward one-to-one relationship and sub-model definition.",
-        "properties": {"user": {"$ref": "#/definitions/PydanticUser"}},
-        "required": ["user"],
-        "title": "PydanticProfile",
-        "type": "object",
     }
 
 
@@ -274,60 +342,87 @@ def test_one_to_one_reverse():
     Test reverse one-to-one relationships.
     """
 
-    class PydanticProfile(PydanticDjangoModel):
-        """
-        Related model for one-to-one relationship.
-        """
-
+    class ProfileSchema(PydanticDjangoModel):
         class Config:
             model = Profile
-            include = ["id"]
 
-    class PydanticUser(PydanticDjangoModel):
-        """
-        Model with a reverse one-to-one relationship.
-        """
-
+    class UserSchema(PydanticDjangoModel):
         class Config:
             model = User
-            include = ["id", "profile"]
 
-    assert PydanticUser.schema() == {
-        "description": "Model with a reverse one-to-one relationship.",
+    assert ProfileSchema.schema() == {
+        "title": "ProfileSchema",
+        "description": "A user's profile.",
+        "type": "object",
         "properties": {
             "id": {"title": "Id", "type": "integer"},
-            "profile": {"title": "Id", "type": "integer"},
+            "user": {"title": "User", "type": "integer"},
+            "website": {
+                "title": "Website",
+                "default": "",
+                "maxLength": 200,
+                "type": "string",
+            },
+            "location": {
+                "title": "Location",
+                "default": "",
+                "maxLength": 100,
+                "type": "string",
+            },
         },
-        "title": "PydanticUser",
-        "type": "object",
+        "required": ["user"],
     }
 
-    class PydanticUser(PydanticDjangoModel):
-        """
-        Model with a reverse one-to-one relationship  and sub-model definition.
-        """
-
-        profile: PydanticProfile
+    class UserWithProfileSchema(PydanticDjangoModel):
+        profile: ProfileSchema
 
         class Config:
             model = User
-            include = ["id", "profile"]
 
-    assert PydanticUser.schema() == {
+    assert UserWithProfileSchema.schema() == {
+        "title": "UserWithProfileSchema",
+        "description": "A user of the application.",
+        "type": "object",
+        "properties": {
+            "profile": {"$ref": "#/definitions/ProfileSchema"},
+            "id": {"title": "Id", "type": "integer"},
+            "first_name": {"title": "First Name", "maxLength": 50, "type": "string"},
+            "last_name": {"title": "Last Name", "maxLength": 50, "type": "string"},
+            "email": {"title": "Email", "maxLength": 254, "type": "string"},
+            "created_at": {
+                "title": "Created At",
+                "type": "string",
+                "format": "date-time",
+            },
+            "updated_at": {
+                "title": "Updated At",
+                "type": "string",
+                "format": "date-time",
+            },
+        },
+        "required": ["profile", "first_name", "email", "created_at", "updated_at"],
         "definitions": {
-            "PydanticProfile": {
-                "description": "Related model for one-to-one relationship.",
-                "properties": {"id": {"title": "Id", "type": "integer"}},
-                "title": "PydanticProfile",
+            "ProfileSchema": {
+                "title": "ProfileSchema",
+                "description": "A user's profile.",
                 "type": "object",
+                "properties": {
+                    "id": {"title": "Id", "type": "integer"},
+                    "user": {"title": "User", "type": "integer"},
+                    "website": {
+                        "title": "Website",
+                        "default": "",
+                        "maxLength": 200,
+                        "type": "string",
+                    },
+                    "location": {
+                        "title": "Location",
+                        "default": "",
+                        "maxLength": 100,
+                        "type": "string",
+                    },
+                },
+                "required": ["user"],
             }
         },
-        "description": "Model with a reverse one-to-one relationship  and sub-model definition.",
-        "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "profile": {"$ref": "#/definitions/PydanticProfile"},
-        },
-        "required": ["profile"],
-        "title": "PydanticUser",
-        "type": "object",
     }
