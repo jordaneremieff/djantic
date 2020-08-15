@@ -195,7 +195,6 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
 
         if not many:
             obj_data = {}
-            from rich import print
 
             annotations = cls.__annotations__
 
