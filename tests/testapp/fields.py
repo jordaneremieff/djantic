@@ -2,6 +2,10 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 
+class CustomFieldMixin:
+    pass
+
+
 class RestrictedCharField(models.CharField):
     def __init__(self, *args, **kwargs):
         kwargs["max_length"] = 20
@@ -15,7 +19,7 @@ class NotNullRestrictedCharField(RestrictedCharField):
         super().__init__(*args, **kwargs)
 
 
-class ListField(JSONField):
+class ListField(CustomFieldMixin, JSONField):
     def __init__(self, *args, **kwargs):
         kwargs["default"] = list
         super().__init__(*args, **kwargs)

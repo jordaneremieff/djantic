@@ -13,24 +13,25 @@ def test_custom_field():
     class RecordSchema(PydanticDjangoModel):
         class Config:
             model = Record
+            include = ["id", "title", "items"]
 
     assert RecordSchema.schema() == {
-        "title": "RecordSchema",
         "description": "A generic record model.",
-        "type": "object",
         "properties": {
             "id": {"title": "Id", "type": "integer"},
-            "title": {"title": "Title", "maxLength": 20, "type": "string"},
             "items": {
-                "title": "Items",
                 "anyOf": [
-                    {"type": "string", "format": "json-string"},
+                    {"format": "json-string", "type": "string"},
                     {"type": "object"},
-                    {"type": "array", "items": {}},
+                    {"items": {}, "type": "array"},
                 ],
+                "title": "Items",
             },
+            "title": {"maxLength": 20, "title": "Title", "type": "string"},
         },
         "required": ["title"],
+        "title": "RecordSchema",
+        "type": "object",
     }
 
 
@@ -76,3 +77,19 @@ def test_postgres_json_field():
             },
         },
     }
+
+
+@pytest.mark.django_db
+def test_lazy_choice_field():
+    """
+    Test generating a dynamic enum choice field.
+    """
+
+    class RecordSchema(PydanticDjangoModel):
+        class Config:
+            model = Record
+            include = ["record_type", "record_status"]
+
+    from rich import print
+
+    print(RecordSchema.schema())

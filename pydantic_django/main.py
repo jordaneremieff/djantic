@@ -20,13 +20,19 @@ class PydanticDjangoError(Exception):
 _is_base_model_class_defined = False
 
 
+def construct_related(model_cls):
+    """
+    """
+    pass
+
+
 class PydanticDjangoModelMetaclass(ModelMetaclass):
     def __new__(
         mcs: Type["PydanticDjangoModelMetaclass"],
         name: str,
         bases: tuple,
         namespace: dict,
-    ) -> "PydanticDjangoModelMetaclass":
+    ):
 
         cls = super().__new__(mcs, name, bases, namespace)
 
@@ -253,7 +259,6 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
                 elif field.one_to_many or field.many_to_many:
 
                     if isinstance(field, GenericRelation):
-
                         related_qs = getattr(instance, field.name)
 
                         if model_cls:

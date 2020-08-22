@@ -138,8 +138,28 @@ class Record(models.Model):
     A generic record model.
     """
 
+    NEW = "NEW"
+    OLD = "OLD"
+
+    PENDING = 0
+    CANCELLED = 1
+    CONFIRMED = 2
+
+    RECORD_TYPE_CHOICES = ((NEW, "New"), (OLD, "Old"))
+    RECORD_STATUS_CHOICES = (
+        (PENDING, "Pending"),
+        (CANCELLED, "Cancelled"),
+        (CONFIRMED, "Confirmed"),
+    )
+
     title = NotNullRestrictedCharField()
     items = ListField()
+    record_type = models.CharField(
+        default=NEW, max_length=5, choices=RECORD_TYPE_CHOICES
+    )
+    record_status = models.PositiveSmallIntegerField(
+        default=PENDING, choices=RECORD_STATUS_CHOICES
+    )
 
 
 class ItemList(models.Model):

@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional, List, Union
 from decimal import Decimal
 from datetime import date, time, datetime, timedelta
+from enum import Enum
 from uuid import UUID
 from ipaddress import _BaseAddress, IPv4Address, IPv6Address
 
@@ -103,8 +104,6 @@ def DjangoField(field):
     description = None
     title = None
     max_length = None
-    # min_length = None
-
     python_type = None
 
     if field.is_relation:
@@ -131,7 +130,8 @@ def DjangoField(field):
         internal_type = field.get_internal_type()
         if internal_type in STR_TYPES:
             python_type = str
-            max_length = field.max_length
+            if not field.choices:
+                max_length = field.max_length
 
         elif internal_type in INT_TYPES:
             python_type = int
@@ -139,10 +139,12 @@ def DjangoField(field):
             python_type = FIELD_TYPES[internal_type]
         else:
             for field_class in type(field).__mro__:
-                _internal_type = field_class().get_internal_type()
-                if _internal_type in FIELD_TYPES:
-                    python_type = FIELD_TYPES[_internal_type]
-                    break
+                get_internal_type = getattr(field_class, "get_internal_type", None)
+                if get_internal_type:
+                    _internal_type = get_internal_type(field_class())
+                    if _internal_type in FIELD_TYPES:
+                        python_type = FIELD_TYPES[_internal_type]
+                        break
 
         if not python_type:
             raise FieldNotFoundError(f"Could not find {internal_type}")
@@ -151,6 +153,15 @@ def DjangoField(field):
         field_options = deconstructed[3] or {}
         blank = field_options.pop("blank", False)
         null = field_options.pop("null", False)
+
+        if field.choices:
+            enum_choices = {v: k for k, v in field.choices}
+            python_type = Enum(
+                f"{field.name.title().replace('_', '')}Enum",
+                enum_choices,
+                module=__name__,
+            )
+
         if field.has_default():
             if callable(field.default):
                 default_factory = field.default
@@ -170,6 +181,5 @@ def DjangoField(field):
             title=title,
             description=description,
             max_length=max_length,
-            # **extra,
         ),
     )
