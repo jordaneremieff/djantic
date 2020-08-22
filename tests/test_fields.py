@@ -90,6 +90,24 @@ def test_lazy_choice_field():
             model = Record
             include = ["record_type", "record_status"]
 
-    from rich import print
-
-    print(RecordSchema.schema())
+    assert RecordSchema.schema() == {
+        "definitions": {
+            "RecordStatusEnum": {
+                "description": "An enumeration.",
+                "enum": [0, 1, 2],
+                "title": "RecordStatusEnum",
+            },
+            "RecordTypeEnum": {
+                "description": "An enumeration.",
+                "enum": ["NEW", "OLD"],
+                "title": "RecordTypeEnum",
+            },
+        },
+        "description": "A generic record model.",
+        "properties": {
+            "record_status": {"$ref": "#/definitions/RecordStatusEnum"},
+            "record_type": {"$ref": "#/definitions/RecordTypeEnum"},
+        },
+        "title": "RecordSchema",
+        "type": "object",
+    }
