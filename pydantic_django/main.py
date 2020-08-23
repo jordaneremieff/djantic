@@ -8,7 +8,7 @@ from pydantic.main import ModelMetaclass
 import django
 from django.contrib.contenttypes.fields import GenericRelation
 from django.utils.functional import Promise
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.core.serializers.json import DjangoJSONEncoder
 
 from .fields import PydanticDjangoField
@@ -20,7 +20,7 @@ _is_base_model_class_defined = False
 class PydanticDjangoJSONEncoder(DjangoJSONEncoder):
     def default(self, obj):
         if isinstance(obj, Promise):
-            return force_text(obj)
+            return force_str(obj)
         return super().default(obj)
 
 
