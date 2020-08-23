@@ -30,3 +30,32 @@ def test_config_errors():
                 model = User
                 include = ["id"]
                 exclude = ["first_name"]
+
+
+@pytest.mark.django_db
+def test_get_fields():
+    """
+    Test retrieving the field names for a model.
+    """
+
+    class UserSchema(PydanticDjangoModel):
+        class Config:
+            model = User
+            include = ["id"]
+
+    assert UserSchema.get_fields() == ["id"]
+
+    class UserSchema(PydanticDjangoModel):
+        class Config:
+            model = User
+            exclude = ["id"]
+
+    assert UserSchema.get_fields() == [
+        "profile",
+        "id",
+        "first_name",
+        "last_name",
+        "email",
+        "created_at",
+        "updated_at",
+    ]

@@ -1,5 +1,5 @@
 import uuid
-
+from datetime import datetime
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -112,10 +112,14 @@ class Configuration(models.Model):
     A configuration container.
     """
 
+    config_id = models.UUIDField(
+        default=uuid.uuid4, help_text=_("Unique id of the configuration.")
+    )
     name = models.CharField(max_length=100)
     permissions = JSONField(default=dict, blank=True)
     changelog = JSONField(default=list, blank=True)
     metadata = JSONField(blank=True)
+    version = models.CharField(default="0.0.1", max_length=5)
 
 
 class RequestLog(models.Model):

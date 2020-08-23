@@ -21,7 +21,7 @@ class PydanticDjangoJSONEncoder(DjangoJSONEncoder):
     def default(self, obj):
         if isinstance(obj, Promise):
             return force_str(obj)
-        return super().default(obj)
+        return super().default(obj)  # pragma: nocover
 
 
 class PydanticDjangoModelMetaclass(ModelMetaclass):
@@ -135,10 +135,6 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
         p_model = cls.__new__(cls)
         self._ṣet_object(__dict__=p_model.__dict__)
 
-    def _ṣet_object(self, **kwargs) -> None:
-        object.__setattr__(self, "__dict__", kwargs["__dict__"])
-        object.__setattr__(self, "__fields_set__", kwargs.get("__fields_set__", {}))
-
     @classmethod
     def schema_json(
         cls,
@@ -152,33 +148,7 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
         )
 
     @classmethod
-    def _objects(cls) -> django.db.models.manager.Manager:
-        if not cls.__config__.model:
-            raise ConfigError(
-                "A valid Django model class must be set on `Config.model`."
-            )
-
-        return cls.__config__.model.objects
-
-    @classmethod
-    def _create(cls, **kwargs) -> Type["PydanticDjangoModel"]:
-        instance = cls.objects.create(**kwargs)
-
-        return cls.from_django(instance)
-
-    @classmethod
-    def _get(cls, **kwargs) -> Type["PydanticDjangoModel"]:
-        instance = cls.objects.get(**kwargs)
-
-        return cls.from_django(instance)
-
-    @classmethod
     def get_fields(cls):
-        if not cls.__config__.model:
-            raise ConfigError(
-                "A valid Django model class must be set on `Config.model`."
-            )
-
         if hasattr(cls.__config__, "include"):
             fields = cls.__config__.include
         elif hasattr(cls.__config__, "exclude"):
@@ -192,11 +162,14 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
 
         return fields
 
-    @classmethod
-    def get_object_model(cls, obj_data):
+    def _ṣet_object(self, **kwargs) -> None:
+        object.__setattr__(self, "__dict__", kwargs["__dict__"])
+        object.__setattr__(self, "__fields_set__", kwargs.get("__fields_set__", {}))
 
+    @classmethod
+    def _get_object_model(cls, obj_data):
         values, fields_set, validation_error = validate_model(cls, obj_data)
-        if validation_error:
+        if validation_error:  # pragma: nocover
             raise validation_error
 
         p_model = cls.__new__(cls)
@@ -204,6 +177,22 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
         object.__setattr__(p_model, "__fields_set__", fields_set)
 
         return p_model
+
+    @classmethod
+    def _objects(cls) -> django.db.models.manager.Manager:
+        return cls.__config__.model.objects
+
+    @classmethod
+    def _create(cls, **kwargs) -> Type["PydanticDjangoModel"]:
+        instance = cls.objects.create(**kwargs)
+
+        return cls.from_django(instance)
+
+    @classmethod
+    def _get(cls, **kwargs) -> Type["PydanticDjangoModel"]:
+        instance = cls.objects.get(**kwargs)
+
+        return cls.from_django(instance)
 
     @classmethod
     def from_django(
@@ -292,7 +281,7 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
                 else:
                     obj_data[field.name] = field.value_from_object(instance)
 
-            p_model = cls.get_object_model(obj_data)
+            p_model = cls._get_object_model(obj_data)
 
             if save:
                 instance.save()

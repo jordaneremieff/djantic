@@ -4,7 +4,7 @@ from typing import Optional
 import pytest
 from pydantic import BaseModel, Field
 
-from testapp.models import User, Profile, RequestLog
+from testapp.models import User, Profile, Configuration
 
 from pydantic_django import PydanticDjangoModel
 
@@ -272,16 +272,16 @@ def test_sub_model():
 
 @pytest.mark.django_db
 def test_json():
-    class RequestLogSchema(PydanticDjangoModel):
+    class ConfigurationSchema(PydanticDjangoModel):
         """
         Test JSON schema.
         """
 
         class Config:
-            model = RequestLog
+            model = Configuration
 
     expected = """{
-  "title": "RequestLogSchema",
+  "title": "ConfigurationSchema",
   "description": "Test JSON schema.",
   "type": "object",
   "properties": {
@@ -289,31 +289,48 @@ def test_json():
       "title": "Id",
       "type": "integer"
     },
-    "request_id": {
-      "title": "Request Id",
-      "description": "Unique id of the request.",
+    "config_id": {
+      "title": "Config Id",
+      "description": "Unique id of the configuration.",
       "type": "string",
       "format": "uuid"
     },
-    "response_time": {
-      "title": "Response Time",
-      "type": "number",
-      "format": "time-delta"
+    "name": {
+      "title": "Name",
+      "maxLength": 100,
+      "type": "string"
     },
-    "ip_address": {
-      "title": "Ip Address",
-      "type": "string",
-      "format": "ipvanyaddress"
+    "permissions": {
+      "title": "Permissions",
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "json-string"
+        },
+        {
+          "type": "object"
+        },
+        {
+          "type": "array",
+          "items": {}
+        }
+      ]
     },
-    "host_ipv4_address": {
-      "title": "Host Ipv4 Address",
-      "type": "string",
-      "format": "ipvanyaddress"
-    },
-    "host_ipv6_address": {
-      "title": "Host Ipv6 Address",
-      "type": "string",
-      "format": "ipvanyaddress"
+    "changelog": {
+      "title": "Changelog",
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "json-string"
+        },
+        {
+          "type": "object"
+        },
+        {
+          "type": "array",
+          "items": {}
+        }
+      ]
     },
     "metadata": {
       "title": "Metadata",
@@ -330,11 +347,16 @@ def test_json():
           "items": {}
         }
       ]
+    },
+    "version": {
+      "title": "Version",
+      "default": "0.0.1",
+      "maxLength": 5,
+      "type": "string"
     }
   },
   "required": [
-    "response_time"
+    "name"
   ]
 }"""
-
-    assert RequestLogSchema.schema_json(indent=2) == expected
+    assert ConfigurationSchema.schema_json(indent=2) == expected

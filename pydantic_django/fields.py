@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 from decimal import Decimal
 from datetime import date, time, datetime, timedelta
 from enum import Enum
@@ -58,7 +58,7 @@ FIELD_TYPES = {
 }
 
 
-def PydanticDjangoField(field):
+def PydanticDjangoField(field: Any) -> tuple:
     default = ...
     default_factory = None
     description = None
@@ -71,9 +71,7 @@ def PydanticDjangoField(field):
             internal_type = field.model._meta.pk.get_internal_type()
         else:
             internal_type = field.related_model._meta.pk.get_internal_type()
-            if not field.concrete and field.auto_created:
-                default = None
-            elif field.null:
+            if not field.concrete and field.auto_created or field.null:
                 default = None
 
         pk_type = FIELD_TYPES.get(internal_type, int)
@@ -104,9 +102,6 @@ def PydanticDjangoField(field):
                     if _internal_type in FIELD_TYPES:
                         python_type = FIELD_TYPES[_internal_type]
                         break
-
-        if not python_type:
-            raise RuntimeError(f"Could not find {internal_type}")
 
         deconstructed = field.deconstruct()
         field_options = deconstructed[3] or {}
