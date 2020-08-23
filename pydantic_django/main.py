@@ -1,14 +1,17 @@
 from inspect import isclass
 from itertools import chain
-from typing import Type, Optional, Union
+from typing import Type, Optional, Union, Any
 
-import django
 from pydantic import BaseModel, create_model, validate_model, Field
 from pydantic.main import ModelMetaclass
 
-from .types import DjangoField
-
+import django
 from django.contrib.contenttypes.fields import GenericRelation
+from django.utils.functional import Promise
+from django.utils.encoding import force_text
+from django.core.serializers.json import DjangoJSONEncoder
+
+from .fields import PydanticDjangoField
 
 
 class PydanticDjangoError(Exception):
@@ -20,10 +23,11 @@ class PydanticDjangoError(Exception):
 _is_base_model_class_defined = False
 
 
-def construct_related(model_cls):
-    """
-    """
-    pass
+class PydanticDjangoJSONEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Promise):
+            return force_text(obj)
+        return super().default(obj)
 
 
 class PydanticDjangoModelMetaclass(ModelMetaclass):
@@ -33,9 +37,7 @@ class PydanticDjangoModelMetaclass(ModelMetaclass):
         bases: tuple,
         namespace: dict,
     ):
-
         cls = super().__new__(mcs, name, bases, namespace)
-
         for base in reversed(bases):
             if (
                 _is_base_model_class_defined
@@ -96,7 +98,7 @@ class PydanticDjangoModelMetaclass(ModelMetaclass):
                         )
 
                     else:
-                        python_type, pydantic_field = DjangoField(field)
+                        python_type, pydantic_field = PydanticDjangoField(field)
 
                     field_values[field_name] = (python_type, pydantic_field)
 
@@ -142,6 +144,18 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
     def _ṣet_object(self, **kwargs) -> None:
         object.__setattr__(self, "__dict__", kwargs["__dict__"])
         object.__setattr__(self, "__fields_set__", kwargs.get("__fields_set__", {}))
+
+    @classmethod
+    def schema_json(
+        cls,
+        *,
+        by_alias: bool = True,
+        encoder_cls=PydanticDjangoJSONEncoder,
+        **dumps_kwargs: Any,
+    ) -> str:
+        return cls.__config__.json_dumps(
+            cls.schema(by_alias=by_alias), cls=encoder_cls, **dumps_kwargs
+        )
 
     @classmethod
     def _objects(cls) -> django.db.models.manager.Manager:
@@ -267,7 +281,6 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
                                 for field in model_cls.get_fields()
                                 if field != "content_object"
                             ]
-
                             related_obj_data = [
                                 model_cls.construct(**obj_vals)
                                 for obj_vals in related_qs.values(*related_fields)

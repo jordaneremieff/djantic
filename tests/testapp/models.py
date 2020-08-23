@@ -7,7 +7,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.utils.text import slugify
 from django.contrib.postgres.fields import JSONField
-
+from django.utils.translation import gettext_lazy as _
 from .fields import ListField, NotNullRestrictedCharField
 
 
@@ -124,7 +124,7 @@ class RequestLog(models.Model):
     """
 
     request_id = models.UUIDField(
-        default=uuid.uuid4, help_text="Unique id of the request."
+        default=uuid.uuid4, help_text=_("Unique id of the request.")
     )
     response_time = models.DurationField()
     ip_address = models.GenericIPAddressField(blank=True)

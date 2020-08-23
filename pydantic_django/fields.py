@@ -98,7 +98,7 @@ FIELD_TYPES = {
 }
 
 
-def DjangoField(field):
+def PydanticDjangoField(field):
     default = ...
     default_factory = None
     description = None
@@ -109,7 +109,6 @@ def DjangoField(field):
     if field.is_relation:
         if not field.related_model:
             internal_type = field.model._meta.pk.get_internal_type()
-
         else:
             internal_type = field.related_model._meta.pk.get_internal_type()
             if not field.concrete and field.auto_created:

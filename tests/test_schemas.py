@@ -4,7 +4,7 @@ from typing import Optional
 import pytest
 from pydantic import BaseModel, Field
 
-from testapp.models import User, Profile
+from testapp.models import User, Profile, RequestLog
 
 from pydantic_django import PydanticDjangoModel
 
@@ -188,44 +188,6 @@ def test_annotations():
     assert set(schema["required"]) == set(["last_name"])
 
 
-@pytest.mark.django_db
-def test_json():
-    class UserSchema(PydanticDjangoModel):
-        """
-        Test JSON schema.
-        """
-
-        class Config:
-            model = User
-            include = ["id", "first_name", "last_name"]
-
-    expected = """{
-  "title": "UserSchema",
-  "description": "Test JSON schema.",
-  "type": "object",
-  "properties": {
-    "id": {
-      "title": "Id",
-      "type": "integer"
-    },
-    "first_name": {
-      "title": "First Name",
-      "maxLength": 50,
-      "type": "string"
-    },
-    "last_name": {
-      "title": "Last Name",
-      "maxLength": 50,
-      "type": "string"
-    }
-  },
-  "required": [
-    "first_name"
-  ]
-}"""
-    assert expected == UserSchema.schema_json(indent=2)
-
-
 def test_by_alias_generator():
     class UserSchema(PydanticDjangoModel):
         """
@@ -306,3 +268,73 @@ def test_sub_model():
     assert set(Notification.schema()["definitions"].keys()) == set(
         ["ProfileSchema", "SignUp", "UserSchema"]
     )
+
+
+@pytest.mark.django_db
+def test_json():
+    class RequestLogSchema(PydanticDjangoModel):
+        """
+        Test JSON schema.
+        """
+
+        class Config:
+            model = RequestLog
+
+    expected = """{
+  "title": "RequestLogSchema",
+  "description": "Test JSON schema.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "integer"
+    },
+    "request_id": {
+      "title": "Request Id",
+      "description": "Unique id of the request.",
+      "type": "string",
+      "format": "uuid"
+    },
+    "response_time": {
+      "title": "Response Time",
+      "type": "number",
+      "format": "time-delta"
+    },
+    "ip_address": {
+      "title": "Ip Address",
+      "type": "string",
+      "format": "both"
+    },
+    "host_ipv4_address": {
+      "title": "Host Ipv4 Address",
+      "type": "string",
+      "format": "both"
+    },
+    "host_ipv6_address": {
+      "title": "Host Ipv6 Address",
+      "type": "string",
+      "format": "both"
+    },
+    "metadata": {
+      "title": "Metadata",
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "json-string"
+        },
+        {
+          "type": "object"
+        },
+        {
+          "type": "array",
+          "items": {}
+        }
+      ]
+    }
+  },
+  "required": [
+    "response_time"
+  ]
+}"""
+
+    assert RequestLogSchema.schema_json(indent=2) == expected
