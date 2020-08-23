@@ -1,18 +1,12 @@
-from typing import Any, Dict, Optional, List, Union
+from typing import Dict, List, Union
 from decimal import Decimal
 from datetime import date, time, datetime, timedelta
 from enum import Enum
 from uuid import UUID
-from ipaddress import _BaseAddress, IPv4Address, IPv6Address
 
-from pydantic import errors, IPvAnyAddress, Json
+
+from pydantic import IPvAnyAddress, Json
 from pydantic.fields import FieldInfo
-
-
-class FieldNotFoundError(Exception):
-    """
-    Raised when a field lookup fails when generating the Pydantic model.
-    """
 
 
 INT_TYPES = [
@@ -34,42 +28,8 @@ STR_TYPES = [
 ]
 
 
-class GenericIPAddressField(_BaseAddress):
-
-    protocol: Optional[str] = "both"
-
-    @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(type="string", format=cls.protocol)
-
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v) -> str:
-        if cls.protocol == "both":
-            try:
-                return str(IPvAnyAddress(v))
-            except ValueError:
-                raise errors.IPvAnyAddressError()
-
-        if cls.protocol == "ipv4":
-            try:
-                return str(IPv4Address(v))
-            except ValueError:
-                raise errors.IPv4AddressError()
-
-        if cls.protocol == "ipv6":
-            try:
-                return str(IPv6Address(v))
-            except ValueError:
-                raise errors.IPv6AddressError()
-
-
 FIELD_TYPES = {
-    "GenericIPAddressField": GenericIPAddressField,
-    "TextField": str,
+    "GenericIPAddressField": IPvAnyAddress,
     "BooleanField": bool,
     "BinaryField": bytes,
     "DateField": date,
@@ -146,7 +106,7 @@ def PydanticDjangoField(field):
                         break
 
         if not python_type:
-            raise FieldNotFoundError(f"Could not find {internal_type}")
+            raise RuntimeError(f"Could not find {internal_type}")
 
         deconstructed = field.deconstruct()
         field_options = deconstructed[3] or {}

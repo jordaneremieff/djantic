@@ -2,7 +2,7 @@ from inspect import isclass
 from itertools import chain
 from typing import Type, Optional, Union, Any
 
-from pydantic import BaseModel, create_model, validate_model, Field
+from pydantic import BaseModel, create_model, validate_model, Field, ConfigError
 from pydantic.main import ModelMetaclass
 
 import django
@@ -12,12 +12,6 @@ from django.utils.encoding import force_text
 from django.core.serializers.json import DjangoJSONEncoder
 
 from .fields import PydanticDjangoField
-
-
-class PydanticDjangoError(Exception):
-    """
-    Raised when an exception occurs in the Pydantic Django model.
-    """
 
 
 _is_base_model_class_defined = False
@@ -50,7 +44,7 @@ class PydanticDjangoModelMetaclass(ModelMetaclass):
                 exclude = getattr(config, "exclude", None)
 
                 if include and exclude:
-                    raise PydanticDjangoError(
+                    raise ConfigError(
                         "Only one of 'include' or 'exclude' should be set in configuration."
                     )
 
@@ -58,7 +52,7 @@ class PydanticDjangoModelMetaclass(ModelMetaclass):
                 try:
                     fields = config.model._meta.get_fields()
                 except AttributeError as exc:
-                    raise PydanticDjangoError(
+                    raise ConfigError(
                         f"{exc} (Is `Config.model` a valid Django model class?)"
                     )
 
@@ -160,7 +154,7 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
     @classmethod
     def _objects(cls) -> django.db.models.manager.Manager:
         if not cls.__config__.model:
-            raise PydanticDjangoError(
+            raise ConfigError(
                 "A valid Django model class must be set on `Config.model`."
             )
 
@@ -181,7 +175,7 @@ class PydanticDjangoModel(BaseModel, metaclass=PydanticDjangoModelMetaclass):
     @classmethod
     def get_fields(cls):
         if not cls.__config__.model:
-            raise PydanticDjangoError(
+            raise ConfigError(
                 "A valid Django model class must be set on `Config.model`."
             )
 

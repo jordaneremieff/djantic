@@ -2,8 +2,8 @@ import pytest
 
 from testapp.models import User
 
+from pydantic import ConfigError
 from pydantic_django import PydanticDjangoModel
-from pydantic_django.main import PydanticDjangoError
 
 
 @pytest.mark.django_db
@@ -13,7 +13,7 @@ def test_config_errors():
     """
 
     with pytest.raises(
-        PydanticDjangoError, match="(Is `Config.model` a valid Django model class?)"
+        ConfigError, match="(Is `Config.model` a valid Django model class?)"
     ):
 
         class InvalidModelErrorSchema(PydanticDjangoModel):
@@ -21,7 +21,7 @@ def test_config_errors():
                 model = "Ok"
 
     with pytest.raises(
-        PydanticDjangoError,
+        ConfigError,
         match="Only one of 'include' or 'exclude' should be set in configuration.",
     ):
 

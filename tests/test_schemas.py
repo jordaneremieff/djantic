@@ -303,17 +303,17 @@ def test_json():
     "ip_address": {
       "title": "Ip Address",
       "type": "string",
-      "format": "both"
+      "format": "ipvanyaddress"
     },
     "host_ipv4_address": {
       "title": "Host Ipv4 Address",
       "type": "string",
-      "format": "both"
+      "format": "ipvanyaddress"
     },
     "host_ipv6_address": {
       "title": "Host Ipv6 Address",
       "type": "string",
-      "format": "both"
+      "format": "ipvanyaddress"
     },
     "metadata": {
       "title": "Metadata",
