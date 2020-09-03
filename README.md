@@ -24,6 +24,8 @@ An example of basic [schema](https://pydantic-docs.helpmanual.io/usage/schema/) 
 class UserSchema(PydanticDjangoModel):
     class Config:
         model = User
+        
+UserSchema.schema()
 ```
 
 The schema call above would return something like this:
