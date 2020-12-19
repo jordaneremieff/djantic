@@ -1,12 +1,10 @@
 # Pydantic-Django
 
-An attempt to implement a [Pydantic](https://pydantic-docs.helpmanual.io/) model interface for [Django](https://www.djangoproject.com/) ORM. The goal of this project is to support all of Pydantic's features to provide as many (useful) conveniences for Django models as possible.
+[Pydantic](https://pydantic-docs.helpmanual.io/) model interface for [Django](https://www.djangoproject.com/) ORM.
 
-**Important**: this project should be considered an ***experimental*** work-in-progress. The current API design and behaviour is not finalised, specific version support is not yet determined, and there is still a lot of things to test yet.
+**Important**: this project should be considered an ***experimental*** work-in-progress. The current API design and behaviour is not finalised, specific version support is not yet determined, and there is still a lot of things to test yet. 
 
-Also, I typically haven't used metaclasses/classes like this previously, so there may be some details in the implementation to refine. 
-
-Seems to work okay so far. :)
+The initial non-experimental release will be `0.1.0` and minor releases will be used for deprecations.
 
 ## Installation
 
@@ -134,22 +132,3 @@ The `first_name` field here is required in the database and the `last_name` fiel
 ```
         
 It can do a bit more than this, but you'll have to check out the testing application and test cases as a reference for now.
-
-## Roadmap
-
-- [x] Automatic schema generation from Django models
-- [x] Basic queryset interface for CRUD operations
-- [x] Include & exclude field filtering
-- [x] Default factory support
-- [x] Support basic field types
-- [x] Sub-model support for forward and reverse relations
-- [x] JSON field types
-- [x] Support for multi-object querysets
-- [x] Support generic relations
-- [ ] Postgres field types
-- [ ] Look into custom validators and configurations
-- [ ] More comprehensive support for Django features
-- [ ] HTML schema generation
-- [ ] Create a complete application example
-- [ ] Look into performance & benchmarking
-- [ ] More test coverage & type annotations
