@@ -58,7 +58,7 @@ FIELD_TYPES = {
 }
 
 
-def PydanticDjangoField(field: Any) -> tuple:
+def ModelSchemaField(field: Any) -> tuple:
     default = ...
     default_factory = None
     description = None
@@ -94,7 +94,9 @@ def PydanticDjangoField(field: Any) -> tuple:
             python_type = int
         elif internal_type in FIELD_TYPES:
             python_type = FIELD_TYPES[internal_type]
-        else:
+
+        # FIXME: Confirm if this is still needed.
+        else:  # pragma: nocover
             for field_class in type(field).__mro__:
                 get_internal_type = getattr(field_class, "get_internal_type", None)
                 if get_internal_type:

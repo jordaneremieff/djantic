@@ -4,7 +4,7 @@ import pytest
 
 from testapp.models import User, Profile, Thread, Message, Tagged, Bookmark, Item
 
-from pydantic_django import PydanticDjangoModel
+from pydantic_django import ModelSchema
 
 
 @pytest.mark.django_db
@@ -13,14 +13,12 @@ def test_query_create():
     Test creating and saving a Django object to populate the schema model.
     """
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         class Config:
             model = User
             include = ["id", "email"]
 
-    user_schema = UserSchema.create(
-        first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
-    )
+    user_schema = UserSchema.create(first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com")
 
     assert (
         user_schema.schema()
@@ -39,11 +37,7 @@ def test_query_create():
 
     user = User.objects.get(id=user_schema.instance.id)
 
-    assert (
-        UserSchema.from_django(user).dict()
-        == user_schema.dict()
-        == {"email": "jordan@eremieff.com", "id": 1}
-    )
+    assert UserSchema.from_django(user).dict() == user_schema.dict() == {"email": "jordan@eremieff.com", "id": 1}
 
 
 @pytest.mark.django_db
@@ -52,22 +46,16 @@ def test_get_instance():
     Test retrieving an existing Django object to populate the schema model.
     """
 
-    user = User.objects.create(
-        first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
-    )
+    user = User.objects.create(first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com")
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         class Config:
             model = User
             include = ["id", "first_name"]
 
     user_schema = UserSchema.get(id=user.id)
 
-    assert (
-        UserSchema.from_django(user).dict()
-        == user_schema.dict()
-        == {"first_name": "Jordan", "id": 1}
-    )
+    assert UserSchema.from_django(user).dict() == user_schema.dict() == {"first_name": "Jordan", "id": 1}
 
 
 @pytest.mark.django_db
@@ -76,11 +64,11 @@ def test_get_instance_with_generic_foreign_key():
     bookmark = Bookmark.objects.create(url="https://www.djangoproject.com/")
     Tagged.objects.create(content_object=bookmark, slug="django")
 
-    class TaggedSchema(PydanticDjangoModel):
+    class TaggedSchema(ModelSchema):
         class Config:
             model = Tagged
 
-    class BookmarkWithTaggedSchema(PydanticDjangoModel):
+    class BookmarkWithTaggedSchema(ModelSchema):
 
         tags: List[TaggedSchema]
 
@@ -101,11 +89,9 @@ def test_save_instance():
     """
     Test updating and saving a Django object and updating the schema model.
     """
-    user = User.objects.create(
-        first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
-    )
+    user = User.objects.create(first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com")
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         class Config:
             model = User
             include = ["id", "first_name", "last_name"]
@@ -114,14 +100,8 @@ def test_save_instance():
     user_schema.instance.last_name = "Lastname"
     user_schema.save()
 
-    user_values_from_db = dict(
-        User.objects.filter(id=user.id).values("id", "first_name", "last_name")[0]
-    )
-    assert (
-        user_schema.dict()
-        == {"first_name": "Jordan", "id": 1, "last_name": "Lastname"}
-        == user_values_from_db
-    )
+    user_values_from_db = dict(User.objects.filter(id=user.id).values("id", "first_name", "last_name")[0])
+    assert user_schema.dict() == {"first_name": "Jordan", "id": 1, "last_name": "Lastname"} == user_values_from_db
 
 
 @pytest.mark.django_db
@@ -129,11 +109,9 @@ def test_refresh_instance():
     """
     Test refreshing a Django object from the database and updating the schema model.
     """
-    user = User.objects.create(
-        first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
-    )
+    user = User.objects.create(first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com")
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         class Config:
             model = User
             include = ["id", "email", "profile"]
@@ -144,9 +122,7 @@ def test_refresh_instance():
     assert not user_schema_values["profile"]
     assert user_schema_values["email"] == "jordan@eremieff.com"
 
-    profile = Profile.objects.create(
-        user=user, website="https://github.com/jordaneremieff", location="Australia"
-    )
+    profile = Profile.objects.create(user=user, website="https://github.com/jordaneremieff", location="Australia")
     user.email = "hello@eremieff.com"
     user.save()
 
@@ -163,11 +139,9 @@ def test_delete_instance():
     """
     Test deleting a Django object and clearing the schema model.
     """
-    user = User.objects.create(
-        first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
-    )
+    user = User.objects.create(first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com")
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         class Config:
             model = User
 
@@ -191,7 +165,7 @@ def test_get_queryset_with_reverse_one_to_one():
         user = User.objects.create(**kwargs)
         Profile.objects.create(user=user, location="Australia")
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         class Config:
             model = User
             include = ["id", "email", "first_name", "profile"]
@@ -211,12 +185,12 @@ def test_get_queryset_with_reverse_one_to_one():
     }
 
     # Test when using a declared sub-model
-    class ProfileSchema(PydanticDjangoModel):
+    class ProfileSchema(ModelSchema):
         class Config:
             model = Profile
             include = ["id", "location"]
 
-    class UserWithProfileSchema(PydanticDjangoModel):
+    class UserWithProfileSchema(ModelSchema):
 
         profile: ProfileSchema
 
@@ -259,12 +233,12 @@ def test_get_queryset_with_reverse_foreign_key():
 
     threads = Thread.objects.all()
 
-    class MessageSchema(PydanticDjangoModel):
+    class MessageSchema(ModelSchema):
         class Config:
             model = Message
             include = ["id", "content"]
 
-    class ThreadSchema(PydanticDjangoModel):
+    class ThreadSchema(ModelSchema):
         class Config:
             model = Thread
 
@@ -285,16 +259,14 @@ def test_get_queryset_with_reverse_foreign_key():
     }
 
     # Test when using a declared sub-model
-    class ThreadWithMessageListSchema(PydanticDjangoModel):
+    class ThreadWithMessageListSchema(ModelSchema):
         messages: List[MessageSchema]
 
         class Config:
             model = Thread
             exclude = ["created_at", "updated_at"]
 
-    thread_with_message_list_schema_qs = ThreadWithMessageListSchema.from_django(
-        threads, many=True
-    )
+    thread_with_message_list_schema_qs = ThreadWithMessageListSchema.from_django(threads, many=True)
 
     assert thread_with_message_list_schema_qs.dict() == {
         "threads": [

@@ -3,7 +3,7 @@ import pytest
 from testapp.models import User
 
 from pydantic import ConfigError
-from pydantic_django import PydanticDjangoModel
+from pydantic_django import ModelSchema
 
 
 @pytest.mark.django_db
@@ -12,11 +12,9 @@ def test_config_errors():
     Test the model config error exceptions.
     """
 
-    with pytest.raises(
-        ConfigError, match="(Is `Config.model` a valid Django model class?)"
-    ):
+    with pytest.raises(ConfigError, match="(Is `Config.model` a valid Django model class?)"):
 
-        class InvalidModelErrorSchema(PydanticDjangoModel):
+        class InvalidModelErrorSchema(ModelSchema):
             class Config:
                 model = "Ok"
 
@@ -25,7 +23,7 @@ def test_config_errors():
         match="Only one of 'include' or 'exclude' should be set in configuration.",
     ):
 
-        class IncludeExcludeErrorSchema(PydanticDjangoModel):
+        class IncludeExcludeErrorSchema(ModelSchema):
             class Config:
                 model = User
                 include = ["id"]
@@ -38,14 +36,14 @@ def test_get_fields():
     Test retrieving the field names for a model.
     """
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         class Config:
             model = User
             include = ["id"]
 
     assert UserSchema.get_fields() == ["id"]
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         class Config:
             model = User
             exclude = ["id"]

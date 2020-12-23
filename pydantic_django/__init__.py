@@ -1,1 +1,1 @@
-from .main import PydanticDjangoModel
+from .main import ModelSchema

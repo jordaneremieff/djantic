@@ -15,7 +15,7 @@ from testapp.models import (
     Bookmark,
 )
 
-from pydantic_django import PydanticDjangoModel
+from pydantic_django import ModelSchema
 
 
 @pytest.mark.django_db
@@ -24,7 +24,7 @@ def test_m2m():
     Test forward m2m relationships.
     """
 
-    class ArticleSchema(PydanticDjangoModel):
+    class ArticleSchema(ModelSchema):
         class Config:
             model = Article
 
@@ -48,11 +48,11 @@ def test_m2m():
         "required": ["headline", "pub_date", "publications"],
     }
 
-    class PublicationSchema(PydanticDjangoModel):
+    class PublicationSchema(ModelSchema):
         class Config:
             model = Publication
 
-    class ArticleWithPublicationListSchema(PydanticDjangoModel):
+    class ArticleWithPublicationListSchema(ModelSchema):
 
         publications: List[PublicationSchema]
 
@@ -103,11 +103,11 @@ def test_foreign_key():
     Test forward foreign-key relationships.
     """
 
-    class ThreadSchema(PydanticDjangoModel):
+    class ThreadSchema(ModelSchema):
         class Config:
             model = Thread
 
-    class MessageSchema(PydanticDjangoModel):
+    class MessageSchema(ModelSchema):
         class Config:
             model = Message
 
@@ -128,7 +128,7 @@ def test_foreign_key():
         "required": ["content", "created_at", "thread"],
     }
 
-    class MessageWithThreadSchema(PydanticDjangoModel):
+    class MessageWithThreadSchema(ModelSchema):
 
         thread: ThreadSchema
 
@@ -179,11 +179,11 @@ def test_foreign_key_reverse():
     Test reverse foreign-key relationships.
     """
 
-    class MessageSchema(PydanticDjangoModel):
+    class MessageSchema(ModelSchema):
         class Config:
             model = Message
 
-    class ThreadSchema(PydanticDjangoModel):
+    class ThreadSchema(ModelSchema):
         class Config:
             model = Thread
 
@@ -206,7 +206,7 @@ def test_foreign_key_reverse():
         "required": ["title"],
     }
 
-    class ThreadWithMessageListSchema(PydanticDjangoModel):
+    class ThreadWithMessageListSchema(ModelSchema):
         messages: List[MessageSchema]
 
         class Config:
@@ -253,11 +253,11 @@ def test_one_to_one():
     Test forward one-to-one relationships.
     """
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         class Config:
             model = User
 
-    class ProfileSchema(PydanticDjangoModel):
+    class ProfileSchema(ModelSchema):
         class Config:
             model = Profile
 
@@ -284,7 +284,7 @@ def test_one_to_one():
         "required": ["user"],
     }
 
-    class ProfileWithUserSchema(PydanticDjangoModel):
+    class ProfileWithUserSchema(ModelSchema):
         user: UserSchema
 
         class Config:
@@ -353,11 +353,11 @@ def test_one_to_one_reverse():
     Test reverse one-to-one relationships.
     """
 
-    class ProfileSchema(PydanticDjangoModel):
+    class ProfileSchema(ModelSchema):
         class Config:
             model = Profile
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         class Config:
             model = User
 
@@ -384,7 +384,7 @@ def test_one_to_one_reverse():
         "required": ["user"],
     }
 
-    class UserWithProfileSchema(PydanticDjangoModel):
+    class UserWithProfileSchema(ModelSchema):
         profile: ProfileSchema
 
         class Config:
@@ -445,7 +445,7 @@ def test_generic_relation():
     Test generic foreign-key relationships.
     """
 
-    class TaggedSchema(PydanticDjangoModel):
+    class TaggedSchema(ModelSchema):
         class Config:
             model = Tagged
 
@@ -463,7 +463,7 @@ def test_generic_relation():
         "required": ["slug", "content_type", "object_id", "content_object"],
     }
 
-    class BookmarkSchema(PydanticDjangoModel):
+    class BookmarkSchema(ModelSchema):
         class Config:
             model = Bookmark
 
@@ -477,16 +477,13 @@ def test_generic_relation():
             "tags": {
                 "title": "Tags",
                 "type": "array",
-                "items": {
-                    "type": "object",
-                    "additionalProperties": {"type": "integer"},
-                },
+                "items": {"type": "object", "additionalProperties": {"type": "integer"}},
             },
         },
-        "required": ["url", "tags"],
+        "required": ["url"],
     }
 
-    class BookmarkWithTaggedSchema(PydanticDjangoModel):
+    class BookmarkWithTaggedSchema(ModelSchema):
 
         tags: List[TaggedSchema]
 
@@ -524,7 +521,7 @@ def test_generic_relation():
         },
     }
 
-    class ItemSchema(PydanticDjangoModel):
+    class ItemSchema(ModelSchema):
 
         tags: List[TaggedSchema]
 
