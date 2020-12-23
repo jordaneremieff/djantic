@@ -1,7 +1,7 @@
 import pytest
 
 from testapp.models import Record, Configuration
-from pydantic_django import PydanticDjangoModel
+from pydantic_django import ModelSchema
 
 
 @pytest.mark.django_db
@@ -10,7 +10,7 @@ def test_custom_field():
     Test a model using custom field subclasses.
     """
 
-    class RecordSchema(PydanticDjangoModel):
+    class RecordSchema(ModelSchema):
         class Config:
             model = Record
             include = ["id", "title", "items"]
@@ -41,7 +41,7 @@ def test_postgres_json_field():
     Test generating a schema for multiple Postgres JSON fields.
     """
 
-    class ConfigurationSchema(PydanticDjangoModel):
+    class ConfigurationSchema(ModelSchema):
         class Config:
             model = Configuration
             include = ["permissions", "changelog", "metadata"]
@@ -85,29 +85,29 @@ def test_lazy_choice_field():
     Test generating a dynamic enum choice field.
     """
 
-    class RecordSchema(PydanticDjangoModel):
+    class RecordSchema(ModelSchema):
         class Config:
             model = Record
             include = ["record_type", "record_status"]
 
     assert RecordSchema.schema() == {
-        "definitions": {
-            "RecordStatusEnum": {
-                "description": "An enumeration.",
-                "enum": [0, 1, 2],
-                "title": "RecordStatusEnum",
-            },
-            "RecordTypeEnum": {
-                "description": "An enumeration.",
-                "enum": ["NEW", "OLD"],
-                "title": "RecordTypeEnum",
-            },
-        },
-        "description": "A generic record model.",
-        "properties": {
-            "record_status": {"$ref": "#/definitions/RecordStatusEnum"},
-            "record_type": {"$ref": "#/definitions/RecordTypeEnum"},
-        },
         "title": "RecordSchema",
+        "description": "A generic record model.",
         "type": "object",
+        "properties": {
+            "record_type": {
+                "title": "Record Type",
+                "default": "NEW",
+                "allOf": [{"$ref": "#/definitions/RecordTypeEnum"}],
+            },
+            "record_status": {
+                "title": "Record Status",
+                "default": 0,
+                "allOf": [{"$ref": "#/definitions/RecordStatusEnum"}],
+            },
+        },
+        "definitions": {
+            "RecordTypeEnum": {"title": "RecordTypeEnum", "description": "An enumeration.", "enum": ["NEW", "OLD"]},
+            "RecordStatusEnum": {"title": "RecordStatusEnum", "description": "An enumeration.", "enum": [0, 1, 2]},
+        },
     }

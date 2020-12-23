@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from testapp.models import User, Profile, Configuration
 
-from pydantic_django import PydanticDjangoModel
+from pydantic_django import ModelSchema
 
 
 @pytest.mark.django_db
@@ -15,7 +15,7 @@ def test_description():
     Test setting the schema description to the docstring of the Pydantic model.
     """
 
-    class ProfileSchema(PydanticDjangoModel):
+    class ProfileSchema(ModelSchema):
         """
         Pydantic profile docstring.
         """
@@ -25,7 +25,7 @@ def test_description():
 
     assert ProfileSchema.schema()["description"] == "Pydantic profile docstring."
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         """
         Pydantic user docstring.
         """
@@ -36,7 +36,7 @@ def test_description():
     assert UserSchema.schema()["description"] == "Pydantic user docstring."
 
     # Default will be the model docstring
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         class Config:
             model = User
 
@@ -49,7 +49,7 @@ def test_cache():
     Test the schema cache.
     """
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         class Config:
             model = User
             include = ["id", "first_name"]
@@ -68,8 +68,7 @@ def test_cache():
     assert True not in UserSchema.__schema_cache__
     assert False not in UserSchema.__schema_cache__
     assert UserSchema.schema() == expected
-    assert True in UserSchema.__schema_cache__
-    assert False not in UserSchema.__schema_cache__
+    assert UserSchema.__schema_cache__.keys() == {(True, "#/definitions/{model}")}
     assert UserSchema.schema() == expected
 
 
@@ -81,7 +80,7 @@ def test_include_exclude():
 
     all_user_fields = [field.name for field in User._meta.get_fields()]
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         """
         All fields are included by default.
         """
@@ -91,7 +90,7 @@ def test_include_exclude():
 
     assert set(UserSchema.schema()["properties"].keys()) == set(all_user_fields)
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         """
         All fields are included explicitly.
         """
@@ -101,7 +100,7 @@ def test_include_exclude():
 
     assert set(UserSchema.schema()["properties"].keys()) == set(all_user_fields)
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         """
         Only 'first_name' and 'email' are included.
         """
@@ -116,7 +115,7 @@ def test_include_exclude():
     assert set(included) == set(UserSchema.__config__.include)
     assert set(included) == set(["first_name", "email"])
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         """
         Only 'id' and 'profile' are not excluded.
         """
@@ -129,13 +128,7 @@ def test_include_exclude():
             exclude = ["first_name", "last_name", "email", "created_at", "updated_at"]
 
     not_excluded = UserSchema.schema()["properties"].keys()
-    assert set(not_excluded) == set(
-        [
-            field
-            for field in all_user_fields
-            if field not in UserSchema.__config__.exclude
-        ]
-    )
+    assert set(not_excluded) == set([field for field in all_user_fields if field not in UserSchema.__config__.exclude])
     assert set(not_excluded) == set(["profile", "id"])
 
 
@@ -145,7 +138,7 @@ def test_annotations():
     Test annotating fields.
     """
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         """
         Test required, optional, and function fields.
 
@@ -164,7 +157,7 @@ def test_annotations():
 
     updated_at_dt = datetime.datetime(2020, 12, 31, 0, 0)
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         """
         Test field functions and factory defaults.
         """
@@ -189,7 +182,7 @@ def test_annotations():
 
 
 def test_by_alias_generator():
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         """
         Test alias generator.
         """
@@ -212,12 +205,8 @@ def test_by_alias_generator():
         },
         "required": ["FIRST_NAME"],
     }
-    assert set(UserSchema.schema()["properties"].keys()) == set(
-        ["FIRST_NAME", "LAST_NAME"]
-    )
-    assert set(UserSchema.schema(by_alias=False)["properties"].keys()) == set(
-        ["first_name", "last_name"]
-    )
+    assert set(UserSchema.schema()["properties"].keys()) == set(["FIRST_NAME", "LAST_NAME"])
+    assert set(UserSchema.schema(by_alias=False)["properties"].keys()) == set(["first_name", "last_name"])
 
 
 def test_sub_model():
@@ -232,7 +221,7 @@ def test_sub_model():
 
         referral_code: Optional[str]
 
-    class ProfileSchema(PydanticDjangoModel):
+    class ProfileSchema(ModelSchema):
         """
         Django model relation as a sub-model.
         """
@@ -241,7 +230,7 @@ def test_sub_model():
             model = Profile
             include = ["id"]
 
-    class UserSchema(PydanticDjangoModel):
+    class UserSchema(ModelSchema):
         sign_up: SignUp
         profile: ProfileSchema
 
@@ -249,9 +238,7 @@ def test_sub_model():
             model = User
             include = ["id", "sign_up", "profile"]
 
-    assert set(UserSchema.schema()["definitions"].keys()) == set(
-        ["ProfileSchema", "SignUp"]
-    )
+    assert set(UserSchema.schema()["definitions"].keys()) == set(["ProfileSchema", "SignUp"])
 
     class Notification(BaseModel):
         """
@@ -262,17 +249,13 @@ def test_sub_model():
         content: str
         sent_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
-    assert set(Notification.schema()["properties"].keys()) == set(
-        ["user", "content", "sent_at"]
-    )
-    assert set(Notification.schema()["definitions"].keys()) == set(
-        ["ProfileSchema", "SignUp", "UserSchema"]
-    )
+    assert set(Notification.schema()["properties"].keys()) == set(["user", "content", "sent_at"])
+    assert set(Notification.schema()["definitions"].keys()) == set(["ProfileSchema", "SignUp", "UserSchema"])
 
 
 @pytest.mark.django_db
 def test_json():
-    class ConfigurationSchema(PydanticDjangoModel):
+    class ConfigurationSchema(ModelSchema):
         """
         Test JSON schema.
         """

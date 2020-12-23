@@ -19,7 +19,7 @@ pip install pydantic-django
 An example of basic [schema](https://pydantic-docs.helpmanual.io/usage/schema/) usage:
 
 ```python
-class UserSchema(PydanticDjangoModel):
+class UserSchema(ModelSchema):
     class Config:
         model = User
         
@@ -105,7 +105,7 @@ To produce a result such as:
 It can also use standard Python type annotations in conjunction with the fields retrieved automatically from the database, and the configuration class supports `exclude` and `include` options:
 
 ```python
-class UserSchema(PydanticDjangoModel):
+class UserSchema(ModelSchema):
     first_name: Optional[str]
     last_name: str
 
