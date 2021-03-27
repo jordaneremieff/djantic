@@ -7,7 +7,7 @@ def get_long_description():
 
 setup(
     name="pydantic-django",
-    version="0.0.7",
+    version="0.0.8",
     packages=find_packages(),
     license="MIT",
     url="https://github.com/jordaneremieff/pydantic-django/",
@@ -21,8 +21,13 @@ setup(
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        "Framework :: Django",
+        "Framework :: Django :: 2.2",
+        "Framework :: Django :: 3.0",
+        "Framework :: Django :: 3.1",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
 )
