@@ -12,7 +12,9 @@ def test_config_errors():
     Test the model config error exceptions.
     """
 
-    with pytest.raises(ConfigError, match="(Is `Config.model` a valid Django model class?)"):
+    with pytest.raises(
+        ConfigError, match="(Is `Config.model` a valid Django model class?)"
+    ):
 
         class InvalidModelErrorSchema(ModelSchema):
             class Config:

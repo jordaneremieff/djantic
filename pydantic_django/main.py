@@ -6,7 +6,7 @@ from pydantic import BaseModel, create_model, validate_model, Field, ConfigError
 from pydantic.main import ModelMetaclass
 
 import django
-from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 from django.utils.functional import Promise
 from django.utils.encoding import force_str
 from django.core.serializers.json import DjangoJSONEncoder
@@ -26,7 +26,10 @@ class ModelSchemaJSONEncoder(DjangoJSONEncoder):
 
 class ModelSchemaMetaclass(ModelMetaclass):
     def __new__(
-        mcs: Type["ModelSchemaMetaclass"], name: str, bases: tuple, namespace: dict,
+        mcs: Type["ModelSchemaMetaclass"],
+        name: str,
+        bases: tuple,
+        namespace: dict,
     ):
         cls = super().__new__(mcs, name, bases, namespace)
         for base in reversed(bases):
@@ -57,7 +60,6 @@ class ModelSchemaMetaclass(ModelMetaclass):
                 _seen = set()
 
                 for field in chain(fields, annotations.copy()):
-
                     field_name = getattr(
                         field, "name", getattr(field, "related_name", field)
                     )
@@ -204,16 +206,17 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
             obj_data = {}
 
             annotations = cls.__annotations__
-
-            for field in instance._meta.get_fields():
+            fields = instance._meta.get_fields(include_hidden=False)
+            for field in fields:
                 model_cls = None
-
+                model_cls_fields = None
                 if (
                     field.name in annotations
                     and isclass(cls.__fields__[field.name].type_)
                     and issubclass(cls.__fields__[field.name].type_, ModelSchema)
                 ):
                     model_cls = cls.__fields__[field.name].type_
+                    model_cls_fields = model_cls.get_fields()
 
                 if not field.concrete and field.auto_created:
                     accessor_name = field.get_accessor_name()
@@ -226,9 +229,7 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                         if model_cls:
                             related_obj_data = [
                                 model_cls.construct(**obj_vals)
-                                for obj_vals in related_qs.values(
-                                    *model_cls.get_fields()
-                                )
+                                for obj_vals in related_qs.values(*model_cls_fields)
                             ]
 
                         else:
@@ -242,37 +243,35 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                                     for _field in model_cls.get_fields()
                                 }
                             )
-
                         else:
                             related_obj_data = related_obj.pk
-
                     obj_data[accessor_name] = related_obj_data
 
                 elif field.one_to_many or field.many_to_many:
-
-                    if isinstance(field, GenericRelation):
-                        related_qs = getattr(instance, field.name)
-
-                        if model_cls:
-                            related_fields = [
-                                field
-                                for field in model_cls.get_fields()
-                                if field != "content_object"
-                            ]
-                            related_obj_data = [
-                                model_cls.construct(**obj_vals)
-                                for obj_vals in related_qs.values(*related_fields)
-                            ]
-
-                        else:
-                            related_obj_data = list(related_qs.values())
-
-                        obj_data[field.name] = related_obj_data
-                    else:
-
-                        obj_data[field.name] = [
-                            _obj.pk for _obj in field.value_from_object(instance)
+                    related_qs = getattr(instance, field.name)
+                    if model_cls:
+                        related_fields = [
+                            field
+                            for field in model_cls_fields
+                            if field != "content_object"
                         ]
+                        related_obj_data = [
+                            model_cls.construct(**obj_vals)
+                            for obj_vals in related_qs.values(*related_fields)
+                        ]
+                    else:
+                        related_obj_data = list(related_qs.values("pk"))
+
+                    obj_data[field.name] = related_obj_data
+
+                elif field.many_to_one:
+                    related_obj = getattr(instance, field.name)
+                    if model_cls:
+                        related_obj_data = model_cls.from_django(related_obj).dict()
+                    else:
+                        related_obj_data = field.value_from_object(instance)
+                    obj_data[field.name] = related_obj_data
+
                 else:
                     obj_data[field.name] = field.value_from_object(instance)
 

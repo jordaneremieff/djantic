@@ -128,7 +128,13 @@ def test_include_exclude():
             exclude = ["first_name", "last_name", "email", "created_at", "updated_at"]
 
     not_excluded = UserSchema.schema()["properties"].keys()
-    assert set(not_excluded) == set([field for field in all_user_fields if field not in UserSchema.__config__.exclude])
+    assert set(not_excluded) == set(
+        [
+            field
+            for field in all_user_fields
+            if field not in UserSchema.__config__.exclude
+        ]
+    )
     assert set(not_excluded) == set(["profile", "id"])
 
 
@@ -205,8 +211,12 @@ def test_by_alias_generator():
         },
         "required": ["FIRST_NAME"],
     }
-    assert set(UserSchema.schema()["properties"].keys()) == set(["FIRST_NAME", "LAST_NAME"])
-    assert set(UserSchema.schema(by_alias=False)["properties"].keys()) == set(["first_name", "last_name"])
+    assert set(UserSchema.schema()["properties"].keys()) == set(
+        ["FIRST_NAME", "LAST_NAME"]
+    )
+    assert set(UserSchema.schema(by_alias=False)["properties"].keys()) == set(
+        ["first_name", "last_name"]
+    )
 
 
 def test_sub_model():
@@ -238,7 +248,9 @@ def test_sub_model():
             model = User
             include = ["id", "sign_up", "profile"]
 
-    assert set(UserSchema.schema()["definitions"].keys()) == set(["ProfileSchema", "SignUp"])
+    assert set(UserSchema.schema()["definitions"].keys()) == set(
+        ["ProfileSchema", "SignUp"]
+    )
 
     class Notification(BaseModel):
         """
@@ -249,8 +261,12 @@ def test_sub_model():
         content: str
         sent_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
-    assert set(Notification.schema()["properties"].keys()) == set(["user", "content", "sent_at"])
-    assert set(Notification.schema()["definitions"].keys()) == set(["ProfileSchema", "SignUp", "UserSchema"])
+    assert set(Notification.schema()["properties"].keys()) == set(
+        ["user", "content", "sent_at"]
+    )
+    assert set(Notification.schema()["definitions"].keys()) == set(
+        ["ProfileSchema", "SignUp", "UserSchema"]
+    )
 
 
 @pytest.mark.django_db

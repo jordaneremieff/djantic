@@ -184,7 +184,7 @@ class Tagged(models.Model):
     content_object = GenericForeignKey("content_type", "object_id")
 
     def __str__(self):
-        return self.tag
+        return self.slug
 
 
 class Bookmark(models.Model):

@@ -107,7 +107,15 @@ def test_lazy_choice_field():
             },
         },
         "definitions": {
-            "RecordTypeEnum": {"title": "RecordTypeEnum", "description": "An enumeration.", "enum": ["NEW", "OLD"]},
-            "RecordStatusEnum": {"title": "RecordStatusEnum", "description": "An enumeration.", "enum": [0, 1, 2]},
+            "RecordTypeEnum": {
+                "title": "RecordTypeEnum",
+                "description": "An enumeration.",
+                "enum": ["NEW", "OLD"],
+            },
+            "RecordStatusEnum": {
+                "title": "RecordStatusEnum",
+                "description": "An enumeration.",
+                "enum": [0, 1, 2],
+            },
         },
     }

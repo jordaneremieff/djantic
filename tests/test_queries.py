@@ -18,7 +18,9 @@ def test_query_create():
             model = User
             include = ["id", "email"]
 
-    user_schema = UserSchema.create(first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com")
+    user_schema = UserSchema.create(
+        first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
+    )
 
     assert (
         user_schema.schema()
@@ -37,7 +39,11 @@ def test_query_create():
 
     user = User.objects.get(id=user_schema.instance.id)
 
-    assert UserSchema.from_django(user).dict() == user_schema.dict() == {"email": "jordan@eremieff.com", "id": 1}
+    assert (
+        UserSchema.from_django(user).dict()
+        == user_schema.dict()
+        == {"email": "jordan@eremieff.com", "id": 1}
+    )
 
 
 @pytest.mark.django_db
@@ -46,7 +52,9 @@ def test_get_instance():
     Test retrieving an existing Django object to populate the schema model.
     """
 
-    user = User.objects.create(first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com")
+    user = User.objects.create(
+        first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
+    )
 
     class UserSchema(ModelSchema):
         class Config:
@@ -55,7 +63,11 @@ def test_get_instance():
 
     user_schema = UserSchema.get(id=user.id)
 
-    assert UserSchema.from_django(user).dict() == user_schema.dict() == {"first_name": "Jordan", "id": 1}
+    assert (
+        UserSchema.from_django(user).dict()
+        == user_schema.dict()
+        == {"first_name": "Jordan", "id": 1}
+    )
 
 
 @pytest.mark.django_db
@@ -89,7 +101,9 @@ def test_save_instance():
     """
     Test updating and saving a Django object and updating the schema model.
     """
-    user = User.objects.create(first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com")
+    user = User.objects.create(
+        first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
+    )
 
     class UserSchema(ModelSchema):
         class Config:
@@ -100,8 +114,14 @@ def test_save_instance():
     user_schema.instance.last_name = "Lastname"
     user_schema.save()
 
-    user_values_from_db = dict(User.objects.filter(id=user.id).values("id", "first_name", "last_name")[0])
-    assert user_schema.dict() == {"first_name": "Jordan", "id": 1, "last_name": "Lastname"} == user_values_from_db
+    user_values_from_db = dict(
+        User.objects.filter(id=user.id).values("id", "first_name", "last_name")[0]
+    )
+    assert (
+        user_schema.dict()
+        == {"first_name": "Jordan", "id": 1, "last_name": "Lastname"}
+        == user_values_from_db
+    )
 
 
 @pytest.mark.django_db
@@ -109,7 +129,9 @@ def test_refresh_instance():
     """
     Test refreshing a Django object from the database and updating the schema model.
     """
-    user = User.objects.create(first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com")
+    user = User.objects.create(
+        first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
+    )
 
     class UserSchema(ModelSchema):
         class Config:
@@ -122,7 +144,9 @@ def test_refresh_instance():
     assert not user_schema_values["profile"]
     assert user_schema_values["email"] == "jordan@eremieff.com"
 
-    profile = Profile.objects.create(user=user, website="https://github.com/jordaneremieff", location="Australia")
+    profile = Profile.objects.create(
+        user=user, website="https://github.com/jordaneremieff", location="Australia"
+    )
     user.email = "hello@eremieff.com"
     user.save()
 
@@ -139,7 +163,9 @@ def test_delete_instance():
     """
     Test deleting a Django object and clearing the schema model.
     """
-    user = User.objects.create(first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com")
+    user = User.objects.create(
+        first_name="Jordan", last_name="Eremieff", email="jordan@eremieff.com"
+    )
 
     class UserSchema(ModelSchema):
         class Config:
@@ -220,6 +246,50 @@ def test_get_queryset_with_reverse_one_to_one():
 
 
 @pytest.mark.django_db
+def test_get_queryset_with_foreign_key():
+    """
+    Test retrieving a Django queryset with foreign-key relationships.
+    """
+
+    thread = Thread.objects.create(title="My thread topic")
+    thread2 = Thread.objects.create(title="Another topic")
+    for content in ("I agree.", "I disagree!", "lol"):
+        message_one = Message.objects.create(content=content, thread=thread)
+        Message.objects.create(content=content, thread=thread2)
+
+    class MessageSchema(ModelSchema):
+        class Config:
+            model = Message
+            exclude = ["created_at"]
+
+    schema = MessageSchema.from_django(message_one)
+    assert schema.dict() == {"id": 5, "content": "lol", "thread": 1}
+
+    class ThreadSchema(ModelSchema):
+        class Config:
+            model = Thread
+            exclude = ["created_at"]
+
+    class MessageWithThreadSchema(ModelSchema):
+        thread: ThreadSchema
+
+        class Config:
+            model = Message
+            exclude = ["created_at"]
+
+    schema = MessageWithThreadSchema.from_django(message_one)
+    assert schema.dict() == {
+        "id": 5,
+        "content": "lol",
+        "thread": {
+            "messages": [{"id": 1}, {"id": 3}, {"id": 5}],
+            "id": 1,
+            "title": "My thread topic",
+        },
+    }
+
+
+@pytest.mark.django_db
 def test_get_queryset_with_reverse_foreign_key():
     """
     Test retrieving a Django queryset with reverse foreign-key relationships.
@@ -266,7 +336,9 @@ def test_get_queryset_with_reverse_foreign_key():
             model = Thread
             exclude = ["created_at", "updated_at"]
 
-    thread_with_message_list_schema_qs = ThreadWithMessageListSchema.from_django(threads, many=True)
+    thread_with_message_list_schema_qs = ThreadWithMessageListSchema.from_django(
+        threads, many=True
+    )
 
     assert thread_with_message_list_schema_qs.dict() == {
         "threads": [
@@ -289,4 +361,27 @@ def test_get_queryset_with_reverse_foreign_key():
                 "title": "My thread topic",
             },
         ]
+    }
+
+
+@pytest.mark.django_db
+def test_get_queryset_with_generic_foreign_key():
+
+    bookmark = Bookmark.objects.create(url="https://github.com")
+    bookmark.tags.create(slug="tag-1")
+    bookmark.tags.create(slug="tag-2")
+
+    class TaggedSchema(ModelSchema):
+        class Config:
+            model = Tagged
+
+    class BookmarkSchema(ModelSchema):
+        class Config:
+            model = Bookmark
+
+    schema = BookmarkSchema.from_django(bookmark)
+    schema.dict() == {
+        "id": 1,
+        "url": "https://github.com",
+        "tags": [{"pk": 1}, {"pk": 2}],
     }

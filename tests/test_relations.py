@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 import pytest
@@ -53,7 +54,6 @@ def test_m2m():
             model = Publication
 
     class ArticleWithPublicationListSchema(ModelSchema):
-
         publications: List[PublicationSchema]
 
         class Config:
@@ -94,6 +94,20 @@ def test_m2m():
                 "required": ["title"],
             }
         },
+    }
+
+    article = Article.objects.create(
+        headline="My Headline", pub_date=datetime.date(2021, 3, 20)
+    )
+    publication = Publication.objects.create(title="My Publication")
+    article.publications.add(publication)
+
+    schema = ArticleWithPublicationListSchema.from_django(article)
+    assert schema.dict() == {
+        "id": 1,
+        "headline": "My Headline",
+        "pub_date": datetime.date(2021, 3, 20),
+        "publications": [{"article": 1, "id": 1, "title": "My Publication"}],
     }
 
 
@@ -477,7 +491,10 @@ def test_generic_relation():
             "tags": {
                 "title": "Tags",
                 "type": "array",
-                "items": {"type": "object", "additionalProperties": {"type": "integer"}},
+                "items": {
+                    "type": "object",
+                    "additionalProperties": {"type": "integer"},
+                },
             },
         },
         "required": ["url"],
