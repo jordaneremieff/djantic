@@ -2,7 +2,7 @@
 
 [Pydantic](https://pydantic-docs.helpmanual.io/) model interface for [Django](https://www.djangoproject.com/) ORM.
 
-**Important**: this project should be considered an ***experimental*** work-in-progress. The current API design and behaviour is not finalised, specific version support is not yet determined, and there is still a lot of things to test yet. 
+**Important**: this project should be considered an ***experimental*** work-in-progress. The current API design and behaviour is not finalised and specific version support is not yet determined.
 
 ## Installation
 

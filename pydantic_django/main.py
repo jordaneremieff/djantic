@@ -26,7 +26,7 @@ class ModelSchemaJSONEncoder(DjangoJSONEncoder):
 
 class ModelSchemaMetaclass(ModelMetaclass):
     def __new__(
-        mcs: Type["ModelSchemaMetaclass"],
+        mcs: "ModelSchemaMetaclass",
         name: str,
         bases: tuple,
         namespace: dict,
@@ -182,25 +182,25 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         return cls.__config__.model.objects
 
     @classmethod
-    def _create(cls, **kwargs) -> Type["ModelSchema"]:
+    def _create(cls, **kwargs) -> "ModelSchema":
         instance = cls.objects.create(**kwargs)
 
         return cls.from_django(instance)
 
     @classmethod
-    def _get(cls, **kwargs) -> Type["ModelSchema"]:
+    def _get(cls, **kwargs) -> "ModelSchema":
         instance = cls.objects.get(**kwargs)
 
         return cls.from_django(instance)
 
     @classmethod
     def from_django(
-        cls: Type["ModelSchema"],
+        cls: "ModelSchema",
         instance: Union[django.db.models.Model, django.db.models.QuerySet],
         many: bool = False,
         cache: bool = True,
         save: bool = False,
-    ) -> Union[Type["ModelSchema"], Type["ModelSchemaQuerySet"]]:
+    ) -> Union["ModelSchema", "ModelSchemaQuerySet"]:
 
         if not many:
             obj_data = {}

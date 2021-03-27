@@ -65,6 +65,7 @@ def ModelSchemaField(field: Any) -> tuple:
     title = None
     max_length = None
     python_type = None
+
     if field.is_relation:
 
         if not field.related_model:

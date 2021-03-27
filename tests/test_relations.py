@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Dict
 
 import pytest
 
@@ -478,6 +478,10 @@ def test_generic_relation():
     }
 
     class BookmarkSchema(ModelSchema):
+        # FIXME: I added this because for some reason in 2.2 the GenericRelation field
+        # ends up required, but in 3 it does not.
+        tags: List[Dict[str, int]] = None
+
         class Config:
             model = Bookmark
 
