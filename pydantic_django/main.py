@@ -206,7 +206,7 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
             obj_data = {}
 
             annotations = cls.__annotations__
-            fields = instance._meta.get_fields(include_hidden=False)
+            fields = instance._meta.get_fields()
             for field in fields:
                 model_cls = None
                 model_cls_fields = None
