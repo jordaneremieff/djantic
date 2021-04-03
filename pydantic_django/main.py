@@ -1,12 +1,12 @@
 from inspect import isclass
 from itertools import chain
-from typing import Type, Optional, Union, Any
+from typing import Optional, Union, Any, List
 
-from pydantic import BaseModel, create_model, validate_model, Field, ConfigError
+from pydantic import BaseModel, create_model, validate_model, ConfigError
 from pydantic.main import ModelMetaclass
 
+
 import django
-from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 from django.utils.functional import Promise
 from django.utils.encoding import force_str
 from django.core.serializers.json import DjangoJSONEncoder
@@ -18,10 +18,10 @@ _is_base_model_class_defined = False
 
 
 class ModelSchemaJSONEncoder(DjangoJSONEncoder):
-    def default(self, obj):
+    def default(self, obj):  # pragma: nocover
         if isinstance(obj, Promise):
             return force_str(obj)
-        return super().default(obj)  # pragma: nocover
+        return super().default(obj)
 
 
 class ModelSchemaMetaclass(ModelMetaclass):
@@ -142,6 +142,7 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         encoder_cls=ModelSchemaJSONEncoder,
         **dumps_kwargs: Any,
     ) -> str:
+
         return cls.__config__.json_dumps(
             cls.schema(by_alias=by_alias), cls=encoder_cls, **dumps_kwargs
         )
@@ -200,7 +201,7 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         many: bool = False,
         cache: bool = True,
         save: bool = False,
-    ) -> Union["ModelSchema", "ModelSchemaQuerySet"]:
+    ) -> Union["ModelSchema", List["ModelSchema"]]:
 
         if not many:
             obj_data = {}
@@ -284,23 +285,12 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
 
             return p_model
 
-        p_model_list = []
-        for obj in instance:
-            p_model = cls.from_django(obj, cache=False, many=False, save=False)
-            p_model_list.append(p_model)
+        p_model_list = [
+            cls.from_django(obj, cache=False, many=False, save=False)
+            for obj in instance
+        ]
 
-        model_name = p_model.__config__.model._meta.model_name
-        model_name_plural = f"{model_name}s"
-
-        fields = {model_name_plural: (list, Field(None, title=f"{model_name_plural}"))}
-        p_model_qs = create_model(
-            "ModelSchemaQuerySet",
-            __base__=BaseModel,
-            __module__=cls.__module__,
-            **fields,
-        )
-
-        return p_model_qs(**{model_name_plural: p_model_list})
+        return p_model_list
 
 
 _is_base_model_class_defined = True

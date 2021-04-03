@@ -16,22 +16,28 @@ def test_custom_field():
             include = ["id", "title", "items"]
 
     assert RecordSchema.schema() == {
+        "title": "RecordSchema",
         "description": "A generic record model.",
+        "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "items": {
-                "anyOf": [
-                    {"format": "json-string", "type": "string"},
-                    {"type": "object"},
-                    {"items": {}, "type": "array"},
-                ],
-                "title": "Items",
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "title": {
+                "title": "Title",
+                "description": "title",
+                "maxLength": 20,
+                "type": "string",
             },
-            "title": {"maxLength": 20, "title": "Title", "type": "string"},
+            "items": {
+                "title": "Items",
+                "description": "items",
+                "anyOf": [
+                    {"type": "string", "format": "json-string"},
+                    {"type": "object"},
+                    {"type": "array", "items": {}},
+                ],
+            },
         },
         "required": ["title"],
-        "title": "RecordSchema",
-        "type": "object",
     }
 
 
@@ -53,6 +59,7 @@ def test_postgres_json_field():
         "properties": {
             "permissions": {
                 "title": "Permissions",
+                "description": "permissions",
                 "anyOf": [
                     {"type": "string", "format": "json-string"},
                     {"type": "object"},
@@ -61,6 +68,7 @@ def test_postgres_json_field():
             },
             "changelog": {
                 "title": "Changelog",
+                "description": "changelog",
                 "anyOf": [
                     {"type": "string", "format": "json-string"},
                     {"type": "object"},
@@ -69,6 +77,7 @@ def test_postgres_json_field():
             },
             "metadata": {
                 "title": "Metadata",
+                "description": "metadata",
                 "anyOf": [
                     {"type": "string", "format": "json-string"},
                     {"type": "object"},
@@ -97,11 +106,13 @@ def test_lazy_choice_field():
         "properties": {
             "record_type": {
                 "title": "Record Type",
+                "description": "record_type",
                 "default": "NEW",
                 "allOf": [{"$ref": "#/definitions/RecordTypeEnum"}],
             },
             "record_status": {
                 "title": "Record Status",
+                "description": "record_status",
                 "default": 0,
                 "allOf": [{"$ref": "#/definitions/RecordStatusEnum"}],
             },

@@ -59,8 +59,13 @@ def test_cache():
         "description": "A user of the application.",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "first_name": {"title": "First Name", "maxLength": 50, "type": "string"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "first_name": {
+                "title": "First Name",
+                "description": "first_name",
+                "maxLength": 50,
+                "type": "string",
+            },
         },
         "required": ["first_name"],
     }
@@ -206,8 +211,18 @@ def test_by_alias_generator():
         "description": "Test alias generator.",
         "type": "object",
         "properties": {
-            "FIRST_NAME": {"title": "First Name", "maxLength": 50, "type": "string"},
-            "LAST_NAME": {"title": "Last Name", "maxLength": 50, "type": "string"},
+            "FIRST_NAME": {
+                "title": "First Name",
+                "description": "first_name",
+                "maxLength": 50,
+                "type": "string",
+            },
+            "LAST_NAME": {
+                "title": "Last Name",
+                "description": "last_name",
+                "maxLength": 50,
+                "type": "string",
+            },
         },
         "required": ["FIRST_NAME"],
     }
@@ -286,6 +301,7 @@ def test_json():
   "properties": {
     "id": {
       "title": "Id",
+      "description": "id",
       "type": "integer"
     },
     "config_id": {
@@ -296,11 +312,13 @@ def test_json():
     },
     "name": {
       "title": "Name",
+      "description": "name",
       "maxLength": 100,
       "type": "string"
     },
     "permissions": {
       "title": "Permissions",
+      "description": "permissions",
       "anyOf": [
         {
           "type": "string",
@@ -317,6 +335,7 @@ def test_json():
     },
     "changelog": {
       "title": "Changelog",
+      "description": "changelog",
       "anyOf": [
         {
           "type": "string",
@@ -333,6 +352,7 @@ def test_json():
     },
     "metadata": {
       "title": "Metadata",
+      "description": "metadata",
       "anyOf": [
         {
           "type": "string",
@@ -349,6 +369,7 @@ def test_json():
     },
     "version": {
       "title": "Version",
+      "description": "version",
       "default": "0.0.1",
       "maxLength": 5,
       "type": "string"

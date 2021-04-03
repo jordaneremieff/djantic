@@ -34,11 +34,22 @@ def test_m2m():
         "description": "A news article.",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "headline": {"title": "Headline", "maxLength": 100, "type": "string"},
-            "pub_date": {"title": "Pub Date", "type": "string", "format": "date"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "headline": {
+                "title": "Headline",
+                "description": "headline",
+                "maxLength": 100,
+                "type": "string",
+            },
+            "pub_date": {
+                "title": "Pub Date",
+                "description": "pub_date",
+                "type": "string",
+                "format": "date",
+            },
             "publications": {
                 "title": "Publications",
+                "description": "None",
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -64,9 +75,19 @@ def test_m2m():
         "description": "A news article.",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "headline": {"title": "Headline", "maxLength": 100, "type": "string"},
-            "pub_date": {"title": "Pub Date", "type": "string", "format": "date"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "headline": {
+                "title": "Headline",
+                "description": "headline",
+                "maxLength": 100,
+                "type": "string",
+            },
+            "pub_date": {
+                "title": "Pub Date",
+                "description": "pub_date",
+                "type": "string",
+                "format": "date",
+            },
             "publications": {
                 "title": "Publications",
                 "type": "array",
@@ -82,14 +103,20 @@ def test_m2m():
                 "properties": {
                     "article": {
                         "title": "Article",
+                        "description": "None",
                         "type": "array",
                         "items": {
                             "type": "object",
                             "additionalProperties": {"type": "integer"},
                         },
                     },
-                    "id": {"title": "Id", "type": "integer"},
-                    "title": {"title": "Title", "maxLength": 30, "type": "string"},
+                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "title": {
+                        "title": "Title",
+                        "description": "title",
+                        "maxLength": 30,
+                        "type": "string",
+                    },
                 },
                 "required": ["title"],
             }
@@ -130,14 +157,15 @@ def test_foreign_key():
         "description": "A message posted in a thread.",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "content": {"title": "Content", "type": "string"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "content": {"title": "Content", "description": "content", "type": "string"},
             "created_at": {
                 "title": "Created At",
+                "description": "created_at",
                 "type": "string",
                 "format": "date-time",
             },
-            "thread": {"title": "Thread", "type": "integer"},
+            "thread": {"title": "Thread", "description": "None", "type": "integer"},
         },
         "required": ["content", "created_at", "thread"],
     }
@@ -154,10 +182,11 @@ def test_foreign_key():
         "description": "A message posted in a thread.",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "content": {"title": "Content", "type": "string"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "content": {"title": "Content", "description": "content", "type": "string"},
             "created_at": {
                 "title": "Created At",
+                "description": "created_at",
                 "type": "string",
                 "format": "date-time",
             },
@@ -172,52 +201,24 @@ def test_foreign_key():
                 "properties": {
                     "messages": {
                         "title": "Messages",
+                        "description": "None",
                         "type": "array",
                         "items": {
                             "type": "object",
                             "additionalProperties": {"type": "integer"},
                         },
                     },
-                    "id": {"title": "Id", "type": "integer"},
-                    "title": {"title": "Title", "maxLength": 30, "type": "string"},
+                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "title": {
+                        "title": "Title",
+                        "description": "title",
+                        "maxLength": 30,
+                        "type": "string",
+                    },
                 },
                 "required": ["title"],
             }
         },
-    }
-
-
-@pytest.mark.django_db
-def test_foreign_key_reverse():
-    """
-    Test reverse foreign-key relationships.
-    """
-
-    class MessageSchema(ModelSchema):
-        class Config:
-            model = Message
-
-    class ThreadSchema(ModelSchema):
-        class Config:
-            model = Thread
-
-    assert ThreadSchema.schema() == {
-        "title": "ThreadSchema",
-        "description": "A thread of messages.",
-        "type": "object",
-        "properties": {
-            "messages": {
-                "title": "Messages",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "additionalProperties": {"type": "integer"},
-                },
-            },
-            "id": {"title": "Id", "type": "integer"},
-            "title": {"title": "Title", "maxLength": 30, "type": "string"},
-        },
-        "required": ["title"],
     }
 
     class ThreadWithMessageListSchema(ModelSchema):
@@ -236,8 +237,13 @@ def test_foreign_key_reverse():
                 "type": "array",
                 "items": {"$ref": "#/definitions/MessageSchema"},
             },
-            "id": {"title": "Id", "type": "integer"},
-            "title": {"title": "Title", "maxLength": 30, "type": "string"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "title": {
+                "title": "Title",
+                "description": "title",
+                "maxLength": 30,
+                "type": "string",
+            },
         },
         "required": ["messages", "title"],
         "definitions": {
@@ -246,14 +252,23 @@ def test_foreign_key_reverse():
                 "description": "A message posted in a thread.",
                 "type": "object",
                 "properties": {
-                    "id": {"title": "Id", "type": "integer"},
-                    "content": {"title": "Content", "type": "string"},
+                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "content": {
+                        "title": "Content",
+                        "description": "content",
+                        "type": "string",
+                    },
                     "created_at": {
                         "title": "Created At",
+                        "description": "created_at",
                         "type": "string",
                         "format": "date-time",
                     },
-                    "thread": {"title": "Thread", "type": "integer"},
+                    "thread": {
+                        "title": "Thread",
+                        "description": "None",
+                        "type": "integer",
+                    },
                 },
                 "required": ["content", "created_at", "thread"],
             }
@@ -280,16 +295,18 @@ def test_one_to_one():
         "description": "A user's profile.",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "user": {"title": "User", "type": "integer"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "user": {"title": "User", "description": "None", "type": "integer"},
             "website": {
                 "title": "Website",
+                "description": "website",
                 "default": "",
                 "maxLength": 200,
                 "type": "string",
             },
             "location": {
                 "title": "Location",
+                "description": "location",
                 "default": "",
                 "maxLength": 100,
                 "type": "string",
@@ -309,16 +326,18 @@ def test_one_to_one():
         "description": "A user's profile.",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
             "user": {"$ref": "#/definitions/UserSchema"},
             "website": {
                 "title": "Website",
+                "description": "website",
                 "default": "",
                 "maxLength": 200,
                 "type": "string",
             },
             "location": {
                 "title": "Location",
+                "description": "location",
                 "default": "",
                 "maxLength": 100,
                 "type": "string",
@@ -331,26 +350,39 @@ def test_one_to_one():
                 "description": "A user of the application.",
                 "type": "object",
                 "properties": {
-                    "profile": {"title": "Profile", "type": "integer"},
-                    "id": {"title": "Id", "type": "integer"},
+                    "profile": {
+                        "title": "Profile",
+                        "description": "None",
+                        "type": "integer",
+                    },
+                    "id": {"title": "Id", "description": "id", "type": "integer"},
                     "first_name": {
                         "title": "First Name",
+                        "description": "first_name",
                         "maxLength": 50,
                         "type": "string",
                     },
                     "last_name": {
                         "title": "Last Name",
+                        "description": "last_name",
                         "maxLength": 50,
                         "type": "string",
                     },
-                    "email": {"title": "Email", "maxLength": 254, "type": "string"},
+                    "email": {
+                        "title": "Email",
+                        "description": "email",
+                        "maxLength": 254,
+                        "type": "string",
+                    },
                     "created_at": {
                         "title": "Created At",
+                        "description": "created_at",
                         "type": "string",
                         "format": "date-time",
                     },
                     "updated_at": {
                         "title": "Updated At",
+                        "description": "updated_at",
                         "type": "string",
                         "format": "date-time",
                     },
@@ -380,16 +412,18 @@ def test_one_to_one_reverse():
         "description": "A user's profile.",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "user": {"title": "User", "type": "integer"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "user": {"title": "User", "description": "None", "type": "integer"},
             "website": {
                 "title": "Website",
+                "description": "website",
                 "default": "",
                 "maxLength": 200,
                 "type": "string",
             },
             "location": {
                 "title": "Location",
+                "description": "location",
                 "default": "",
                 "maxLength": 100,
                 "type": "string",
@@ -410,17 +444,34 @@ def test_one_to_one_reverse():
         "type": "object",
         "properties": {
             "profile": {"$ref": "#/definitions/ProfileSchema"},
-            "id": {"title": "Id", "type": "integer"},
-            "first_name": {"title": "First Name", "maxLength": 50, "type": "string"},
-            "last_name": {"title": "Last Name", "maxLength": 50, "type": "string"},
-            "email": {"title": "Email", "maxLength": 254, "type": "string"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "first_name": {
+                "title": "First Name",
+                "description": "first_name",
+                "maxLength": 50,
+                "type": "string",
+            },
+            "last_name": {
+                "title": "Last Name",
+                "description": "last_name",
+                "maxLength": 50,
+                "type": "string",
+            },
+            "email": {
+                "title": "Email",
+                "description": "email",
+                "maxLength": 254,
+                "type": "string",
+            },
             "created_at": {
                 "title": "Created At",
+                "description": "created_at",
                 "type": "string",
                 "format": "date-time",
             },
             "updated_at": {
                 "title": "Updated At",
+                "description": "updated_at",
                 "type": "string",
                 "format": "date-time",
             },
@@ -432,16 +483,18 @@ def test_one_to_one_reverse():
                 "description": "A user's profile.",
                 "type": "object",
                 "properties": {
-                    "id": {"title": "Id", "type": "integer"},
-                    "user": {"title": "User", "type": "integer"},
+                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "user": {"title": "User", "description": "None", "type": "integer"},
                     "website": {
                         "title": "Website",
+                        "description": "website",
                         "default": "",
                         "maxLength": 200,
                         "type": "string",
                     },
                     "location": {
                         "title": "Location",
+                        "description": "location",
                         "default": "",
                         "maxLength": 100,
                         "type": "string",
@@ -468,11 +521,28 @@ def test_generic_relation():
         "description": "Tagged(id, slug, content_type, object_id)",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "slug": {"title": "Slug", "maxLength": 50, "type": "string"},
-            "content_type": {"title": "Content Type", "type": "integer"},
-            "object_id": {"title": "Object Id", "type": "integer"},
-            "content_object": {"title": "Content Object", "type": "integer"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "slug": {
+                "title": "Slug",
+                "description": "slug",
+                "maxLength": 50,
+                "type": "string",
+            },
+            "content_type": {
+                "title": "Content Type",
+                "description": "None",
+                "type": "integer",
+            },
+            "object_id": {
+                "title": "Object Id",
+                "description": "object_id",
+                "type": "integer",
+            },
+            "content_object": {
+                "title": "Content Object",
+                "description": "None",
+                "type": "integer",
+            },
         },
         "required": ["slug", "content_type", "object_id", "content_object"],
     }
@@ -490,8 +560,13 @@ def test_generic_relation():
         "description": "Bookmark(id, url)",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "url": {"title": "Url", "maxLength": 200, "type": "string"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "url": {
+                "title": "Url",
+                "description": "url",
+                "maxLength": 200,
+                "type": "string",
+            },
             "tags": {
                 "title": "Tags",
                 "type": "array",
@@ -516,8 +591,13 @@ def test_generic_relation():
         "description": "Bookmark(id, url)",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "url": {"title": "Url", "maxLength": 200, "type": "string"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "url": {
+                "title": "Url",
+                "description": "url",
+                "maxLength": 200,
+                "type": "string",
+            },
             "tags": {
                 "title": "Tags",
                 "type": "array",
@@ -531,11 +611,28 @@ def test_generic_relation():
                 "description": "Tagged(id, slug, content_type, object_id)",
                 "type": "object",
                 "properties": {
-                    "id": {"title": "Id", "type": "integer"},
-                    "slug": {"title": "Slug", "maxLength": 50, "type": "string"},
-                    "content_type": {"title": "Content Type", "type": "integer"},
-                    "object_id": {"title": "Object Id", "type": "integer"},
-                    "content_object": {"title": "Content Object", "type": "integer"},
+                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "slug": {
+                        "title": "Slug",
+                        "description": "slug",
+                        "maxLength": 50,
+                        "type": "string",
+                    },
+                    "content_type": {
+                        "title": "Content Type",
+                        "description": "None",
+                        "type": "integer",
+                    },
+                    "object_id": {
+                        "title": "Object Id",
+                        "description": "object_id",
+                        "type": "integer",
+                    },
+                    "content_object": {
+                        "title": "Content Object",
+                        "description": "None",
+                        "type": "integer",
+                    },
                 },
                 "required": ["slug", "content_type", "object_id", "content_object"],
             }
@@ -549,15 +646,24 @@ def test_generic_relation():
         class Config:
             model = Item
 
-    # Test without defining a GenericRelation on the model.
+    # Test without defining a GenericRelation on the model
     assert ItemSchema.schema() == {
         "title": "ItemSchema",
         "description": "Item(id, name, item_list)",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "type": "integer"},
-            "name": {"title": "Name", "maxLength": 100, "type": "string"},
-            "item_list": {"title": "Item List", "type": "integer"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "name": {
+                "title": "Name",
+                "description": "name",
+                "maxLength": 100,
+                "type": "string",
+            },
+            "item_list": {
+                "title": "Item List",
+                "description": "None",
+                "type": "integer",
+            },
             "tags": {
                 "title": "Tags",
                 "type": "array",
@@ -571,11 +677,28 @@ def test_generic_relation():
                 "description": "Tagged(id, slug, content_type, object_id)",
                 "type": "object",
                 "properties": {
-                    "id": {"title": "Id", "type": "integer"},
-                    "slug": {"title": "Slug", "maxLength": 50, "type": "string"},
-                    "content_type": {"title": "Content Type", "type": "integer"},
-                    "object_id": {"title": "Object Id", "type": "integer"},
-                    "content_object": {"title": "Content Object", "type": "integer"},
+                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "slug": {
+                        "title": "Slug",
+                        "description": "slug",
+                        "maxLength": 50,
+                        "type": "string",
+                    },
+                    "content_type": {
+                        "title": "Content Type",
+                        "description": "None",
+                        "type": "integer",
+                    },
+                    "object_id": {
+                        "title": "Object Id",
+                        "description": "object_id",
+                        "type": "integer",
+                    },
+                    "content_object": {
+                        "title": "Content Object",
+                        "description": "None",
+                        "type": "integer",
+                    },
                 },
                 "required": ["slug", "content_type", "object_id", "content_object"],
             }

@@ -25,14 +25,19 @@ def test_query_create():
     assert (
         user_schema.schema()
         == {
+            "title": "UserSchema",
             "description": "A user of the application.",
+            "type": "object",
             "properties": {
-                "email": {"maxLength": 254, "title": "Email", "type": "string"},
-                "id": {"title": "Id", "type": "integer"},
+                "id": {"title": "Id", "description": "id", "type": "integer"},
+                "email": {
+                    "title": "Email",
+                    "description": "email",
+                    "maxLength": 254,
+                    "type": "string",
+                },
             },
             "required": ["email"],
-            "title": "UserSchema",
-            "type": "object",
         }
         == UserSchema.schema()
     )
@@ -198,17 +203,15 @@ def test_get_queryset_with_reverse_one_to_one():
 
     users = User.objects.all()
     user_schema_qs = UserSchema.from_django(users, many=True)
-    assert user_schema_qs.dict() == {
-        "users": [
-            {
-                "email": "jordan@eremieff.com",
-                "first_name": "Jordan",
-                "id": 1,
-                "profile": 1,
-            },
-            {"email": "sara@example.com", "first_name": "Sara", "id": 2, "profile": 2},
-        ]
-    }
+    assert user_schema_qs == [
+        {
+            "email": "jordan@eremieff.com",
+            "first_name": "Jordan",
+            "id": 1,
+            "profile": 1,
+        },
+        {"email": "sara@example.com", "first_name": "Sara", "id": 2, "profile": 2},
+    ]
 
     # Test when using a declared sub-model
     class ProfileSchema(ModelSchema):
@@ -227,22 +230,20 @@ def test_get_queryset_with_reverse_one_to_one():
     users = User.objects.all()
 
     user_with_profile_schema_qs = UserWithProfileSchema.from_django(users, many=True)
-    assert user_with_profile_schema_qs.dict() == {
-        "users": [
-            {
-                "email": "jordan@eremieff.com",
-                "first_name": "Jordan",
-                "id": 1,
-                "profile": {"id": 1, "location": "Australia"},
-            },
-            {
-                "email": "sara@example.com",
-                "first_name": "Sara",
-                "id": 2,
-                "profile": {"id": 2, "location": "Australia"},
-            },
-        ]
-    }
+    assert user_with_profile_schema_qs == [
+        {
+            "email": "jordan@eremieff.com",
+            "first_name": "Jordan",
+            "id": 1,
+            "profile": {"id": 1, "location": "Australia"},
+        },
+        {
+            "email": "sara@example.com",
+            "first_name": "Sara",
+            "id": 2,
+            "profile": {"id": 2, "location": "Australia"},
+        },
+    ]
 
 
 @pytest.mark.django_db
@@ -313,20 +314,18 @@ def test_get_queryset_with_reverse_foreign_key():
             model = Thread
 
     thread_schema_qs = ThreadSchema.from_django(threads, many=True)
-    assert thread_schema_qs.dict() == {
-        "threads": [
-            {
-                "messages": [{"id": 2}, {"id": 4}, {"id": 6}],
-                "id": 2,
-                "title": "Another topic",
-            },
-            {
-                "messages": [{"id": 1}, {"id": 3}, {"id": 5}],
-                "id": 1,
-                "title": "My thread topic",
-            },
-        ]
-    }
+    assert thread_schema_qs == [
+        {
+            "messages": [{"id": 2}, {"id": 4}, {"id": 6}],
+            "id": 2,
+            "title": "Another topic",
+        },
+        {
+            "messages": [{"id": 1}, {"id": 3}, {"id": 5}],
+            "id": 1,
+            "title": "My thread topic",
+        },
+    ]
 
     # Test when using a declared sub-model
     class ThreadWithMessageListSchema(ModelSchema):
@@ -340,28 +339,26 @@ def test_get_queryset_with_reverse_foreign_key():
         threads, many=True
     )
 
-    assert thread_with_message_list_schema_qs.dict() == {
-        "threads": [
-            {
-                "messages": [
-                    {"id": 2, "content": "I agree."},
-                    {"id": 4, "content": "I disagree!"},
-                    {"id": 6, "content": "lol"},
-                ],
-                "id": 2,
-                "title": "Another topic",
-            },
-            {
-                "messages": [
-                    {"id": 1, "content": "I agree."},
-                    {"id": 3, "content": "I disagree!"},
-                    {"id": 5, "content": "lol"},
-                ],
-                "id": 1,
-                "title": "My thread topic",
-            },
-        ]
-    }
+    assert thread_with_message_list_schema_qs == [
+        {
+            "messages": [
+                {"id": 2, "content": "I agree."},
+                {"id": 4, "content": "I disagree!"},
+                {"id": 6, "content": "lol"},
+            ],
+            "id": 2,
+            "title": "Another topic",
+        },
+        {
+            "messages": [
+                {"id": 1, "content": "I agree."},
+                {"id": 3, "content": "I disagree!"},
+                {"id": 5, "content": "lol"},
+            ],
+            "id": 1,
+            "title": "My thread topic",
+        },
+    ]
 
 
 @pytest.mark.django_db

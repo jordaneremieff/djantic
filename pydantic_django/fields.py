@@ -4,7 +4,6 @@ from datetime import date, time, datetime, timedelta
 from enum import Enum
 from uuid import UUID
 
-
 from pydantic import IPvAnyAddress, Json
 from pydantic.fields import FieldInfo
 
@@ -67,7 +66,6 @@ def ModelSchemaField(field: Any) -> tuple:
     python_type = None
 
     if field.is_relation:
-
         if not field.related_model:
             internal_type = field.model._meta.pk.get_internal_type()
         else:
@@ -136,7 +134,7 @@ def ModelSchemaField(field: Any) -> tuple:
             default,
             default_factory=default_factory,
             title=title,
-            description=description,
+            description=str(description) or field.name,
             max_length=max_length,
         ),
     )
