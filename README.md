@@ -2,7 +2,7 @@
 
 [Pydantic](https://pydantic-docs.helpmanual.io/) model interface for [Django](https://www.djangoproject.com/) ORM.
 
-**Important**: this project should be considered an ***experimental*** work-in-progress. The current API design and behaviour is not finalised and specific version support is not yet determined.
+**Important**: this project should be considered an ***experimental*** work-in-progress.
 
 ## Installation
 
@@ -28,31 +28,48 @@ The schema call above would return something like this:
 
 ```python
 {
-    "title": "UserSchema",
-    "description": "A user of the application.",
-    "type": "object",
-    "properties": {
-        "profile": {"title": "Profile", "type": "integer"},
-        "id": {"title": "Id", "type": "integer"},
-        "first_name": {"title": "First Name", "maxLength": 50, "type": "string"},
-        "last_name": {"title": "Last Name", "maxLength": 50, "type": "string"},
-        "email": {"title": "Email", "maxLength": 254, "type": "string"},
-        "created_at": {
-            "title": "Created At",
-            "type": "string",
-            "format": "date-time",
+        "title": "UserSchema",
+        "description": "A user of the application.",
+        "type": "object",
+        "properties": {
+            "profile": {"title": "Profile", "description": "None", "type": "integer"},
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "first_name": {
+                "title": "First Name",
+                "description": "first_name",
+                "maxLength": 50,
+                "type": "string",
+            },
+            "last_name": {
+                "title": "Last Name",
+                "description": "last_name",
+                "maxLength": 50,
+                "type": "string",
+            },
+            "email": {
+                "title": "Email",
+                "description": "email",
+                "maxLength": 254,
+                "type": "string",
+            },
+            "created_at": {
+                "title": "Created At",
+                "description": "created_at",
+                "type": "string",
+                "format": "date-time",
+            },
+            "updated_at": {
+                "title": "Updated At",
+                "description": "updated_at",
+                "type": "string",
+                "format": "date-time",
+            },
         },
-        "updated_at": {
-            "title": "Updated At",
-            "type": "string",
-            "format": "date-time",
-        },
-    },
-    "required": ["first_name", "email", "created_at", "updated_at"],
-}
+        "required": ["first_name", "email", "created_at", "updated_at"],
+    }
 ```
 
-There are a few ways to populate the models with values, the first is using the `from_django` method:
+Use the `from_django` method to populate the models with values:
 
 ```python
 user = User.objects.create(
@@ -64,23 +81,7 @@ user = User.objects.create(
 user_schema = UserSchema.from_django(user)
 ```
 
-Alternatively, the Pydantic model can be used to create a new object:
-
-```python
-user_schema = UserSchema.create(
-    first_name="Jordan", 
-    last_name="Eremieff", 
-    email="jordan@eremieff.com"
-)
-```
-
-Or retrieve an existing one:
-
-```python
-user_schema = UserSchema.get(id=user.id)
-```
-
-The object in each case can be validated and [export](https://pydantic-docs.helpmanual.io/usage/exporting_models/) the values in the same way:
+The object values can be validated and serialized using the Pydantic [export](https://pydantic-docs.helpmanual.io/usage/exporting_models/) methods.
 
 ```python
 user_json = user_schema.json()
