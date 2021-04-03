@@ -102,9 +102,6 @@ class ModelSchemaMetaclass(ModelMetaclass):
                 )
 
                 setattr(p_model, "instance", None)
-                setattr(p_model, "objects", p_model._objects())
-                setattr(p_model, "get", p_model._get)
-                setattr(p_model, "create", p_model._create)
 
                 return p_model
 
@@ -112,28 +109,6 @@ class ModelSchemaMetaclass(ModelMetaclass):
 
 
 class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
-    def save(self) -> None:
-        cls = self.__class__
-        p_model = cls.from_django(self.instance, save=True)
-        self._ṣet_object(
-            __dict__=p_model.__dict__, __fields_set__=p_model.__fields_set__
-        )
-
-    def refresh(self) -> None:
-        cls = self.__class__
-        instance = cls.objects.get(pk=self.instance.pk)
-        p_model = cls.from_django(instance)
-        self._ṣet_object(
-            __dict__=p_model.__dict__, __fields_set__=p_model.__fields_set__
-        )
-
-    def delete(self) -> None:
-        self.instance.delete()
-        cls = self.__class__
-        cls.instance = None
-        p_model = cls.__new__(cls)
-        self._ṣet_object(__dict__=p_model.__dict__)
-
     @classmethod
     def schema_json(
         cls,
@@ -162,10 +137,6 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
 
         return fields
 
-    def _ṣet_object(self, **kwargs) -> None:
-        object.__setattr__(self, "__dict__", kwargs["__dict__"])
-        object.__setattr__(self, "__fields_set__", kwargs.get("__fields_set__", {}))
-
     @classmethod
     def _get_object_model(cls, obj_data):
         values, fields_set, validation_error = validate_model(cls, obj_data)
@@ -179,28 +150,11 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         return p_model
 
     @classmethod
-    def _objects(cls) -> django.db.models.manager.Manager:
-        return cls.__config__.model.objects
-
-    @classmethod
-    def _create(cls, **kwargs) -> "ModelSchema":
-        instance = cls.objects.create(**kwargs)
-
-        return cls.from_django(instance)
-
-    @classmethod
-    def _get(cls, **kwargs) -> "ModelSchema":
-        instance = cls.objects.get(**kwargs)
-
-        return cls.from_django(instance)
-
-    @classmethod
     def from_django(
         cls: "ModelSchema",
         instance: Union[django.db.models.Model, django.db.models.QuerySet],
         many: bool = False,
         cache: bool = True,
-        save: bool = False,
     ) -> Union["ModelSchema", List["ModelSchema"]]:
 
         if not many:
@@ -278,16 +232,13 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
 
             p_model = cls._get_object_model(obj_data)
 
-            if save:
-                instance.save()
             if cache:
                 cls.instance = instance
 
             return p_model
 
         p_model_list = [
-            cls.from_django(obj, cache=False, many=False, save=False)
-            for obj in instance
+            cls.from_django(obj, cache=False, many=False) for obj in instance
         ]
 
         return p_model_list
