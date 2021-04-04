@@ -125,19 +125,18 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         )
 
     @classmethod
-    def get_fields(cls):
+    def get_field_names(cls):
+        model_fields = [field.name for field in cls.__config__.model._meta.get_fields()]
         if hasattr(cls.__config__, "include"):
-            fields = cls.__config__.include
-        elif hasattr(cls.__config__, "exclude"):
-            fields = [
-                field.name
-                for field in cls.__config__.model._meta.get_fields()
-                if field not in cls.__config__.exclude
+            model_fields = [
+                name for name in model_fields if name in cls.__config__.include
             ]
-        else:
-            fields = [field.name for field in cls.__config__.model._meta.get_fields()]
+        elif hasattr(cls.__config__, "exclude"):
+            model_fields = [
+                name for name in model_fields if name not in cls.__config__.exclude
+            ]
 
-        return fields
+        return model_fields
 
     @classmethod
     def _get_object_model(cls, obj_data):
@@ -161,12 +160,15 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
 
         if not many:
             obj_data = {}
-
             annotations = cls.__annotations__
-            fields = instance._meta.get_fields()
+            fields = [
+                field
+                for field in instance._meta.get_fields()
+                if field.name in cls.get_field_names()
+            ]
             for field in fields:
-                model_cls = None
-                model_cls_fields = None
+                schema_cls = None
+                related_field_names = None
 
                 # Check if this field is a related model schema to handle the data
                 # according to specific schema rules.
@@ -175,42 +177,34 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                     and isclass(cls.__fields__[field.name].type_)
                     and issubclass(cls.__fields__[field.name].type_, ModelSchema)
                 ):
-                    model_cls = cls.__fields__[field.name].type_
-                    model_cls_fields = model_cls.get_fields()
-                    related_include = getattr(model_cls.__config__, "include", None)
-                    related_exclude = getattr(model_cls.__config__, "exclude", None)
-                    if related_exclude:
-                        model_cls_fields = [
-                            i for i in model_cls_fields if i not in related_exclude
-                        ]
-                    elif related_include:
-                        model_cls_fields = [
-                            i for i in model_cls_fields if i in related_include
-                        ]
+                    schema_cls = cls.__fields__[field.name].type_
+                    related_field_names = schema_cls.get_field_names()
 
                 if not field.concrete and field.auto_created:
                     accessor_name = field.get_accessor_name()
                     related_obj = getattr(instance, accessor_name, None)
-                    if not related_obj:
+                    if not related_obj:  # pragma: nocover
+
+                        # FIXME: Add coverage or maybe raise?
                         related_obj_data = None
                     elif field.one_to_many:
                         related_qs = related_obj.all()
 
-                        if model_cls:
+                        if schema_cls:
                             related_obj_data = [
-                                model_cls.construct(**obj_vals)
-                                for obj_vals in related_qs.values(*model_cls_fields)
+                                schema_cls.construct(**obj_vals)
+                                for obj_vals in related_qs.values(*related_field_names)
                             ]
 
                         else:
                             related_obj_data = list(related_obj.all().values("id"))
 
                     elif field.one_to_one:
-                        if model_cls:
-                            related_obj_data = model_cls.construct(
+                        if schema_cls:
+                            related_obj_data = schema_cls.construct(
                                 **{
                                     _field: getattr(related_obj, _field)
-                                    for _field in model_cls_fields
+                                    for _field in related_field_names
                                 }
                             )
                         else:
@@ -219,14 +213,14 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
 
                 elif field.one_to_many or field.many_to_many:
                     related_qs = getattr(instance, field.name)
-                    if model_cls:
+                    if schema_cls:
                         related_fields = [
                             field
-                            for field in model_cls_fields
+                            for field in related_field_names
                             if field != "content_object"
                         ]
                         related_obj_data = [
-                            model_cls.construct(**obj_vals)
+                            schema_cls.construct(**obj_vals)
                             for obj_vals in related_qs.values(*related_fields)
                         ]
                     else:
@@ -236,8 +230,8 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
 
                 elif field.many_to_one:
                     related_obj = getattr(instance, field.name)
-                    if model_cls:
-                        related_obj_data = model_cls.from_django(related_obj).dict()
+                    if schema_cls:
+                        related_obj_data = schema_cls.from_django(related_obj).dict()
                     else:
                         related_obj_data = field.value_from_object(instance)
                     obj_data[field.name] = related_obj_data

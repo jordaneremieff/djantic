@@ -33,7 +33,7 @@ def test_config_errors():
 
 
 @pytest.mark.django_db
-def test_get_fields():
+def test_get_field_names():
     """
     Test retrieving the field names for a model.
     """
@@ -43,16 +43,15 @@ def test_get_fields():
             model = User
             include = ["id"]
 
-    assert UserSchema.get_fields() == ["id"]
+    assert UserSchema.get_field_names() == ["id"]
 
     class UserSchema(ModelSchema):
         class Config:
             model = User
             exclude = ["id"]
 
-    assert UserSchema.get_fields() == [
+    assert UserSchema.get_field_names() == [
         "profile",
-        "id",
         "first_name",
         "last_name",
         "email",

@@ -1,12 +1,12 @@
 # Usage
 
-The main functionality this library intends to provide is a means to automatically generate Pydantic models based on Django ORM model definitions using the `ModelSchema` class. Most of the Pydantic [model properties](https://pydantic-docs.helpmanual.io/usage/models/#model-properties) are expected to work with the generated model schema objects.
+The main functionality this library intends to provide is a means to automatically generate Pydantic models based on Django ORM model definitions. Most of the Pydantic [model properties](https://pydantic-docs.helpmanual.io/usage/models/#model-properties) are expected to work with the generated model schemas.
 
-In addition to this, the model schemas provide a `from_django` for loading Django object instance data to be used with Pydantic's [model export](https://pydantic-docs.helpmanual.io/usage/exporting_models/) methods.
+In addition to this, the model schemas provide a `from_django` method for loading Django object instance data to be used with Pydantic's [model export](https://pydantic-docs.helpmanual.io/usage/exporting_models/) methods.
 
 ## Creating a model schema
 
-The `ModelSchema` class can be used to generate a Pydantic model that maps to Django `User` model fields automatically. In addition to automatically mapping the Django model fields, model schemas class also support customization using type annotations and field configurations.
+The `ModelSchema` class can be used to generate a Pydantic model that maps to a Django model's fields automatically, and they also support customization using type annotations and field configurations.
 
 Consider the following model definition for a user in Django:
 
