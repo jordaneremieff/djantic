@@ -1,0 +1,38 @@
+site_name: Pydantic-Django
+site_description: Pydantic model schemas for Django ORM
+site_url: https://github.com/jordaneremieff/pydantic-django
+
+theme:
+  name: material
+  palette:
+
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deeppurple
+      accent: deeppurple
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deeppurple
+      accent: deeppurple
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to light mode
+
+repo_name: jordaneremieff/pydantic-django
+repo_url: https://github.com/jordaneremieff/pydantic-django
+edit_uri: ""
+
+nav:
+    - Introduction: 'index.md'
+    - Usage: 'usage.md'
+
+markdown_extensions:
+  - mkautodoc
+  - pymdownx.highlight
+  - pymdownx.superfences

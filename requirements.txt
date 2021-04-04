@@ -1,9 +1,18 @@
 django
-pytest
-pytest-django
 pydantic
+
+# Development
+pytest-django
 psycopg2
 codecov
 pytest-cov
 black
 mypy
+pytest
+
+# Docs
+mkdocs
+mkdocs-material
+mkautodoc
+pygments
+pymdown-extensions
