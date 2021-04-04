@@ -486,10 +486,10 @@
                 
                 
                 <h1 id="usage">Usage</h1>
-<p>The main functionality this library intends to provide is a means to automatically generate Pydantic models based on Django ORM model definitions using the <code>ModelSchema</code> class. Most of the Pydantic <a href="https://pydantic-docs.helpmanual.io/usage/models/#model-properties">model properties</a> are expected to work with the generated model schema objects.</p>
-<p>In addition to this, the model schemas provide a <code>from_django</code> for loading Django object instance data to be used with Pydantic's <a href="https://pydantic-docs.helpmanual.io/usage/exporting_models/">model export</a> methods.</p>
+<p>The main functionality this library intends to provide is a means to automatically generate Pydantic models based on Django ORM model definitions. Most of the Pydantic <a href="https://pydantic-docs.helpmanual.io/usage/models/#model-properties">model properties</a> are expected to work with the generated model schemas.</p>
+<p>In addition to this, the model schemas provide a <code>from_django</code> method for loading Django object instance data to be used with Pydantic's <a href="https://pydantic-docs.helpmanual.io/usage/exporting_models/">model export</a> methods.</p>
 <h2 id="creating-a-model-schema">Creating a model schema</h2>
-<p>The <code>ModelSchema</code> class can be used to generate a Pydantic model that maps to Django <code>User</code> model fields automatically. In addition to automatically mapping the Django model fields, model schemas class also support customization using type annotations and field configurations.</p>
+<p>The <code>ModelSchema</code> class can be used to generate a Pydantic model that maps to a Django model's fields automatically, and they also support customization using type annotations and field configurations.</p>
 <p>Consider the following model definition for a user in Django:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span> 
 
