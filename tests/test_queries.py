@@ -4,7 +4,7 @@ import pytest
 
 from testapp.models import User, Profile, Thread, Message, Tagged, Bookmark
 
-from pydantic_django import ModelSchema
+from djantic import ModelSchema
 
 
 @pytest.mark.django_db

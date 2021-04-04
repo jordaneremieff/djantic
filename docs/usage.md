@@ -29,7 +29,7 @@ class User(models.Model):
 A custom `ModelSchema` class could then be configured for this model:
 
 ```python
-from pydantic_django import ModelSchema
+from djantic import ModelSchema
 from myapp.models import User
 
 class UserSchema(ModelSchema):
@@ -103,7 +103,7 @@ However, the model schema class itself can be used to override this behaviour:
 
 ```python
 from pydantic import Field, constr
-from pydantic_django import ModelSchema
+from djantic import ModelSchema
 from myapp.models import User
 
 class UserSchema(ModelSchema):
@@ -224,7 +224,7 @@ class Profile(models.Model):
 The new `Profile` relationship would be available to the generated model schema:
 
 ```python
-from pydantic_django import ModelSchema
+from djantic import ModelSchema
 from myapp.models import User
 
 class UserSchema(ModelSchema):
@@ -393,7 +393,7 @@ profile = Profile.objects.create(user=user, website="https://github.com", locati
 Then use the `from_django` method to load this object:
 
 ```python
-from pydantic_django import ModelSchema
+from djantic import ModelSchema
 from myapp.models import User
 
 class ProfileSchema(ModelSchema):

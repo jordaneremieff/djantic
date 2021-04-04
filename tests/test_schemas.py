@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from testapp.models import User, Profile, Configuration
 
-from pydantic_django import ModelSchema
+from djantic import ModelSchema
 
 
 @pytest.mark.django_db

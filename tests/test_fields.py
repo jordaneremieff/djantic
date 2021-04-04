@@ -1,7 +1,7 @@
 import pytest
 
 from testapp.models import Record, Configuration
-from pydantic_django import ModelSchema
+from djantic import ModelSchema
 
 
 @pytest.mark.django_db
