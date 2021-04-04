@@ -60,6 +60,7 @@ class ModelSchemaMetaclass(ModelMetaclass):
                 _seen = set()
 
                 for field in chain(fields, annotations.copy()):
+
                     field_name = getattr(
                         field, "name", getattr(field, "related_name", field)
                     )
@@ -84,6 +85,7 @@ class ModelSchemaMetaclass(ModelMetaclass):
                             and pydantic_field.default_factory
                         ):
                             pydantic_field = pydantic_field.default_factory()
+
                     elif field_name in annotations:
                         python_type = annotations.pop(field_name)
                         pydantic_field = (
@@ -172,6 +174,20 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                 ):
                     model_cls = cls.__fields__[field.name].type_
                     model_cls_fields = model_cls.get_fields()
+                    related_include = getattr(model_cls.__config__, "include", None)
+                    related_exclude = getattr(model_cls.__config__, "exclude", None)
+
+                    if related_exclude:
+                        model_cls_fields = [
+                            i for i in model_cls_fields if i not in related_exclude
+                        ]
+                    elif related_include:
+                        model_cls_fields = [
+                            i for i in model_cls_fields if i in related_include
+                        ]
+
+                    print(field.name)
+                    print(model_cls_fields)
 
                 if not field.concrete and field.auto_created:
                     accessor_name = field.get_accessor_name()
@@ -195,7 +211,7 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                             related_obj_data = model_cls.construct(
                                 **{
                                     _field: getattr(related_obj, _field)
-                                    for _field in model_cls.get_fields()
+                                    for _field in model_cls_fields
                                 }
                             )
                         else:
