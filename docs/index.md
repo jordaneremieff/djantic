@@ -3,6 +3,7 @@
 [Pydantic](https://pydantic-docs.helpmanual.io/) model support for [Django](https://www.djangoproject.com/) ORM.
 
 **Documentation**: https://jordaneremieff.github.io/pydantic-django/
+
 **Requirements**: Python 3.7+, Django 2+
 
 ### Status
