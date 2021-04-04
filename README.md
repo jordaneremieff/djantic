@@ -1,6 +1,6 @@
 # Pydantic-Django
 
-**Documentation**:
+**Documentation**: https://jordaneremieff.github.io/pydantic-django/
 
 [Pydantic](https://pydantic-docs.helpmanual.io/) model support for [Django](https://www.djangoproject.com/) ORM.
 

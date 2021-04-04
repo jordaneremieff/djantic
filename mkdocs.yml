@@ -18,8 +18,8 @@ theme:
     # Dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: deeppurple
-      accent: deeppurple
+      primary: blue
+      accent: blue
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to light mode
