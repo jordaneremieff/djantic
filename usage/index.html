@@ -1,0 +1,916 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Pydantic model schemas for Django ORM">
+      
+      
+      
+      
+        <link rel="canonical" href="https://github.com/jordaneremieff/pydantic-django/usage/">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.1.0">
+    
+    
+      
+        <title>Usage - Pydantic-Django</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.33e2939f.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ef6f36e2.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deeppurple" data-md-color-accent="deeppurple">
+  
+    
+    <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+      <script>var palette=__get("__palette");if(null!==palette&&"object"==typeof palette.color)for(var key in palette.color)document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#usage" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Pydantic-Django" class="md-header__button md-logo" aria-label="Pydantic-Django" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Pydantic-Django
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Usage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deeppurple" data-md-color-accent="deeppurple" type="radio" name="__palette" id="__palette_1">
+          <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
+          </label>
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deeppurple" data-md-color-accent="deeppurple" type="radio" name="__palette" id="__palette_2">
+          <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2m10-3a5 5 0 0 1 5 5 5 5 0 0 1-5 5H7a5 5 0 0 1-5-5 5 5 0 0 1 5-5h10M7 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3h10a3 3 0 0 0 3-3 3 3 0 0 0-3-3H7z"/></svg>
+          </label>
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/jordaneremieff/pydantic-django" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jordaneremieff/pydantic-django
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Pydantic-Django" class="md-nav__button md-logo" aria-label="Pydantic-Django" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Pydantic-Django
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/jordaneremieff/pydantic-django" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jordaneremieff/pydantic-django
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Usage
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Usage
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-model-schema" class="md-nav__link">
+    Creating a model schema
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating a model schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-schema-usage" class="md-nav__link">
+    Basic schema usage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customizing-the-schema" class="md-nav__link">
+    Customizing the schema
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-related-objects" class="md-nav__link">
+    Handling related objects
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling related objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#related-schema-models" class="md-nav__link">
+    Related schema models
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exporting-model-data" class="md-nav__link">
+    Exporting model data
+  </a>
+  
+    <nav class="md-nav" aria-label="Exporting model data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-export-usage" class="md-nav__link">
+    Basic export usage
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic export usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modeldict" class="md-nav__link">
+    model.dict()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modeljson" class="md-nav__link">
+    model.json()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-model-schema" class="md-nav__link">
+    Creating a model schema
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating a model schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-schema-usage" class="md-nav__link">
+    Basic schema usage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customizing-the-schema" class="md-nav__link">
+    Customizing the schema
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-related-objects" class="md-nav__link">
+    Handling related objects
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling related objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#related-schema-models" class="md-nav__link">
+    Related schema models
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exporting-model-data" class="md-nav__link">
+    Exporting model data
+  </a>
+  
+    <nav class="md-nav" aria-label="Exporting model data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-export-usage" class="md-nav__link">
+    Basic export usage
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic export usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modeldict" class="md-nav__link">
+    model.dict()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modeljson" class="md-nav__link">
+    model.json()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="usage">Usage</h1>
+<p>The main functionality this library intends to provide is a means to automatically generate Pydantic models based on Django ORM model definitions using the <code>ModelSchema</code> class. Most of the Pydantic <a href="https://pydantic-docs.helpmanual.io/usage/models/#model-properties">model properties</a> are expected to work with the generated model schema objects.</p>
+<p>In addition to this, the model schemas provide a <code>from_django</code> for loading Django object instance data to be used with Pydantic's <a href="https://pydantic-docs.helpmanual.io/usage/exporting_models/">model export</a> methods.</p>
+<h2 id="creating-a-model-schema">Creating a model schema</h2>
+<p>The <code>ModelSchema</code> class can be used to generate a Pydantic model that maps to Django <code>User</code> model fields automatically. In addition to automatically mapping the Django model fields, model schemas class also support customization using type annotations and field configurations.</p>
+<p>Consider the following model definition for a user in Django:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span> 
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A user of the application.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">first_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">last_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">EmailField</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">created_at</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">updated_at</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<p>A custom <code>ModelSchema</code> class could then be configured for this model:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pydantic_django</span> <span class="kn">import</span> <span class="n">ModelSchema</span>
+<span class="kn">from</span> <span class="nn">myapp.models</span> <span class="kn">import</span> <span class="n">User</span>
+
+<span class="k">class</span> <span class="nc">UserSchema</span><span class="p">(</span><span class="n">ModelSchema</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
+</code></pre></div>
+<p>Once defined, the <code>UserSchema</code> can be used to perform various functions on the underlying Django model object, such as generating JSON schemas or exporting serialized instance data.</p>
+<h3 id="basic-schema-usage">Basic schema usage</h3>
+<p>The <code>UserSchema</code> above can be used to generate a JSON schema using Pydantic's <a href="https://pydantic-docs.helpmanual.io/usage/schema/">schema</a> method:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">UserSchema</span><span class="o">.</span><span class="n">schema</span><span class="p">())</span>
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+        <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;UserSchema&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;A user of the application.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Profile&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Id&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;first_name&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;First Name&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;first_name&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;maxLength&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;last_name&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Last Name&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;last_name&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;maxLength&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Email&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;maxLength&quot;</span><span class="p">:</span> <span class="mi">254</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;created_at&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Created At&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;created_at&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;date-time&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;updated_at&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Updated At&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;updated_at&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;date-time&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;created_at&quot;</span><span class="p">,</span> <span class="s2">&quot;updated_at&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+</code></pre></div>
+<p>By default, all of the fields in a Django model will be included in the model schema produced using the details of each field's configuration.</p>
+<h3 id="customizing-the-schema">Customizing the schema</h3>
+<p>By default, the docstrings and help text of the Django model definition is used to populate the various titles and descriptive text and constraints in the schema outputs. </p>
+<p>However, the model schema class itself can be used to override this behaviour:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">constr</span>
+<span class="kn">from</span> <span class="nn">pydantic_django</span> <span class="kn">import</span> <span class="n">ModelSchema</span>
+<span class="kn">from</span> <span class="nn">myapp.models</span> <span class="kn">import</span> <span class="n">User</span>
+
+<span class="k">class</span> <span class="nc">UserSchema</span><span class="p">(</span><span class="n">ModelSchema</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    My custom model schema.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">first_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;The user&#39;s first name&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;This is the user&#39;s first name&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">last_name</span><span class="p">:</span> <span class="n">constr</span><span class="p">(</span><span class="n">strip_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;My user schema&quot;</span>
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;My user schema&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;My custom model schema.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Id&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;first_name&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;The user&#39;s first name&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;This is the user&#39;s first name&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;last_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Last Name&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Email&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;maxLength&quot;</span><span class="p">:</span> <span class="mi">254</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;created_at&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Created At&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;created_at&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;date-time&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;updated_at&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Updated At&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;updated_at&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;date-time&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;created_at&quot;</span><span class="p">,</span> <span class="s2">&quot;updated_at&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Model schemas also support using standard Python type annotations and field inclusion/exclusion configurations to customize the schemas beyond the definitions inferred from the Django model.</p>
+<p>For example, the <code>last_name</code> field in the Django model is considered optional because of the <code>null=True</code> and <code>blank=True</code> parameters in the field definition, and the <code>first_name</code> field is required. </p>
+<p>These details can be modified by defining specific field rules using type annotations, and the schema fields can limited using the <code>include</code> (or <code>exclude</code>) configuration setting:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">UserSchema</span><span class="p">(</span><span class="n">ModelSchema</span><span class="p">):</span>
+    <span class="n">first_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
+        <span class="n">include</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">]</span>
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;A user of the application.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;first_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;First Name&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;last_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Last Name&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;last_name&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;UserSchema&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="handling-related-objects">Handling related objects</h2>
+<p>Database relations (many to one, one to one, many to many) are also supported in the schema definition. Generic relations are also supported, but not extensively tested.</p>
+<p>Consider the initial <code>User</code> model in <a href="/schemas/#creating-a-schema">creating a schema</a>, but with the addition of a <code>Profile</code> model containing a one to one relationship:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span> 
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A user of the application.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">first_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">last_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">EmailField</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">created_at</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">updated_at</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Profile</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A user&#39;s profile.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">OneToOneField</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s2">&quot;profile&quot;</span><span class="p">)</span>
+    <span class="n">website</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">URLField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<p>The new <code>Profile</code> relationship would be available to the generated model schema:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pydantic_django</span> <span class="kn">import</span> <span class="n">ModelSchema</span>
+<span class="kn">from</span> <span class="nn">myapp.models</span> <span class="kn">import</span> <span class="n">User</span>
+
+<span class="k">class</span> <span class="nc">UserSchema</span><span class="p">(</span><span class="n">ModelSchema</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
+        <span class="n">include</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;profile&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">UserSchema</span><span class="o">.</span><span class="n">schema</span><span class="p">())</span>
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;UserSchema&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;A user of the application.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Profile&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Id&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Email&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;maxLength&quot;</span><span class="p">:</span> <span class="mi">254</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong><em>Note</em></strong>: The initial <code>UserSchema</code> example in <a href="/schemas/#creating-a-schema">creating a schema</a> could be used without modification. The <code>include</code> list here is used to reduce the example output and is not required for relations support.</p>
+<h4 id="related-schema-models">Related schema models</h4>
+<p>The auto-generated <code>profile</code> definition can be expanded using an additional model schema set on the user schema:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ProfileSchema</span><span class="p">(</span><span class="n">ModelSchema</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Profile</span>
+
+<span class="k">class</span> <span class="nc">UserSchema</span><span class="p">(</span><span class="n">ModelSchema</span><span class="p">):</span>
+    <span class="n">profile</span><span class="p">:</span> <span class="n">ProfileSchema</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
+        <span class="n">include</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;profile&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">UserSchema</span><span class="o">.</span><span class="n">schema</span><span class="p">())</span>
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;UserSchema&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;A user of the application.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/ProfileSchema&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Id&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;profile&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;definitions&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;ProfileSchema&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;ProfileSchema&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;A user&#39;s profile.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Id&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;User&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;website&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Website&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;website&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;maxLength&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Location&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;location&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;maxLength&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>These schema relationships also work in reverse:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">UserSchema</span><span class="p">(</span><span class="n">ModelSchema</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
+        <span class="n">include</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">ProfileSchemaWithUser</span><span class="p">(</span><span class="n">ModelSchema</span><span class="p">):</span>
+    <span class="n">user</span><span class="p">:</span> <span class="n">UserSchema</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Profile</span>
+        <span class="n">include</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">ProfileSchemaWithUser</span><span class="o">.</span><span class="n">schema</span><span class="p">())</span>
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;ProfileSchemaWithUser&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;A user&#39;s profile.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Id&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/UserSchema&quot;</span><span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;definitions&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;UserSchema&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;UserSchema&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;A user of the application.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Id&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Email&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;maxLength&quot;</span><span class="p">:</span> <span class="mi">254</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The above behaviour works similarly to one to many and many to many relations. You can see more examples in the <a href="https://github.com/jordaneremieff/pydantic-django/blob/main/tests/test_relations.py">tests</a>.</p>
+<h2 id="exporting-model-data">Exporting model data</h2>
+<p>Model schemas support a <code>from_django</code> method that allows loading Django model instances for export using the generated schema. This method is similar to Pydantic's builtin <a href="https://pydantic-docs.helpmanual.io/usage/models/#orm-mode-aka-arbitrary-class-instances">from_orm</a>, but very specific to Django's ORM.</p>
+<p>It is intended to provide support for all of Pydantic's <a href="https://pydantic-docs.helpmanual.io/usage/exporting_models/">model export</a> methods.</p>
+<h3 id="basic-export-usage">Basic export usage</h3>
+<p>Create one or more Django model instances to be used when populating the model schema:</p>
+<div class="highlight"><pre><span></span><code><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+    <span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;Jordan&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Eremieff&quot;</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="s2">&quot;jordan@eremieff.com&quot;</span>
+<span class="p">)</span>
+<span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">website</span><span class="o">=</span><span class="s2">&quot;https://github.com&quot;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s2">&quot;AU&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Then use the <code>from_django</code> method to load this object:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pydantic_django</span> <span class="kn">import</span> <span class="n">ModelSchema</span>
+<span class="kn">from</span> <span class="nn">myapp.models</span> <span class="kn">import</span> <span class="n">User</span>
+
+<span class="k">class</span> <span class="nc">ProfileSchema</span><span class="p">(</span><span class="n">ModelSchema</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Profile</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">UserSchema</span><span class="p">(</span><span class="n">ModelSchema</span><span class="p">):</span>
+    <span class="n">profile</span><span class="p">:</span> <span class="n">ProfileSchema</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
+
+<span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">obj</span> <span class="o">=</span> <span class="n">UserSchema</span><span class="o">.</span><span class="n">from_django</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+</code></pre></div>
+<p>Now that the instance is loaded, it can be used with the various export methods to produce different outputs according to the schema definition. These outputs will be validated against the schema rules:</p>
+<h4 id="modeldict">model.dict()</h4>
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span>
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code>    <span class="p">{</span>
+    <span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;website&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com&quot;</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;AU&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;first_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Jordan&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;last_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Eremieff&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;jordan@eremieff.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;created_at&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">47</span><span class="p">,</span> <span class="mi">39</span><span class="p">,</span> <span class="mi">567410</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=&lt;</span><span class="n">UTC</span><span class="o">&gt;</span><span class="p">),</span>
+    <span class="s2">&quot;updated_at&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">47</span><span class="p">,</span> <span class="mi">39</span><span class="p">,</span> <span class="mi">567455</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=&lt;</span><span class="n">UTC</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="modeljson">model.json()</h4>
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;profile&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nt">&quot;website&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;AU&quot;</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="nt">&quot;first_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Jordan&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;last_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Eremieff&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;jordan@eremieff.com&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;created_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-04-04T08:47:39.567410+00:00&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;updated_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-04-04T08:47:39.567455+00:00&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong><em>Note</em></strong>: There is more here that should be documented (and tested).</p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        <a href=".." class="md-footer__link md-footer__link--prev" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Introduction
+            </div>
+          </div>
+        </a>
+      
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../assets/javascripts/workers/search.fe42c31b.min.js", "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d892486b.min.js"></script>
+      
+    
+  </body>
+</html>
