@@ -128,13 +128,16 @@ def ModelSchemaField(field: Any) -> tuple:
         description = field.help_text
         title = field.verbose_name.title()
 
+    if not description:
+        description = field.name
+
     return (
         python_type,
         FieldInfo(
             default,
             default_factory=default_factory,
             title=title,
-            description=str(description) or field.name,
+            description=str(description),
             max_length=max_length,
         ),
     )

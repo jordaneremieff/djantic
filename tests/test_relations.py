@@ -11,7 +11,6 @@ from testapp.models import (
     Publication,
     Article,
     Item,
-    ItemList,
     Tagged,
     Bookmark,
 )
@@ -49,7 +48,7 @@ def test_m2m():
             },
             "publications": {
                 "title": "Publications",
-                "description": "None",
+                "description": "id",
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -103,7 +102,7 @@ def test_m2m():
                 "properties": {
                     "article": {
                         "title": "Article",
-                        "description": "None",
+                        "description": "id",
                         "type": "array",
                         "items": {
                             "type": "object",
@@ -165,7 +164,7 @@ def test_foreign_key():
                 "type": "string",
                 "format": "date-time",
             },
-            "thread": {"title": "Thread", "description": "None", "type": "integer"},
+            "thread": {"title": "Thread", "description": "id", "type": "integer"},
         },
         "required": ["content", "created_at", "thread"],
     }
@@ -201,7 +200,7 @@ def test_foreign_key():
                 "properties": {
                     "messages": {
                         "title": "Messages",
-                        "description": "None",
+                        "description": "id",
                         "type": "array",
                         "items": {
                             "type": "object",
@@ -266,7 +265,7 @@ def test_foreign_key():
                     },
                     "thread": {
                         "title": "Thread",
-                        "description": "None",
+                        "description": "id",
                         "type": "integer",
                     },
                 },
@@ -296,7 +295,7 @@ def test_one_to_one():
         "type": "object",
         "properties": {
             "id": {"title": "Id", "description": "id", "type": "integer"},
-            "user": {"title": "User", "description": "None", "type": "integer"},
+            "user": {"title": "User", "description": "id", "type": "integer"},
             "website": {
                 "title": "Website",
                 "description": "website",
@@ -352,7 +351,7 @@ def test_one_to_one():
                 "properties": {
                     "profile": {
                         "title": "Profile",
-                        "description": "None",
+                        "description": "id",
                         "type": "integer",
                     },
                     "id": {"title": "Id", "description": "id", "type": "integer"},
@@ -413,7 +412,7 @@ def test_one_to_one_reverse():
         "type": "object",
         "properties": {
             "id": {"title": "Id", "description": "id", "type": "integer"},
-            "user": {"title": "User", "description": "None", "type": "integer"},
+            "user": {"title": "User", "description": "id", "type": "integer"},
             "website": {
                 "title": "Website",
                 "description": "website",
@@ -484,7 +483,7 @@ def test_one_to_one_reverse():
                 "type": "object",
                 "properties": {
                     "id": {"title": "Id", "description": "id", "type": "integer"},
-                    "user": {"title": "User", "description": "None", "type": "integer"},
+                    "user": {"title": "User", "description": "id", "type": "integer"},
                     "website": {
                         "title": "Website",
                         "description": "website",
@@ -530,7 +529,7 @@ def test_generic_relation():
             },
             "content_type": {
                 "title": "Content Type",
-                "description": "None",
+                "description": "id",
                 "type": "integer",
             },
             "object_id": {
@@ -540,7 +539,7 @@ def test_generic_relation():
             },
             "content_object": {
                 "title": "Content Object",
-                "description": "None",
+                "description": "content_object",
                 "type": "integer",
             },
         },
@@ -620,7 +619,7 @@ def test_generic_relation():
                     },
                     "content_type": {
                         "title": "Content Type",
-                        "description": "None",
+                        "description": "id",
                         "type": "integer",
                     },
                     "object_id": {
@@ -630,7 +629,7 @@ def test_generic_relation():
                     },
                     "content_object": {
                         "title": "Content Object",
-                        "description": "None",
+                        "description": "content_object",
                         "type": "integer",
                     },
                 },
@@ -661,7 +660,7 @@ def test_generic_relation():
             },
             "item_list": {
                 "title": "Item List",
-                "description": "None",
+                "description": "id",
                 "type": "integer",
             },
             "tags": {
@@ -686,7 +685,7 @@ def test_generic_relation():
                     },
                     "content_type": {
                         "title": "Content Type",
-                        "description": "None",
+                        "description": "id",
                         "type": "integer",
                     },
                     "object_id": {
@@ -696,7 +695,7 @@ def test_generic_relation():
                     },
                     "content_object": {
                         "title": "Content Object",
-                        "description": "None",
+                        "description": "content_object",
                         "type": "integer",
                     },
                 },
