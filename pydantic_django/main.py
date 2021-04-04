@@ -26,7 +26,10 @@ class ModelSchemaJSONEncoder(DjangoJSONEncoder):
 
 class ModelSchemaMetaclass(ModelMetaclass):
     def __new__(
-        mcs: "ModelSchemaMetaclass", name: str, bases: tuple, namespace: dict,
+        mcs: "ModelSchemaMetaclass",
+        name: str,
+        bases: tuple,
+        namespace: dict,
     ):
         cls = super().__new__(mcs, name, bases, namespace)
         for base in reversed(bases):
