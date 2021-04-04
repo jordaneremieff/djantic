@@ -23,6 +23,8 @@ pip install djantic
 An example of basic [schema](https://pydantic-docs.helpmanual.io/usage/schema/) usage:
 
 ```python
+from djantic import ModelSchema
+
 class UserSchema(ModelSchema):
     class Config:
         model = User

@@ -370,7 +370,7 @@ Output:
 }
 ```
 
-The above behaviour works similarly to one to many and many to many relations. You can see more examples in the [tests](https://github.com/jordaneremieff/pydantic-django/blob/main/tests/test_relations.py).
+The above behaviour works similarly to one to many and many to many relations. You can see more examples in the [tests](https://github.com/jordaneremieff/djantic/blob/main/tests/test_relations.py).
 
 ## Exporting model data
 

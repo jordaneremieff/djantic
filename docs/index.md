@@ -1,4 +1,4 @@
-# Pydantic-Django
+# djantic
 
 [Pydantic](https://pydantic-docs.helpmanual.io/) model support for [Django](https://www.djangoproject.com/) ORM.
 
@@ -8,19 +8,21 @@
 
 This project should be considered a work-in-progress. It should be okay to use, but no specific version support is guaranteed yet and expected outputs and behaviour may change as it continues to be developed.
 
-There is a lot of Pydantic behaviour to cover, so please use the issues [tracker](https://github.com/jordaneremieff/pydantic-django/issues) for any bug reports or if something seems incorrect.
+There is a lot of Pydantic behaviour to cover, so please use the issues [tracker](https://github.com/jordaneremieff/djantic/issues) for any bug reports or if something seems incorrect.
 
 ## Quickstart
 
 Install using pip:
 
 ```shell
-pip install pydantic-django
+pip install djantic
 ```
 
 An example of basic [schema](https://pydantic-docs.helpmanual.io/usage/schema/) usage:
 
 ```python
+from djantic import ModelSchema
+
 class UserSchema(ModelSchema):
     class Config:
         model = User
