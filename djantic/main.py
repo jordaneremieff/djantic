@@ -1,6 +1,6 @@
 from inspect import isclass
 from itertools import chain
-from typing import Optional, Union, Any, List
+from typing import Optional, Union, Any, List, no_type_check
 
 from pydantic import BaseModel, create_model, validate_model, ConfigError
 from pydantic.main import ModelMetaclass
@@ -18,6 +18,7 @@ _is_base_model_class_defined = False
 
 
 class ModelSchemaJSONEncoder(DjangoJSONEncoder):
+    @no_type_check
     def default(self, obj):  # pragma: nocover
         if isinstance(obj, Promise):
             return force_str(obj)
@@ -25,8 +26,9 @@ class ModelSchemaJSONEncoder(DjangoJSONEncoder):
 
 
 class ModelSchemaMetaclass(ModelMetaclass):
+    @no_type_check
     def __new__(
-        mcs: "ModelSchemaMetaclass",
+        mcs,
         name: str,
         bases: tuple,
         namespace: dict,
@@ -60,7 +62,6 @@ class ModelSchemaMetaclass(ModelMetaclass):
                 _seen = set()
 
                 for field in chain(fields, annotations.copy()):
-
                     field_name = getattr(
                         field, "name", getattr(field, "related_name", field)
                     )
@@ -99,13 +100,13 @@ class ModelSchemaMetaclass(ModelMetaclass):
 
                 cls.__doc__ = namespace.get("__doc__", config.model.__doc__)
                 cls.__fields__ = {}
-                p_model = create_model(
+                model_schema = create_model(
                     name, __base__=cls, __module__=cls.__module__, **field_values
                 )
 
-                setattr(p_model, "instance", None)
+                setattr(model_schema, "instance", None)
 
-                return p_model
+                return model_schema
 
         return cls
 
@@ -116,7 +117,7 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         cls,
         *,
         by_alias: bool = True,
-        encoder_cls=ModelSchemaJSONEncoder,
+        encoder_cls: Any = ModelSchemaJSONEncoder,
         **dumps_kwargs: Any,
     ) -> str:
 
@@ -125,7 +126,8 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         )
 
     @classmethod
-    def get_field_names(cls):
+    @no_type_check
+    def get_field_names(cls) -> List[str]:
         model_fields = [field.name for field in cls.__config__.model._meta.get_fields()]
         if hasattr(cls.__config__, "include"):
             model_fields = [
@@ -139,24 +141,24 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         return model_fields
 
     @classmethod
-    def _get_object_model(cls, obj_data):
+    def _get_object_model(cls, obj_data: dict) -> "ModelSchema":
         values, fields_set, validation_error = validate_model(cls, obj_data)
         if validation_error:  # pragma: nocover
             raise validation_error
 
-        p_model = cls.__new__(cls)
-        object.__setattr__(p_model, "__dict__", values)
-        object.__setattr__(p_model, "__fields_set__", fields_set)
+        model_schema = cls.__new__(cls)
+        object.__setattr__(model_schema, "__dict__", values)
+        object.__setattr__(model_schema, "__fields_set__", fields_set)
 
-        return p_model
+        return model_schema
 
     @classmethod
     def from_django(
-        cls: "ModelSchema",
+        cls,
         instance: Union[django.db.models.Model, django.db.models.QuerySet],
         many: bool = False,
-        cache: bool = True,
-    ) -> Union["ModelSchema", List["ModelSchema"]]:
+        store: bool = True,
+    ) -> Union["ModelSchema", list]:
 
         if not many:
             obj_data = {}
@@ -203,8 +205,8 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                         if schema_cls:
                             related_obj_data = schema_cls.construct(
                                 **{
-                                    _field: getattr(related_obj, _field)
-                                    for _field in related_field_names
+                                    name: getattr(related_obj, name)
+                                    for name in related_field_names
                                 }
                             )
                         else:
@@ -214,6 +216,9 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                 elif field.one_to_many or field.many_to_many:
                     related_qs = getattr(instance, field.name)
                     if schema_cls:
+
+                        # FIXME: This seems incorrect, should probably handle generic
+                        #        relations specifically.
                         related_fields = [
                             field
                             for field in related_field_names
@@ -239,18 +244,18 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                 else:
                     obj_data[field.name] = field.value_from_object(instance)
 
-            p_model = cls._get_object_model(obj_data)
+            model_schema = cls._get_object_model(obj_data)
 
-            if cache:
+            if store:
                 cls.instance = instance
 
-            return p_model
+            return model_schema
 
-        p_model_list = [
-            cls.from_django(obj, cache=False, many=False) for obj in instance
+        model_schema_qs = [
+            cls.from_django(obj, store=False, many=False) for obj in instance
         ]
 
-        return p_model_list
+        return model_schema_qs
 
 
 _is_base_model_class_defined = True
