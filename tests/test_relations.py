@@ -15,7 +15,7 @@ from testapp.models import (
     Bookmark,
 )
 
-from pydantic_django import ModelSchema
+from djantic import ModelSchema
 
 
 @pytest.mark.django_db

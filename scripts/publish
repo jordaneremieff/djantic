@@ -12,8 +12,8 @@ if ! command -v "${PREFIX}twine" &>/dev/null ; then
     exit 1
 fi
 
-find pydantic_django -type f -name "*.py[co]" -delete
-find pydantic_django -type d -name __pycache__ -delete
+find djantic -type f -name "*.py[co]" -delete
+find djantic -type d -name __pycache__ -delete
 
 ${PREFIX}python setup.py sdist
 ${PREFIX}twine upload dist/*

@@ -1,6 +1,6 @@
-site_name: Pydantic-Django
+site_name: Djantic
 site_description: Pydantic model schemas for Django ORM
-site_url: https://github.com/jordaneremieff/pydantic-django
+site_url: https://github.com/jordaneremieff/djantic
 
 theme:
   name: material
@@ -24,8 +24,8 @@ theme:
         icon: material/toggle-switch-off-outline
         name: Switch to light mode
 
-repo_name: jordaneremieff/pydantic-django
-repo_url: https://github.com/jordaneremieff/pydantic-django
+repo_name: jordaneremieff/djantic
+repo_url: https://github.com/jordaneremieff/djantic
 edit_uri: ""
 
 nav:

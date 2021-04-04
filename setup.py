@@ -6,15 +6,15 @@ def get_long_description():
 
 
 setup(
-    name="pydantic-django",
-    version="0.1.0",
+    name="djantic",
+    version="0.1.1",
     packages=find_packages(),
     license="MIT",
-    url="https://github.com/jordaneremieff/pydantic-django/",
+    url="https://github.com/jordaneremieff/djantic/",
     description="Pydantic model support for Django ORM",
     long_description=get_long_description(),
     python_requires=">=3.7",
-    package_data={"pydantic_django": ["py.typed"]},
+    package_data={"djantic": ["py.typed"]},
     long_description_content_type="text/markdown",
     author="Jordan Eremieff",
     author_email="jordan@eremieff.com",
