@@ -26,10 +26,7 @@ class ModelSchemaJSONEncoder(DjangoJSONEncoder):
 
 class ModelSchemaMetaclass(ModelMetaclass):
     def __new__(
-        mcs: "ModelSchemaMetaclass",
-        name: str,
-        bases: tuple,
-        namespace: dict,
+        mcs: "ModelSchemaMetaclass", name: str, bases: tuple, namespace: dict,
     ):
         cls = super().__new__(mcs, name, bases, namespace)
         for base in reversed(bases):
@@ -167,6 +164,9 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
             for field in fields:
                 model_cls = None
                 model_cls_fields = None
+
+                # Check if this field is a related model schema to handle the data
+                # according to specific schema rules.
                 if (
                     field.name in annotations
                     and isclass(cls.__fields__[field.name].type_)
@@ -176,7 +176,6 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                     model_cls_fields = model_cls.get_fields()
                     related_include = getattr(model_cls.__config__, "include", None)
                     related_exclude = getattr(model_cls.__config__, "exclude", None)
-
                     if related_exclude:
                         model_cls_fields = [
                             i for i in model_cls_fields if i not in related_exclude
@@ -185,9 +184,6 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                         model_cls_fields = [
                             i for i in model_cls_fields if i in related_include
                         ]
-
-                    print(field.name)
-                    print(model_cls_fields)
 
                 if not field.concrete and field.auto_created:
                     accessor_name = field.get_accessor_name()
