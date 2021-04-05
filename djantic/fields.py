@@ -1,11 +1,11 @@
-from typing import Any, Dict, List, Union, Optional, Type, TYPE_CHECKING
+from typing import Any, Dict, List, Union, Optional
 from decimal import Decimal
 from datetime import date, time, datetime, timedelta
 from enum import Enum
 from uuid import UUID
 
 from pydantic import IPvAnyAddress, Json
-from pydantic.fields import FieldInfo
+from pydantic.fields import FieldInfo, Required
 
 
 INT_TYPES = [
@@ -57,9 +57,6 @@ FIELD_TYPES = {
 }
 
 
-Required: Any = Ellipsis
-
-
 def ModelSchemaField(field: Any) -> tuple:
     default: Optional[Required] = Required
     default_factory = None
@@ -99,11 +96,22 @@ def ModelSchemaField(field: Any) -> tuple:
                 if not field.choices:
                     max_length = field.max_length
 
-            if internal_type in INT_TYPES:
+            elif internal_type in INT_TYPES:
                 python_type = int
 
-            if internal_type in FIELD_TYPES:
+            elif internal_type in FIELD_TYPES:
                 python_type = FIELD_TYPES[internal_type]
+
+            else:  # pragma: nocover
+
+                # Only required for 2.2 to support custom field subclasses
+                for field_class in type(field).__mro__:
+                    get_internal_type = getattr(field_class, "get_internal_type", None)
+                    if get_internal_type:
+                        _internal_type = get_internal_type(field_class())
+                        if _internal_type in FIELD_TYPES:
+                            python_type = FIELD_TYPES[_internal_type]
+                            break
 
         deconstructed = field.deconstruct()
         field_options = deconstructed[3] or {}
