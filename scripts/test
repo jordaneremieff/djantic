@@ -8,6 +8,4 @@ fi
 
 set -x
 
-#mypy ./djantic
 PYTHONPATH=. ${PREFIX}pytest --ignore venv --cov=djantic --cov-fail-under=100 --cov-report=term-missing "${@}"
-black --check ./

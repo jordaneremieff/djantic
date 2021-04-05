@@ -57,18 +57,11 @@ FIELD_TYPES = {
 }
 
 
-if TYPE_CHECKING:  # pragma: nocover
-
-    class ellipsis(Enum):
-        Ellipsis = "..."
-
-    Ellipsis = ellipsis.Ellipsis
-else:
-    ellipsis = type(Ellipsis)
+Required: Any = Ellipsis
 
 
 def ModelSchemaField(field: Any) -> tuple:
-    default: Optional[ellipsis] = Ellipsis
+    default: Optional[Required] = Required
     default_factory = None
     description = None
     title = None

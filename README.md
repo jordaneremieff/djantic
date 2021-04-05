@@ -1,16 +1,15 @@
 # Djantic
 
-[Pydantic](https://pydantic-docs.helpmanual.io/) model support for [Django](https://www.djangoproject.com/) ORM.
+[![PyPI version](https://badge.fury.io/py/djantic.svg)](https://badge.fury.io/py/djantic)
 
 **Documentation**: https://jordaneremieff.github.io/djantic/
+**Requirements**: Python 3.7+, Django 2.2+
 
-**Requirements**: Python 3.7+, Django 2+
+[Pydantic](https://pydantic-docs.helpmanual.io/) model support for [Django](https://www.djangoproject.com/).
 
-### Status
+This project should be considered a work-in-progress. It should be okay to use, but no specific version support has been determined ([#16](https://github.com/jordaneremieff/djantic/issues/16)) and the *default* model generation behaviour may change across releases.
 
-This project should be considered a work-in-progress. It should be okay to use, but no specific version support is guaranteed yet and expected outputs and behaviour may change as it continues to be developed.
-
-There is a lot of Pydantic behaviour to cover, so please use the issues [tracker](https://github.com/jordaneremieff/djantic/issues) for any bug reports or if something seems incorrect.
+Please use the issues [tracker](https://github.com/jordaneremieff/djantic/issues) to report any bugs, or if something seems incorrect.
 
 ## Quickstart
 
@@ -20,19 +19,23 @@ Install using pip:
 pip install djantic
 ```
 
-An example of basic [schema](https://pydantic-docs.helpmanual.io/usage/schema/) usage:
+## Generating schemas from models
+
+Configure a custom `ModelSchema` class for a Django model to generate a Pydantic model. This will allow using the Django model information with Pydantic model methods:
 
 ```python
+from users.models import User
 from djantic import ModelSchema
 
 class UserSchema(ModelSchema):
     class Config:
         model = User
         
-UserSchema.schema()
+print(UserSchema.schema())
+
 ```
 
-The schema call above would return something like this:
+Output:
 
 ```python
 {
@@ -77,7 +80,12 @@ The schema call above would return something like this:
     }
 ```
 
-Use the `from_django` method to populate the models with values:
+See https://pydantic-docs.helpmanual.io/usage/models/ for more.
+
+## Loading and exporting model data
+
+Use the `from_django` method on a model schema class to load a Django model instance into a schema class:
+
 
 ```python
 user = User.objects.create(
@@ -87,15 +95,11 @@ user = User.objects.create(
 )
 
 user_schema = UserSchema.from_django(user)
+print(user_schema.json(indent=2))
+
 ```
 
-The object values can be validated and serialized using the Pydantic [export](https://pydantic-docs.helpmanual.io/usage/exporting_models/) methods.
-
-```python
-user_json = user_schema.json()
-```
-
-To produce a result such as:
+Output:
 
 ```json
 {
@@ -108,3 +112,5 @@ To produce a result such as:
     "updated_at": "2020-08-15T16:50:30.606452+00:00"
 }
 ```
+
+See https://pydantic-docs.helpmanual.io/usage/exporting_models/ for more.
