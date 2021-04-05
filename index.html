@@ -252,15 +252,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
-    Status
+  <a href="#quickstart" class="md-nav__link">
+    Quickstart
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#quickstart" class="md-nav__link">
-    Quickstart
+  <a href="#generating-schemas-from-models" class="md-nav__link">
+    Generating schemas from models
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-and-exporting-model-data" class="md-nav__link">
+    Loading and exporting model data
   </a>
   
 </li>
@@ -313,15 +320,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
-    Status
+  <a href="#quickstart" class="md-nav__link">
+    Quickstart
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#quickstart" class="md-nav__link">
-    Quickstart
+  <a href="#generating-schemas-from-models" class="md-nav__link">
+    Generating schemas from models
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-and-exporting-model-data" class="md-nav__link">
+    Loading and exporting model data
   </a>
   
 </li>
@@ -339,26 +353,29 @@
               
                 
                 
-                <h1 id="djantic">djantic</h1>
-<p><a href="https://pydantic-docs.helpmanual.io/">Pydantic</a> model support for <a href="https://www.djangoproject.com/">Django</a> ORM.</p>
-<p><strong>Requirements</strong>: Python 3.7+, Django 2+</p>
-<h3 id="status">Status</h3>
-<p>This project should be considered a work-in-progress. It should be okay to use, but no specific version support is guaranteed yet and expected outputs and behaviour may change as it continues to be developed.</p>
-<p>There is a lot of Pydantic behaviour to cover, so please use the issues <a href="https://github.com/jordaneremieff/djantic/issues">tracker</a> for any bug reports or if something seems incorrect.</p>
+                <h1 id="djantic">Djantic</h1>
+<p><a href="https://badge.fury.io/py/djantic"><img alt="PyPI version" src="https://badge.fury.io/py/djantic.svg" /></a></p>
+<p><strong>Documentation</strong>: https://jordaneremieff.github.io/djantic/
+<strong>Requirements</strong>: Python 3.7+, Django 2.2+</p>
+<p><a href="https://pydantic-docs.helpmanual.io/">Pydantic</a> model support for <a href="https://www.djangoproject.com/">Django</a>.</p>
+<p>This project should be considered a work-in-progress. It should be okay to use, but no specific version support has been determined (<a href="https://github.com/jordaneremieff/djantic/issues/16">#16</a>) and the <em>default</em> model generation behaviour may change across releases.</p>
+<p>Please use the issues <a href="https://github.com/jordaneremieff/djantic/issues">tracker</a> to report any bugs, or if something seems incorrect.</p>
 <h2 id="quickstart">Quickstart</h2>
 <p>Install using pip:</p>
 <div class="highlight"><pre><span></span><code>pip install djantic
 </code></pre></div>
-<p>An example of basic <a href="https://pydantic-docs.helpmanual.io/usage/schema/">schema</a> usage:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">djantic</span> <span class="kn">import</span> <span class="n">ModelSchema</span>
+<h2 id="generating-schemas-from-models">Generating schemas from models</h2>
+<p>Configure a custom <code>ModelSchema</code> class for a Django model to generate a Pydantic model. This will allow using the Django model information with Pydantic model methods:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">users.models</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span> <span class="nn">djantic</span> <span class="kn">import</span> <span class="n">ModelSchema</span>
 
 <span class="k">class</span> <span class="nc">UserSchema</span><span class="p">(</span><span class="n">ModelSchema</span><span class="p">):</span>
     <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
 
-<span class="n">UserSchema</span><span class="o">.</span><span class="n">schema</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">UserSchema</span><span class="o">.</span><span class="n">schema</span><span class="p">())</span>
 </code></pre></div>
-<p>The schema call above would return something like this:</p>
+<p>Output:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
         <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;UserSchema&quot;</span><span class="p">,</span>
         <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;A user of the application.&quot;</span><span class="p">,</span>
@@ -400,7 +417,9 @@
         <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;created_at&quot;</span><span class="p">,</span> <span class="s2">&quot;updated_at&quot;</span><span class="p">],</span>
     <span class="p">}</span>
 </code></pre></div>
-<p>Use the <code>from_django</code> method to populate the models with values:</p>
+<p>See https://pydantic-docs.helpmanual.io/usage/models/ for more.</p>
+<h2 id="loading-and-exporting-model-data">Loading and exporting model data</h2>
+<p>Use the <code>from_django</code> method on a model schema class to load a Django model instance into a schema class:</p>
 <div class="highlight"><pre><span></span><code><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
     <span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;Jordan&quot;</span><span class="p">,</span> 
     <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Eremieff&quot;</span><span class="p">,</span> 
@@ -408,11 +427,9 @@
 <span class="p">)</span>
 
 <span class="n">user_schema</span> <span class="o">=</span> <span class="n">UserSchema</span><span class="o">.</span><span class="n">from_django</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">user_schema</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 </code></pre></div>
-<p>The object values can be validated and serialized using the Pydantic <a href="https://pydantic-docs.helpmanual.io/usage/exporting_models/">export</a> methods.</p>
-<div class="highlight"><pre><span></span><code><span class="n">user_json</span> <span class="o">=</span> <span class="n">user_schema</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-</code></pre></div>
-<p>To produce a result such as:</p>
+<p>Output:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
     <span class="nt">&quot;profile&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
     <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -423,6 +440,7 @@
     <span class="nt">&quot;updated_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-08-15T16:50:30.606452+00:00&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
+<p>See https://pydantic-docs.helpmanual.io/usage/exporting_models/ for more.</p>
                 
               
               
