@@ -3,6 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/djantic.svg)](https://badge.fury.io/py/djantic)
 
 **Documentation**: https://jordaneremieff.github.io/djantic/
+
 **Requirements**: Python 3.7+, Django 2.2+
 
 [Pydantic](https://pydantic-docs.helpmanual.io/) model support for [Django](https://www.djangoproject.com/).
