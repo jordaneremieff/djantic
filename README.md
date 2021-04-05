@@ -20,7 +20,7 @@ Install using pip:
 pip install djantic
 ```
 
-## Generating schemas from models
+### Generating schemas from models
 
 Configure a custom `ModelSchema` class for a Django model to generate a Pydantic model. This will allow using the Django model information with Pydantic model methods:
 
@@ -36,7 +36,7 @@ print(UserSchema.schema())
 
 ```
 
-Output:
+**Output:**
 
 ```python
 {
@@ -83,7 +83,7 @@ Output:
 
 See https://pydantic-docs.helpmanual.io/usage/models/ for more.
 
-## Loading and exporting model data
+### Loading and exporting model data
 
 Use the `from_django` method on a model schema class to load a Django model instance into a schema class:
 
@@ -100,7 +100,7 @@ print(user_schema.json(indent=2))
 
 ```
 
-Output:
+**Output:**
 
 ```json
 {
