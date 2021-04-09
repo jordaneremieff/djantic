@@ -10,6 +10,7 @@ from pydantic.fields import FieldInfo, Required
 
 INT_TYPES = [
     "AutoField",
+    "BigAutoField",
     "IntegerField",
     "SmallIntegerField",
     "BigIntegerField",
