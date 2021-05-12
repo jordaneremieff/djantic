@@ -7,7 +7,7 @@ def get_long_description():
 
 setup(
     name="djantic",
-    version="0.2.0",
+    version="0.2.1",
     packages=find_packages(),
     license="MIT",
     url="https://github.com/jordaneremieff/djantic/",
@@ -25,6 +25,7 @@ setup(
         "Framework :: Django :: 2.2",
         "Framework :: Django :: 3.0",
         "Framework :: Django :: 3.1",
+        "Framework :: Django :: 3.2",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
