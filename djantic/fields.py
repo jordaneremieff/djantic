@@ -131,8 +131,6 @@ def ModelSchemaField(field: Any) -> tuple:
     if not description:
         description = field.name
 
-    print(f"{default=} {default_factory=}")
-
     return (
         python_type,
         FieldInfo(
