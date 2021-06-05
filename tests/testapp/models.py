@@ -201,3 +201,23 @@ def upload_image_handler(instance, filename):
 class Attachment(models.Model):
     description = models.CharField(max_length=255)
     image = models.ImageField(blank=True, null=True, upload_to=upload_image_handler)
+
+
+class FoodChoices(models.TextChoices):
+    BANANA = "ba", "A delicious yellow Banana"
+    APPLE = "ap", "A delicious red Apple"
+
+
+class GroupChoices(models.IntegerChoices):
+    GROUP_1 = 1, "First group"
+    GROUP_2 = 2, "Second group"
+
+
+class Preference(models.Model):
+    name = models.CharField(max_length=128)
+    preferred_food = models.CharField(
+        max_length=2, choices=FoodChoices.choices, default=FoodChoices.BANANA
+    )
+    preferred_group = models.IntegerField(
+        choices=GroupChoices.choices, default=GroupChoices.GROUP_1
+    )

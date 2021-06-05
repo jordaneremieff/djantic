@@ -91,6 +91,8 @@ def ModelSchemaField(field: Any) -> tuple:
                 enum_choices,
                 module=__name__,
             )
+            if field.has_default() and isinstance(field.default, Enum):
+                default = field.default.value
         else:
             internal_type = field.get_internal_type()
             if internal_type in STR_TYPES:
@@ -118,7 +120,7 @@ def ModelSchemaField(field: Any) -> tuple:
         blank = field_options.pop("blank", False)
         null = field_options.pop("null", False)
 
-        if field.has_default():
+        if default is Required and field.has_default():
             if callable(field.default):
                 default_factory = field.default
                 default = Undefined

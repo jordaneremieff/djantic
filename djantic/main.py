@@ -49,6 +49,7 @@ class ModelSchemaMetaclass(ModelMetaclass):
                     )
 
                 annotations = namespace.get("__annotations__", {})
+
                 try:
                     fields = config.model._meta.get_fields()
                 except AttributeError as exc:
