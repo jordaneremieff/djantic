@@ -2,6 +2,7 @@ from typing import List
 
 import pytest
 
+
 from testapp.models import User, Profile, Thread, Message, Tagged, Bookmark
 
 from djantic import ModelSchema
@@ -29,7 +30,7 @@ def test_get_instance():
 def test_get_instance_with_generic_foreign_key():
 
     bookmark = Bookmark.objects.create(url="https://www.djangoproject.com/")
-    Tagged.objects.create(content_object=bookmark, slug="django")
+    tagged = Tagged.objects.create(content_object=bookmark, slug="django")
 
     class TaggedSchema(ModelSchema):
         class Config:
@@ -46,7 +47,7 @@ def test_get_instance_with_generic_foreign_key():
 
     assert bookmark_with_tagged_schema.dict() == {
         "id": 1,
-        "tags": [{"content_type": 20, "id": 1, "object_id": 1, "slug": "django"}],
+        "tags": [{"content_type": 20, "id": 1, "object_id": 1, "slug": "django",}],
         "url": "https://www.djangoproject.com/",
     }
 

@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import IPvAnyAddress, Json
 from pydantic.fields import FieldInfo, Required, Undefined
 
+
 INT_TYPES = [
     "AutoField",
     "BigAutoField",
@@ -24,6 +25,7 @@ STR_TYPES = [
     "SlugField",
     "TextField",
     "FilePathField",
+    "FileField",
 ]
 
 
