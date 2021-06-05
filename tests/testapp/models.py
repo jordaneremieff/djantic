@@ -1,4 +1,5 @@
 import uuid
+import os.path
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -189,3 +190,14 @@ class Tagged(models.Model):
 class Bookmark(models.Model):
     url = models.URLField()
     tags = GenericRelation(Tagged)
+
+
+def upload_image_handler(instance, filename):
+    base_name, ext = os.path.splitext(filename)
+
+    return f"{base_name}{uuid.uuid4()}{ext}"
+
+
+class Attachment(models.Model):
+    description = models.CharField(max_length=255)
+    image = models.ImageField(blank=True, null=True, upload_to=upload_image_handler)

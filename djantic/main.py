@@ -22,16 +22,14 @@ class ModelSchemaJSONEncoder(DjangoJSONEncoder):
     def default(self, obj):  # pragma: nocover
         if isinstance(obj, Promise):
             return force_str(obj)
+
         return super().default(obj)
 
 
 class ModelSchemaMetaclass(ModelMetaclass):
     @no_type_check
     def __new__(
-        mcs,
-        name: str,
-        bases: tuple,
-        namespace: dict,
+        mcs, name: str, bases: tuple, namespace: dict,
     ):
         cls = super().__new__(mcs, name, bases, namespace)
         for base in reversed(bases):
@@ -242,7 +240,11 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                     obj_data[field.name] = related_obj_data
 
                 else:
-                    obj_data[field.name] = field.value_from_object(instance)
+                    # Handle field and image fields.
+                    field_data = field.value_from_object(instance)
+                    if hasattr(field_data, "field"):
+                        field_data = str(field_data.field.value_from_object(instance))
+                    obj_data[field.name] = field_data
 
             model_schema = cls._get_object_model(obj_data)
 
