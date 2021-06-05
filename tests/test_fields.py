@@ -1,6 +1,6 @@
 import pytest
 
-from testapp.models import Record, Configuration
+from testapp.models import Record, Configuration, Preference, FoodChoices, GroupChoices
 from djantic import ModelSchema
 
 
@@ -129,4 +129,60 @@ def test_lazy_choice_field():
                 "enum": [0, 1, 2],
             },
         },
+    }
+
+
+@pytest.mark.django_db
+def test_enum_choices():
+    class PreferenceSchema(ModelSchema):
+        class Config:
+            model = Preference
+            use_enum_values = True
+
+    assert PreferenceSchema.schema() == {
+        "title": "PreferenceSchema",
+        "description": "Preference(id, name, preferred_food, preferred_group)",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "name": {
+                "title": "Name",
+                "description": "name",
+                "maxLength": 128,
+                "type": "string",
+            },
+            "preferred_food": {
+                "title": "Preferred Food",
+                "description": "preferred_food",
+                "default": "ba",
+                "allOf": [{"$ref": "#/definitions/PreferredFoodEnum"}],
+            },
+            "preferred_group": {
+                "title": "Preferred Group",
+                "description": "preferred_group",
+                "default": 1,
+                "allOf": [{"$ref": "#/definitions/PreferredGroupEnum"}],
+            },
+        },
+        "required": ["name"],
+        "definitions": {
+            "PreferredFoodEnum": {
+                "title": "PreferredFoodEnum",
+                "description": "An enumeration.",
+                "enum": ["ba", "ap"],
+            },
+            "PreferredGroupEnum": {
+                "title": "PreferredGroupEnum",
+                "description": "An enumeration.",
+                "enum": [1, 2],
+            },
+        },
+    }
+
+    preference = Preference.objects.create(name="Jordan")
+    assert PreferenceSchema.from_django(preference).dict() == {
+        "id": 1,
+        "name": "Jordan",
+        "preferred_food": "ba",
+        "preferred_group": 1,
     }
