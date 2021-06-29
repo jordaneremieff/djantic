@@ -7,7 +7,11 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.utils.text import slugify
 from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+
 from .fields import ListField, NotNullRestrictedCharField
 
 
@@ -221,3 +225,14 @@ class Preference(models.Model):
     preferred_group = models.IntegerField(
         choices=GroupChoices.choices, default=GroupChoices.GROUP_1
     )
+
+
+class Searchable(models.Model):
+    title = models.CharField(max_length=255)
+    search_vector = SearchVectorField(null=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        indexes = [GinIndex(fields=["search_vector"], name="search_vector_idx")]

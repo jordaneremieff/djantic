@@ -1,7 +1,49 @@
 import pytest
 
-from testapp.models import Record, Configuration, Preference, FoodChoices, GroupChoices
+from testapp.models import (
+    Record,
+    Configuration,
+    Preference,
+    FoodChoices,
+    GroupChoices,
+    Searchable,
+)
 from djantic import ModelSchema
+
+
+@pytest.mark.django_db
+def test_unhandled_field_type():
+    class SearchableSchema(ModelSchema):
+        class Config:
+            model = Searchable
+
+    assert SearchableSchema.schema() == {
+        "title": "SearchableSchema",
+        "description": "Searchable(id, title, search_vector)",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "title": {
+                "title": "Title",
+                "description": "title",
+                "maxLength": 255,
+                "type": "string",
+            },
+            "search_vector": {
+                "title": "Search Vector",
+                "description": "search_vector",
+                "type": "string",
+            },
+        },
+        "required": ["title"],
+    }
+
+    searchable = Searchable.objects.create(title="My content")
+    assert SearchableSchema.from_django(searchable).dict() == {
+        "id": 1,
+        "title": "My content",
+        "search_vector": None,
+    }
 
 
 @pytest.mark.django_db
