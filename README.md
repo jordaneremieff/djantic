@@ -4,7 +4,7 @@
 
 **Documentation**: https://jordaneremieff.github.io/djantic/
 
-**Requirements**: Python 3.7+, Django 2.2+
+**Requirements**: Python 3.7+, Django 3.0+
 
 [Pydantic](https://pydantic-docs.helpmanual.io/) model support for [Django](https://www.djangoproject.com/).
 
