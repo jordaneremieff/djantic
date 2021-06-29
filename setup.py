@@ -7,7 +7,7 @@ def get_long_description():
 
 setup(
     name="djantic",
-    version="0.3.2",
+    version="0.3.3",
     packages=find_packages(),
     license="MIT",
     url="https://github.com/jordaneremieff/djantic/",
