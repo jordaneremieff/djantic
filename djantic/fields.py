@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Dict, List, Union
 from decimal import Decimal
 from datetime import date, time, datetime, timedelta
@@ -6,6 +7,8 @@ from uuid import UUID
 
 from pydantic import IPvAnyAddress, Json
 from pydantic.fields import FieldInfo, Required, Undefined
+
+logger = logging.getLogger("djantic")
 
 
 INT_TYPES = [
@@ -65,6 +68,7 @@ def ModelSchemaField(field: Any) -> tuple:
     description = None
     title = None
     max_length = None
+    python_type = None
 
     if field.is_relation:
         if not field.related_model:
@@ -114,6 +118,12 @@ def ModelSchemaField(field: Any) -> tuple:
                         if _internal_type in FIELD_TYPES:
                             python_type = FIELD_TYPES[_internal_type]
                             break
+
+        if python_type is None:
+            logger.warning(
+                "%s is currently unhandled, defaulting to str.", field.__class__
+            )
+            python_type = str
 
         deconstructed = field.deconstruct()
         field_options = deconstructed[3] or {}
