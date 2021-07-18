@@ -7,6 +7,8 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.7"
+pydantic = "^1.8.2"
+Django = "~3"
 
 [tool.poetry.dev-dependencies]
 black = "^21.7b0"
@@ -27,6 +29,9 @@ rich = "^10.6.0"
 python-lsp-server = "^1.1.0"
 mypy-ls = "^0.5.1"
 pyls-flake8 = "^0.4.0"
+django-stubs = "^1.8.0"
+pytest-django = "^4.4.0"
+psycopg2 = "^2.9.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
