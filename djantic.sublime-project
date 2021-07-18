@@ -5,17 +5,17 @@
   }],
   "settings":
   {
-    "python_interpreter": "./venv/bin/python",
+    "python_interpreter": "./.venv/bin/python",
     "LSP":
     {
       "LSP-pylsp":
       {
         "command": [
-          "./venv/bin/pylsp",
+          "./.venv/bin/pylsp",
         ],
         "settings":
         {
-          "pylsp.plugins.jedi.environment": "./venv",
+          "pylsp.plugins.jedi.environment": "./.venv",
         }
       }
     }

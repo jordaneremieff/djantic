@@ -48,7 +48,8 @@ class ModelSchemaMetaclass(ModelMetaclass):
 
                 if include and exclude:
                     raise ConfigError(
-                        "Only one of 'include' or 'exclude' should be set in configuration."
+                        "Only one of 'include' or 'exclude' should be set in "
+                        "configuration."
                     )
 
                 annotations = namespace.get("__annotations__", {})

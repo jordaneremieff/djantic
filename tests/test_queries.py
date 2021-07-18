@@ -30,7 +30,7 @@ def test_get_instance():
 def test_get_instance_with_generic_foreign_key():
 
     bookmark = Bookmark.objects.create(url="https://www.djangoproject.com/")
-    tagged = Tagged.objects.create(content_object=bookmark, slug="django")
+    Tagged.objects.create(content_object=bookmark, slug="django")
 
     class TaggedSchema(ModelSchema):
         class Config:

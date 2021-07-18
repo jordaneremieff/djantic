@@ -10,7 +10,6 @@ from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.utils.translation import gettext_lazy as _
-from django.utils import timezone
 
 from .fields import ListField, NotNullRestrictedCharField
 

@@ -1,13 +1,6 @@
 import pytest
 
-from testapp.models import (
-    Record,
-    Configuration,
-    Preference,
-    FoodChoices,
-    GroupChoices,
-    Searchable,
-)
+from testapp.models import Record, Configuration, Preference, Searchable
 from djantic import ModelSchema
 
 
