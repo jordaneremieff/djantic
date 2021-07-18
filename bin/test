@@ -7,4 +7,4 @@ fi
 
 set -ex
 
-${PREFIX}poetry run pytest
+${PREFIX}poetry run pytest --ignore .venv --cov=djantic --cov-fail-under=100 --cov-report=term-missing "${@}"
