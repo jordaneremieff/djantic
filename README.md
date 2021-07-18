@@ -6,7 +6,7 @@
 
 **Requirements**: Python 3.7+, Django 3.0+
 
-[Pydantic](https://pydantic-docs.helpmanual.io/) model support for [Django](https://www.djangoproject.com/).
+[Pydantic](https://pydantic-docs.helpmanual.io/) models for [Django](https://www.djangoproject.com/).
 
 This project should be considered a work-in-progress. It should be okay to use, but no specific version support has been determined ([#16](https://github.com/jordaneremieff/djantic/issues/16)) and the *default* model generation behaviour may change across releases.
 

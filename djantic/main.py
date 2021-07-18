@@ -29,7 +29,10 @@ class ModelSchemaJSONEncoder(DjangoJSONEncoder):
 class ModelSchemaMetaclass(ModelMetaclass):
     @no_type_check
     def __new__(
-        mcs, name: str, bases: tuple, namespace: dict,
+        mcs,
+        name: str,
+        bases: tuple,
+        namespace: dict,
     ):
         cls = super().__new__(mcs, name, bases, namespace)
         for base in reversed(bases):
@@ -45,7 +48,8 @@ class ModelSchemaMetaclass(ModelMetaclass):
 
                 if include and exclude:
                     raise ConfigError(
-                        "Only one of 'include' or 'exclude' should be set in configuration."
+                        "Only one of 'include' or 'exclude' should be set in "
+                        "configuration."
                     )
 
                 annotations = namespace.get("__annotations__", {})

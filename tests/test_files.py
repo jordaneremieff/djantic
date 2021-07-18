@@ -14,7 +14,8 @@ def test_image_field_schema():
 
     image_file = NamedTemporaryFile(suffix=".jpg")
     attachment = Attachment.objects.create(
-        description="My image upload", image=image_file.name,
+        description="My image upload",
+        image=image_file.name,
     )
 
     assert AttachmentSchema.schema() == {
