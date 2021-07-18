@@ -47,7 +47,14 @@ def test_get_instance_with_generic_foreign_key():
 
     assert bookmark_with_tagged_schema.dict() == {
         "id": 1,
-        "tags": [{"content_type": 20, "id": 1, "object_id": 1, "slug": "django",}],
+        "tags": [
+            {
+                "content_type": 20,
+                "id": 1,
+                "object_id": 1,
+                "slug": "django",
+            }
+        ],
         "url": "https://www.djangoproject.com/",
     }
 

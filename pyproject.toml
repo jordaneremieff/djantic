@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "djantic"
+version = "0.3.3"
+description = "Pydantic models for Django"
+authors = ["Jordan Eremieff <jordan@eremieff.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+[tool.poetry.dev-dependencies]
+black = "^21.7b0"
+setuptools = "^57.2.0"
+twine = "^3.4.1"
+wheel = "^0.36.2"
+flake8 = "^3.9.2"
+mypy = "^0.910"
+pytest = "^6.2.4"
+pytest-cov = "^2.12.1"
+codecov = "^2.1.11"
+mkdocs = "^1.2.1"
+mkdocs-material = "^7.1.10"
+mkautodoc = "^0.1.0"
+Pygments = "^2.9.0"
+pymdown-extensions = "^8.2"
+rich = "^10.6.0"
+python-lsp-server = "^1.1.0"
+mypy-ls = "^0.5.1"
+pyls-flake8 = "^0.4.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

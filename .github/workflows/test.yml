@@ -2,7 +2,6 @@ name: Test
 
 on: [push]
 
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -25,10 +24,13 @@ jobs:
           ${{ runner.os }}-pip-
     - name: Install dependencies
       run: |
-        pip install -U -r requirements.txt
-        pip install -U 'django${{ matrix.django }}'
-    - name: Run tests
+        pip install -U pip poetry
+        poetry config --local virtualenvs.in-project true
+        poetry install
+        poetry run ./bin/test
+    - name: Lint and run test
       run: |
-        scripts/test
+        bin/lint
+        bin/test
     - name: Run codecov
       run: codecov
