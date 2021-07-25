@@ -22,8 +22,9 @@ jobs:
           ${{ runner.os }}-publish-pip-
     - name: Install dependencies
       run: |
-        pip install -U -r requirements.txt
-        pip install setuptools wheel twine
+        pip install -U pip poetry
+        poetry config --local virtualenvs.in-project true
+        poetry install
     - name: Run tests
       run: scripts/test
     - name: Publish
