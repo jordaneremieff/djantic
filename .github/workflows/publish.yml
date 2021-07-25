@@ -26,7 +26,7 @@ jobs:
         poetry config --local virtualenvs.in-project true
         poetry install
     - name: Run tests
-      run: scripts/test
+      run: bin/test
     - name: Publish
       if: success()
       env:
