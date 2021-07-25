@@ -188,11 +188,7 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                 if not field.concrete and field.auto_created:
                     accessor_name = field.get_accessor_name()
                     related_obj = getattr(instance, accessor_name, None)
-                    if not related_obj:  # pragma: nocover
-
-                        # FIXME: Add coverage or maybe raise?
-                        related_obj_data = None
-                    elif field.one_to_many:
+                    if field.one_to_many:
                         related_qs = related_obj.all()
 
                         if schema_cls:
@@ -214,6 +210,17 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                             )
                         else:
                             related_obj_data = related_obj.pk
+
+                    elif field.many_to_many:
+                        related_qs = getattr(instance, accessor_name)
+                        if schema_cls:
+                            related_obj_data = [
+                                schema_cls.construct(**obj_vals)
+                                for obj_vals in related_qs.values(*related_field_names)
+                            ]
+                        else:
+                            related_obj_data = list(related_qs.values("pk"))
+
                     obj_data[accessor_name] = related_obj_data
 
                 elif field.one_to_many or field.many_to_many:

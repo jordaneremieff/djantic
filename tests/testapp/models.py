@@ -235,3 +235,18 @@ class Searchable(models.Model):
 
     class Meta:
         indexes = [GinIndex(fields=["search_vector"], name="search_vector_idx")]
+
+
+class ExtendedModel(models.Model):
+    name = models.CharField(max_length=128)
+
+    class Meta:
+        abstract = True
+
+
+class Expert(ExtendedModel):
+    cases = models.ManyToManyField("Case", related_name="related_experts")
+
+
+class Case(ExtendedModel):
+    details = models.TextField()

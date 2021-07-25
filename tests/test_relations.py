@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 import pytest
 
@@ -13,6 +13,8 @@ from testapp.models import (
     Item,
     Tagged,
     Bookmark,
+    Expert,
+    Case,
 )
 
 from djantic import ModelSchema
@@ -702,4 +704,153 @@ def test_generic_relation():
                 "required": ["slug", "content_type", "object_id", "content_object"],
             }
         },
+    }
+
+
+@pytest.mark.django_db
+def test_m2m_reverse():
+    class ExpertSchema(ModelSchema):
+        class Config:
+            model = Expert
+
+    class CaseSchema(ModelSchema):
+        class Config:
+            model = Case
+
+    assert ExpertSchema.schema() == {
+        "title": "ExpertSchema",
+        "description": "Expert(id, name)",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "name": {
+                "title": "Name",
+                "description": "name",
+                "maxLength": 128,
+                "type": "string",
+            },
+            "cases": {
+                "title": "Cases",
+                "description": "id",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": {"type": "integer"},
+                },
+            },
+        },
+        "required": ["name", "cases"],
+    }
+
+    assert CaseSchema.schema() == {
+        "title": "CaseSchema",
+        "description": "Case(id, name, details)",
+        "type": "object",
+        "properties": {
+            "related_experts": {
+                "title": "Related Experts",
+                "description": "id",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": {"type": "integer"},
+                },
+            },
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "name": {
+                "title": "Name",
+                "description": "name",
+                "maxLength": 128,
+                "type": "string",
+            },
+            "details": {"title": "Details", "description": "details", "type": "string"},
+        },
+        "required": ["name", "details"],
+    }
+    case = Case.objects.create(name="My Case", details="Some text data.")
+    expert = Expert.objects.create(name="My Expert")
+    case_schema = CaseSchema.from_django(case)
+    expert_schema = ExpertSchema.from_django(expert)
+    assert case_schema.dict() == {
+        "related_experts": [],
+        "id": 1,
+        "name": "My Case",
+        "details": "Some text data.",
+    }
+    assert expert_schema.dict() == {"id": 1, "name": "My Expert", "cases": []}
+
+    expert.cases.add(case)
+    case_schema = CaseSchema.from_django(case)
+    expert_schema = ExpertSchema.from_django(expert)
+    assert case_schema.dict() == {
+        "related_experts": [{"pk": 1}],
+        "id": 1,
+        "name": "My Case",
+        "details": "Some text data.",
+    }
+    assert expert_schema.dict() == {"id": 1, "name": "My Expert", "cases": [{"pk": 1}]}
+
+    class CustomExpertSchema(ModelSchema):
+        """Custom schema"""
+
+        name: Optional[str]
+
+        class Config:
+            model = Expert
+
+    class CaseSchema(ModelSchema):
+        related_experts: List[CustomExpertSchema]
+
+        class Config:
+            model = Case
+
+    assert CaseSchema.schema() == {
+        "title": "CaseSchema",
+        "description": "Case(id, name, details)",
+        "type": "object",
+        "properties": {
+            "related_experts": {
+                "title": "Related Experts",
+                "type": "array",
+                "items": {"$ref": "#/definitions/CustomExpertSchema"},
+            },
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "name": {
+                "title": "Name",
+                "description": "name",
+                "maxLength": 128,
+                "type": "string",
+            },
+            "details": {"title": "Details", "description": "details", "type": "string"},
+        },
+        "required": ["related_experts", "name", "details"],
+        "definitions": {
+            "CustomExpertSchema": {
+                "title": "CustomExpertSchema",
+                "description": "Custom schema",
+                "type": "object",
+                "properties": {
+                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "name": {"title": "Name", "type": "string"},
+                    "cases": {
+                        "title": "Cases",
+                        "description": "id",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {"type": "integer"},
+                        },
+                    },
+                },
+                "required": ["cases"],
+            }
+        },
+    }
+
+    case_schema = CaseSchema.from_django(case)
+    assert case_schema.dict() == {
+        "related_experts": [{"id": 1, "name": "My Expert", "cases": 1}],
+        "id": 1,
+        "name": "My Case",
+        "details": "Some text data.",
     }
