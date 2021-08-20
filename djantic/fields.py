@@ -5,6 +5,8 @@ from datetime import date, time, datetime, timedelta
 from enum import Enum
 from uuid import UUID
 
+from django.utils.functional import Promise
+
 from pydantic import IPvAnyAddress, Json
 from pydantic.fields import FieldInfo, Required, Undefined
 
@@ -89,12 +91,17 @@ def ModelSchemaField(field: Any) -> tuple:
 
     else:
         if field.choices:
-            enum_choices = {v: k for k, v in field.choices}
+            enum_choices = {}
+            for k, v in field.choices:
+                if Promise in type(v).__mro__:
+                    v = str(v)
+                enum_choices[v] = k
             python_type = Enum(  # type: ignore
                 f"{field.name.title().replace('_', '')}Enum",
                 enum_choices,
                 module=__name__,
             )
+
             if field.has_default() and isinstance(field.default, Enum):
                 default = field.default.value
         else:
