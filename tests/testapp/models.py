@@ -207,8 +207,8 @@ class Attachment(models.Model):
 
 
 class FoodChoices(models.TextChoices):
-    BANANA = "ba", "A delicious yellow Banana"
-    APPLE = "ap", "A delicious red Apple"
+    BANANA = "ba", _("A delicious yellow Banana")
+    APPLE = "ap", _("A delicious red Apple")
 
 
 class GroupChoices(models.IntegerChoices):
