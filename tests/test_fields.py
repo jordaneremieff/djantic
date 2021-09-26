@@ -143,23 +143,23 @@ def test_lazy_choice_field():
                 "title": "Record Type",
                 "description": "record_type",
                 "default": "NEW",
-                "allOf": [{"$ref": "#/definitions/RecordTypeEnum"}],
+                "allOf": [{"$ref": "#/definitions/RecordSchemaRecordTypeEnum"}],
             },
             "record_status": {
                 "title": "Record Status",
                 "description": "record_status",
                 "default": 0,
-                "allOf": [{"$ref": "#/definitions/RecordStatusEnum"}],
+                "allOf": [{"$ref": "#/definitions/RecordSchemaRecordStatusEnum"}],
             },
         },
         "definitions": {
-            "RecordTypeEnum": {
-                "title": "RecordTypeEnum",
+            "RecordSchemaRecordTypeEnum": {
+                "title": "RecordSchemaRecordTypeEnum",
                 "description": "An enumeration.",
                 "enum": ["NEW", "OLD"],
             },
-            "RecordStatusEnum": {
-                "title": "RecordStatusEnum",
+            "RecordSchemaRecordStatusEnum": {
+                "title": "RecordSchemaRecordStatusEnum",
                 "description": "An enumeration.",
                 "enum": [0, 1, 2],
             },
@@ -190,24 +190,24 @@ def test_enum_choices():
                 "title": "Preferred Food",
                 "description": "preferred_food",
                 "default": "ba",
-                "allOf": [{"$ref": "#/definitions/PreferredFoodEnum"}],
+                "allOf": [{"$ref": "#/definitions/PreferenceSchemaPreferredFoodEnum"}],
             },
             "preferred_group": {
                 "title": "Preferred Group",
                 "description": "preferred_group",
                 "default": 1,
-                "allOf": [{"$ref": "#/definitions/PreferredGroupEnum"}],
+                "allOf": [{"$ref": "#/definitions/PreferenceSchemaPreferredGroupEnum"}],
             },
         },
         "required": ["name"],
         "definitions": {
-            "PreferredFoodEnum": {
-                "title": "PreferredFoodEnum",
+            "PreferenceSchemaPreferredFoodEnum": {
+                "title": "PreferenceSchemaPreferredFoodEnum",
                 "description": "An enumeration.",
                 "enum": ["ba", "ap"],
             },
-            "PreferredGroupEnum": {
-                "title": "PreferredGroupEnum",
+            "PreferenceSchemaPreferredGroupEnum": {
+                "title": "PreferenceSchemaPreferredGroupEnum",
                 "description": "An enumeration.",
                 "enum": [1, 2],
             },
@@ -221,3 +221,20 @@ def test_enum_choices():
         "preferred_food": "ba",
         "preferred_group": 1,
     }
+
+
+@pytest.mark.django_db
+def test_enum_choices_generates_unique_enums():
+    class PreferenceSchema(ModelSchema):
+        class Config:
+            model = Preference
+            use_enum_values = True
+
+    class PreferenceSchema2(ModelSchema):
+        class Config:
+            model = Preference
+            use_enum_values = True
+
+    assert str(PreferenceSchema2.__fields__["preferred_food"].type_) != str(
+        PreferenceSchema.__fields__["preferred_food"].type_
+    )
