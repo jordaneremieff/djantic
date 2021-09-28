@@ -64,7 +64,7 @@ FIELD_TYPES = {
 }
 
 
-def ModelSchemaField(field: Any) -> tuple:
+def ModelSchemaField(field: Any, schema_name: str) -> tuple:
     default = Required
     default_factory = None
     description = None
@@ -97,7 +97,7 @@ def ModelSchemaField(field: Any) -> tuple:
                     v = str(v)
                 enum_choices[v] = k
             python_type = Enum(  # type: ignore
-                f"{field.name.title().replace('_', '')}Enum",
+                f"{schema_name.replace('_', '')}{field.name.title().replace('_', '')}Enum",
                 enum_choices,
                 module=__name__,
             )

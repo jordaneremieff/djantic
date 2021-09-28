@@ -97,7 +97,7 @@ class ModelSchemaMetaclass(ModelMetaclass):
                         )
 
                     else:
-                        python_type, pydantic_field = ModelSchemaField(field)
+                        python_type, pydantic_field = ModelSchemaField(field, name)
 
                     field_values[field_name] = (python_type, pydantic_field)
 
