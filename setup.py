@@ -1,13 +1,16 @@
 from setuptools import find_packages, setup
 
 
+__version__ = "0.3.5"
+
+
 def get_long_description():
     return open("README.md", "r", encoding="utf8").read()
 
 
 setup(
     name="djantic",
-    version="0.3.5",
+    version=__version__,
     packages=find_packages(),
     license="MIT",
     url="https://github.com/jordaneremieff/djantic/",

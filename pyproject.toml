@@ -32,6 +32,7 @@ pyls-flake8 = "^0.4.0"
 django-stubs = "^1.8.0"
 pytest-django = "^4.4.0"
 psycopg2 = "^2.9.1"
+bump2version = "^1.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
