@@ -23,6 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -U pip poetry
+        pip install setuptools wheel twine
         poetry config --local virtualenvs.in-project true
         poetry install
     - name: Run tests
