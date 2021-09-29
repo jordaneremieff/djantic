@@ -96,8 +96,12 @@ def ModelSchemaField(field: Any, schema_name: str) -> tuple:
                 if Promise in type(v).__mro__:
                     v = str(v)
                 enum_choices[v] = k
+
+            enum_prefix = (
+                f"{schema_name.replace('_', '')}{field.name.title().replace('_', '')}"
+            )
             python_type = Enum(  # type: ignore
-                f"{schema_name.replace('_', '')}{field.name.title().replace('_', '')}Enum",
+                f"{enum_prefix}Enum",
                 enum_choices,
                 module=__name__,
             )
