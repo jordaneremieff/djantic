@@ -1,6 +1,6 @@
 import pytest
 
-from testapp.models import Record, Configuration, Preference, Searchable
+from testapp.models import Record, Configuration, Preference, Searchable, Listing
 from djantic import ModelSchema
 
 
@@ -238,3 +238,33 @@ def test_enum_choices_generates_unique_enums():
     assert str(PreferenceSchema2.__fields__["preferred_food"].type_) != str(
         PreferenceSchema.__fields__["preferred_food"].type_
     )
+
+
+@pytest.mark.django_db
+def test_listing():
+    class ListingSchema(ModelSchema):
+        class Config:
+            model = Listing
+            use_enum_values = True
+
+    assert ListingSchema.schema() == {
+        "title": "ListingSchema",
+        "description": "Listing(id, items)",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            'items': {
+                'description': 'items',
+                'items': {},
+                'title': 'Items',
+                'type': 'array'
+            },
+        },
+        "required": ["items"],
+    }
+
+    preference = Listing(items=["a", "b"])
+    assert ListingSchema.from_django(preference).dict() == {
+        "id": None,
+        "items": ["a", "b"],
+    }

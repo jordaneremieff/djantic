@@ -46,7 +46,7 @@ FIELD_TYPES = {
     "FloatField": float,
     "UUIDField": UUID,
     "JSONField": Union[Json, dict, list],  # TODO: Configure this using default
-    # "ArrayField",
+    "ArrayField": List,
     # "BigIntegerRangeField",
     # "CICharField",
     # "CIEmailField",

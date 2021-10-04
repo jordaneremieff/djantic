@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.utils.text import slugify
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.utils.translation import gettext_lazy as _
@@ -250,3 +250,7 @@ class Expert(ExtendedModel):
 
 class Case(ExtendedModel):
     details = models.TextField()
+
+
+class Listing(models.Model):
+    items = ArrayField(models.TextField(), size=4)
