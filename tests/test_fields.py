@@ -247,8 +247,6 @@ def test_listing():
             model = Listing
             use_enum_values = True
 
-    import json
-    print(json.dumps(ListingSchema.schema(), indent=4))
     assert ListingSchema.schema() == {
         "title": "ListingSchema",
         "description": "Listing(id, items)",
