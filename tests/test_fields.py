@@ -253,11 +253,11 @@ def test_listing():
         "type": "object",
         "properties": {
             "id": {"title": "Id", "description": "id", "type": "integer"},
-            'items': {
-                'description': 'items',
-                'items': {},
-                'title': 'Items',
-                'type': 'array'
+            "items": {
+                "description": "items",
+                "items": {},
+                "title": "Items",
+                "type": "array",
             },
         },
         "required": ["items"],
