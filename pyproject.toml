@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "djantic"
-version = "0.4.0"
+version = "0.4.1"
 description = "Pydantic models for Django"
 authors = ["Jordan Eremieff <jordan@eremieff.com>"]
 license = "MIT"
