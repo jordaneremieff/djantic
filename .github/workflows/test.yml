@@ -7,8 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
-        django: [">=3.0,<3.1", ">=3.1,<3.2", ">=3.2"]
+        python-version: [3.7, 3.8, 3.9, 3.10.0]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -24,10 +23,6 @@ jobs:
           ${{ runner.os }}-pip-
     - name: Install dependencies
       run: |
-        pip install -U pip poetry
-        poetry config --local virtualenvs.in-project true
-        poetry install
-    - name: Lint and test
-      run: |
-        bin/lint
-        bin/test
+        pip install -U pip poetry tox tox-gh-actions
+    - name: "Run tox targets for ${{ matrix.python-version }}"
+      run: "python -m tox"
