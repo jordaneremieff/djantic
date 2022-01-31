@@ -140,6 +140,10 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
             model_fields = [
                 name for name in model_fields if name not in cls.__config__.exclude
             ]
+        for field in model_fields:
+            if hasattr(cls.__fields__[field].type_, 'get_field_names'):
+                sub_fields = cls.__fields__[field].type_.get_field_names()
+                model_fields = model_fields + [f'{field}__{sub_field}' for sub_field in sub_fields]
 
         return model_fields
 
@@ -154,6 +158,58 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         object.__setattr__(model_schema, "__fields_set__", fields_set)
 
         return model_schema
+
+    @classmethod
+    def _get_mapping(cls, qs_values: dict) -> dict:
+        """Breaks an query set key values pair (with sub-fields separated by __) into a dictionary of dictionaries.
+
+        Args:
+            qs_values (dict): 
+                        {
+                        'a': 1,
+                        'y': 1,
+                        'a__x': 1,
+                        'a__b': 1,
+                        'a__b__z': 1,
+                        'a__b__c': 1,
+                        'a__b__c__k': 1,
+                        'a__b__c__j': 1,
+                        'b': None,
+                        'b__b': None,
+                        }
+
+        Returns:
+            dict: Ex: 
+                    {
+                        'a': {
+                            'x': 1,
+                            'b': {
+                                'z': 1,
+                                'c': {
+                                    'k': 1,
+                                    'j': 1
+                                }
+                            }
+                        },
+                        'b': None,
+                        'y': 1
+                    }
+
+        """
+
+        data = {}
+        mapping = [x.split('__') for x in qs_values]
+        mapping.sort(key=lambda x: len(x))
+        for key_map in mapping:
+            if len(key_map) == 1:
+                data[key_map[0]] = qs_values[key_map[0]]
+            else:
+                if qs_values[key_map[0]] is None:
+                    data[key_map[0]] = None
+                else:
+                    sub_c = {'__'.join(k.split('__')[1:]): v for k, v in qs_values.items() if len(k.split('__')) > 1 and k.split('__')[0] == key_map[0]}
+                    data[key_map[0]] = cls._get_mapping(sub_c)
+        return data
 
     @classmethod
     def from_django(
@@ -192,10 +248,7 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                         related_qs = related_obj.all()
 
                         if schema_cls:
-                            related_obj_data = [
-                                schema_cls.construct(**obj_vals)
-                                for obj_vals in related_qs.values(*related_field_names)
-                            ]
+                            related_obj_data = [schema_cls(**cls._get_mapping(x)) for x in related_qs.values(*related_field_names)]
 
                         else:
                             related_obj_data = list(related_obj.all().values("id"))
