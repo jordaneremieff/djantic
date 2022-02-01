@@ -164,6 +164,9 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
     ) -> Union["ModelSchema", list]:
 
         if not many:
+            if store:
+                cls.instance = instance
+
             obj_data = {}
             annotations = cls.__annotations__
             fields = [
@@ -259,9 +262,6 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
                     obj_data[field.name] = field_data
 
             model_schema = cls._get_object_model(obj_data)
-
-            if store:
-                cls.instance = instance
 
             return model_schema
 
