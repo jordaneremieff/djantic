@@ -1,12 +1,11 @@
 import logging
-from typing import Any, Dict, List, Union
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
-from datetime import date, time, datetime, timedelta
 from enum import Enum
+from typing import Any, Dict, List, Union
 from uuid import UUID
 
 from django.utils.functional import Promise
-
 from pydantic import IPvAnyAddress, Json
 from pydantic.fields import FieldInfo, Required, Undefined
 
@@ -96,6 +95,8 @@ def ModelSchemaField(field: Any, schema_name: str) -> tuple:
                 if Promise in type(v).__mro__:
                     v = str(v)
                 enum_choices[v] = k
+            if field.blank:
+                enum_choices['_blank'] = ''
 
             enum_prefix = (
                 f"{schema_name.replace('_', '')}{field.name.title().replace('_', '')}"

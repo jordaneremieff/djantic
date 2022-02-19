@@ -176,7 +176,7 @@ def test_enum_choices():
 
     assert PreferenceSchema.schema() == {
         "title": "PreferenceSchema",
-        "description": "Preference(id, name, preferred_food, preferred_group)",
+        "description": "Preference(id, name, preferred_food, preferred_group, preferred_sport)",
         "type": "object",
         "properties": {
             "id": {"title": "Id", "description": "id", "type": "integer"},
@@ -198,6 +198,11 @@ def test_enum_choices():
                 "default": 1,
                 "allOf": [{"$ref": "#/definitions/PreferenceSchemaPreferredGroupEnum"}],
             },
+            "preferred_sport": {
+                "title": "Preferred Sport",
+                "description": "preferred_sport",
+                "allOf": [{"$ref": "#/definitions/PreferenceSchemaPreferredSportEnum"}],
+            }
         },
         "required": ["name"],
         "definitions": {
@@ -211,15 +216,21 @@ def test_enum_choices():
                 "description": "An enumeration.",
                 "enum": [1, 2],
             },
+            "PreferenceSchemaPreferredSportEnum": {
+                "title": "PreferenceSchemaPreferredSportEnum",
+                "description": "An enumeration.",
+                "enum": ["football", "basketball", ""],
+            }
         },
     }
 
-    preference = Preference.objects.create(name="Jordan")
+    preference = Preference.objects.create(name="Jordan", preferred_sport="")
     assert PreferenceSchema.from_django(preference).dict() == {
         "id": 1,
         "name": "Jordan",
         "preferred_food": "ba",
         "preferred_group": 1,
+        "preferred_sport": ""
     }
 
 
