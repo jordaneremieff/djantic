@@ -151,6 +151,9 @@ def ModelSchemaField(field: Any, schema_name: str) -> tuple:
         elif field.primary_key or blank or null:
             default = None
 
+        if default is not None and field.null:
+            python_type = Union[python_type, None]
+
         description = field.help_text
         title = field.verbose_name.title()
 

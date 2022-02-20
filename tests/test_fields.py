@@ -176,7 +176,7 @@ def test_enum_choices():
 
     assert PreferenceSchema.schema() == {
         "title": "PreferenceSchema",
-        "description": "Preference(id, name, preferred_food, preferred_group, preferred_sport)",
+        "description": "Preference(id, name, preferred_food, preferred_group, preferred_sport, preferred_musician)",
         "type": "object",
         "properties": {
             "id": {"title": "Id", "description": "id", "type": "integer"},
@@ -202,7 +202,13 @@ def test_enum_choices():
                 "title": "Preferred Sport",
                 "description": "preferred_sport",
                 "allOf": [{"$ref": "#/definitions/PreferenceSchemaPreferredSportEnum"}],
-            }
+            },
+            "preferred_musician": {
+                "allOf": [{"$ref": "#/definitions/PreferenceSchemaPreferredMusicianEnum"}],
+                'default': '',
+                "description": "preferred_musician",
+                "title": "Preferred Musician"
+            },
         },
         "required": ["name"],
         "definitions": {
@@ -220,17 +226,23 @@ def test_enum_choices():
                 "title": "PreferenceSchemaPreferredSportEnum",
                 "description": "An enumeration.",
                 "enum": ["football", "basketball", ""],
+            },
+            "PreferenceSchemaPreferredMusicianEnum": {
+                "title": "PreferenceSchemaPreferredMusicianEnum",
+                "description": "An enumeration.",
+                "enum": ["tom_jobim", "sinatra", ""],
             }
         },
     }
 
-    preference = Preference.objects.create(name="Jordan", preferred_sport="")
+    preference = Preference.objects.create(name="Jordan", preferred_sport="", preferred_musician=None)
     assert PreferenceSchema.from_django(preference).dict() == {
         "id": 1,
         "name": "Jordan",
         "preferred_food": "ba",
         "preferred_group": 1,
-        "preferred_sport": ""
+        "preferred_sport": "",
+        'preferred_musician': None
     }
 
 

@@ -221,6 +221,11 @@ class SportChoices(models.TextChoices):
     BASKETBALL = "basketball", _("I prefer to use my hands.")
 
 
+class MusicianChoices(models.TextChoices):
+    TOM = "tom_jobim", _("Antônio Carlos Jobim.")
+    SINATRA = "sinatra", _("Francis Albert Sinatra.")
+
+
 class Preference(models.Model):
     name = models.CharField(max_length=128)
     preferred_food = models.CharField(
@@ -231,6 +236,9 @@ class Preference(models.Model):
     )
     preferred_sport = models.CharField(
         max_length=255, choices=SportChoices.choices, default=SportChoices.FOOTBALL, blank=True
+    )
+    preferred_musician = models.CharField(
+        max_length=255, choices=MusicianChoices.choices, null=True, blank=True, default=""
     )
 
 
