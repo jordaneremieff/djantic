@@ -216,6 +216,16 @@ class GroupChoices(models.IntegerChoices):
     GROUP_2 = 2, "Second group"
 
 
+class SportChoices(models.TextChoices):
+    FOOTBALL = "football", _("I prefer to use my foots.")
+    BASKETBALL = "basketball", _("I prefer to use my hands.")
+
+
+class MusicianChoices(models.TextChoices):
+    TOM = "tom_jobim", _("Antônio Carlos Jobim.")
+    SINATRA = "sinatra", _("Francis Albert Sinatra.")
+
+
 class Preference(models.Model):
     name = models.CharField(max_length=128)
     preferred_food = models.CharField(
@@ -223,6 +233,12 @@ class Preference(models.Model):
     )
     preferred_group = models.IntegerField(
         choices=GroupChoices.choices, default=GroupChoices.GROUP_1
+    )
+    preferred_sport = models.CharField(
+        max_length=255, choices=SportChoices.choices, default=SportChoices.FOOTBALL, blank=True
+    )
+    preferred_musician = models.CharField(
+        max_length=255, choices=MusicianChoices.choices, null=True, blank=True, default=""
     )
 
 
