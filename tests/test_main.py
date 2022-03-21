@@ -1,8 +1,7 @@
 import pytest
-
+from pydantic import ConfigError
 from testapp.models import User
 
-from pydantic import ConfigError
 from djantic import ModelSchema
 
 

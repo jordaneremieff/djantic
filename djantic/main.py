@@ -1,18 +1,19 @@
-from inspect import isclass
+from functools import reduce
 from itertools import chain
-from typing import Optional, Union, Any, List, no_type_check
+from typing import Any, Dict, List, Optional, no_type_check
 
-from pydantic import BaseModel, create_model, validate_model, ConfigError
-from pydantic.main import ModelMetaclass
-
-
-import django
-from django.utils.functional import Promise
-from django.utils.encoding import force_str
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Manager, Model
+from django.db.models.fields.files import ImageFieldFile
+from django.db.models.fields.reverse_related import (ForeignObjectRel,
+                                                     OneToOneRel)
+from django.utils.encoding import force_str
+from django.utils.functional import Promise
+from pydantic import BaseModel, ConfigError, create_model
+from pydantic.main import ModelMetaclass
+from pydantic.utils import GetterDict
 
 from .fields import ModelSchemaField
-
 
 _is_base_model_class_defined = False
 
@@ -61,13 +62,17 @@ class ModelSchemaMetaclass(ModelMetaclass):
                         f"{exc} (Is `Config.model` a valid Django model class?)"
                     )
 
+                if include is None and exclude is None:
+                    cls.__config__.include = [f.name for f in fields]
+
                 field_values = {}
                 _seen = set()
 
                 for field in chain(fields, annotations.copy()):
-                    field_name = getattr(
-                        field, "name", getattr(field, "related_name", field)
-                    )
+                    if issubclass(field.__class__, ForeignObjectRel) and not issubclass(field.__class__, OneToOneRel):
+                        field_name = getattr(field, "related_name", None) or f"{field.name}_set"
+                    else:
+                        field_name = getattr(field, "name", field)
 
                     if (
                         field_name in _seen
@@ -107,14 +112,43 @@ class ModelSchemaMetaclass(ModelMetaclass):
                     name, __base__=cls, __module__=cls.__module__, **field_values
                 )
 
-                setattr(model_schema, "instance", None)
-
                 return model_schema
 
         return cls
 
 
+class ProxyGetterNestedObj(GetterDict):
+    def __init__(self, obj: Any, schema_class):
+        self._obj = obj
+        self.schema_class = schema_class
+
+    def get(self, key: Any, default: Any = None) -> Any:
+        if "__" in key:
+            # Allow double underscores aliases: `first_name: str = Field(alias="user__first_name")`
+            keys_map = key.split("__")
+            attr = reduce(lambda a, b: getattr(a, b, default), keys_map, self._obj)
+            outer_type_ = self.schema_class.__fields__["user"].outer_type_
+        else:
+            attr = getattr(self._obj, key)
+            outer_type_ = self.schema_class.__fields__[key].outer_type_
+
+        is_manager = issubclass(attr.__class__, Manager)
+
+        if is_manager and outer_type_ == List[Dict[str, int]]:
+            attr = list(attr.all().values("id"))
+        elif is_manager:
+            attr = list(attr.all())
+        elif outer_type_ == int and issubclass(type(attr), Model):
+            attr = attr.id
+        elif issubclass(attr.__class__, ImageFieldFile) and issubclass(outer_type_, str):
+            attr = attr.name
+        return attr
+
+
 class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
+    class Config:
+        orm_mode = True
+
     @classmethod
     def schema_json(
         cls,
@@ -131,145 +165,30 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
     @classmethod
     @no_type_check
     def get_field_names(cls) -> List[str]:
-        model_fields = [field.name for field in cls.__config__.model._meta.get_fields()]
-        if hasattr(cls.__config__, "include"):
-            model_fields = [
-                name for name in model_fields if name in cls.__config__.include
+        if hasattr(cls.__config__, "exclude"):
+            django_model_fields = cls.__config__.model._meta.get_fields()
+            all_fields = [f.name for f in django_model_fields]
+            return [
+                name for name in all_fields if name not in cls.__config__.exclude
             ]
-        elif hasattr(cls.__config__, "exclude"):
-            model_fields = [
-                name for name in model_fields if name not in cls.__config__.exclude
-            ]
-
-        return model_fields
+        return cls.__config__.include
 
     @classmethod
-    def _get_object_model(cls, obj_data: dict) -> "ModelSchema":
-        values, fields_set, validation_error = validate_model(cls, obj_data)
-        if validation_error:  # pragma: nocover
-            raise validation_error
-
-        model_schema = cls.__new__(cls)
-        object.__setattr__(model_schema, "__dict__", values)
-        object.__setattr__(model_schema, "__fields_set__", fields_set)
-
-        return model_schema
+    def from_orm(cls, *args, **kwargs):
+        return cls.from_django(*args, **kwargs)
 
     @classmethod
-    def from_django(
-        cls,
-        instance: Union[django.db.models.Model, django.db.models.QuerySet],
-        many: bool = False,
-        store: bool = True,
-    ) -> Union["ModelSchema", list]:
+    def from_django(cls, objs, many=False, context={}):
+        cls.context = context
+        if many:
+            result_objs = []
+            for obj in objs:
+                cls.instance = obj
+                result_objs.append(super().from_orm(ProxyGetterNestedObj(obj, cls)))
+            return result_objs
 
-        if not many:
-            obj_data = {}
-            annotations = cls.__annotations__
-            fields = [
-                field
-                for field in instance._meta.get_fields()
-                if field.name in cls.get_field_names()
-            ]
-            for field in fields:
-                schema_cls = None
-                related_field_names = None
-
-                # Check if this field is a related model schema to handle the data
-                # according to specific schema rules.
-                if (
-                    field.name in annotations
-                    and isclass(cls.__fields__[field.name].type_)
-                    and issubclass(cls.__fields__[field.name].type_, ModelSchema)
-                ):
-                    schema_cls = cls.__fields__[field.name].type_
-                    related_field_names = schema_cls.get_field_names()
-
-                if not field.concrete and field.auto_created:
-                    accessor_name = field.get_accessor_name()
-                    related_obj = getattr(instance, accessor_name, None)
-                    if field.one_to_many:
-                        related_qs = related_obj.all()
-
-                        if schema_cls:
-                            related_obj_data = [
-                                schema_cls.construct(**obj_vals)
-                                for obj_vals in related_qs.values(*related_field_names)
-                            ]
-
-                        else:
-                            related_obj_data = list(related_obj.all().values("id"))
-
-                    elif field.one_to_one:
-                        if schema_cls:
-                            related_obj_data = schema_cls.construct(
-                                **{
-                                    name: getattr(related_obj, name)
-                                    for name in related_field_names
-                                }
-                            )
-                        else:
-                            related_obj_data = related_obj.pk
-
-                    elif field.many_to_many:
-                        related_qs = getattr(instance, accessor_name)
-                        if schema_cls:
-                            related_obj_data = [
-                                schema_cls.construct(**obj_vals)
-                                for obj_vals in related_qs.values(*related_field_names)
-                            ]
-                        else:
-                            related_obj_data = list(related_qs.values("pk"))
-
-                    obj_data[accessor_name] = related_obj_data
-
-                elif field.one_to_many or field.many_to_many:
-                    related_qs = getattr(instance, field.name)
-                    if schema_cls:
-
-                        # FIXME: This seems incorrect, should probably handle generic
-                        #        relations specifically.
-                        related_fields = [
-                            field
-                            for field in related_field_names
-                            if field != "content_object"
-                        ]
-                        related_obj_data = [
-                            schema_cls.construct(**obj_vals)
-                            for obj_vals in related_qs.values(*related_fields)
-                        ]
-                    else:
-                        related_obj_data = list(related_qs.values("pk"))
-
-                    obj_data[field.name] = related_obj_data
-
-                elif field.many_to_one:
-                    related_obj = getattr(instance, field.name)
-                    if schema_cls:
-                        related_obj_data = schema_cls.from_django(related_obj).dict()
-                    else:
-                        related_obj_data = field.value_from_object(instance)
-                    obj_data[field.name] = related_obj_data
-
-                else:
-                    # Handle field and image fields.
-                    field_data = field.value_from_object(instance)
-                    if hasattr(field_data, "field"):
-                        field_data = str(field_data.field.value_from_object(instance))
-                    obj_data[field.name] = field_data
-
-            model_schema = cls._get_object_model(obj_data)
-
-            if store:
-                cls.instance = instance
-
-            return model_schema
-
-        model_schema_qs = [
-            cls.from_django(obj, store=False, many=False) for obj in instance
-        ]
-
-        return model_schema_qs
+        cls.instance = objs
+        return super().from_orm(ProxyGetterNestedObj(objs, cls))
 
 
 _is_base_model_class_defined = True

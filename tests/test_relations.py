@@ -1,20 +1,20 @@
 import datetime
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 import pytest
-
+from pydantic import Field
 from testapp.models import (
-    User,
-    Profile,
-    Thread,
-    Message,
-    Publication,
     Article,
-    Item,
-    Tagged,
     Bookmark,
-    Expert,
     Case,
+    Expert,
+    Item,
+    Message,
+    Profile,
+    Publication,
+    Tagged,
+    Thread,
+    User
 )
 
 from djantic import ModelSchema
@@ -102,8 +102,8 @@ def test_m2m():
                 "description": "A news publication.",
                 "type": "object",
                 "properties": {
-                    "article": {
-                        "title": "Article",
+                    "article_set": {
+                        "title": "Article Set",
                         "description": "id",
                         "type": "array",
                         "items": {
@@ -135,7 +135,7 @@ def test_m2m():
         "id": 1,
         "headline": "My Headline",
         "pub_date": datetime.date(2021, 3, 20),
-        "publications": [{"article": 1, "id": 1, "title": "My Publication"}],
+        "publications": [{"article_set": [{'id': 1}], "id": 1, "title": "My Publication"}],
     }
 
 
@@ -783,12 +783,12 @@ def test_m2m_reverse():
     case_schema = CaseSchema.from_django(case)
     expert_schema = ExpertSchema.from_django(expert)
     assert case_schema.dict() == {
-        "related_experts": [{"pk": 1}],
+        "related_experts": [{"id": 1}],
         "id": 1,
         "name": "My Case",
         "details": "Some text data.",
     }
-    assert expert_schema.dict() == {"id": 1, "name": "My Expert", "cases": [{"pk": 1}]}
+    assert expert_schema.dict() == {"id": 1, "name": "My Expert", "cases": [{"id": 1}]}
 
     class CustomExpertSchema(ModelSchema):
         """Custom schema"""
@@ -849,8 +849,62 @@ def test_m2m_reverse():
 
     case_schema = CaseSchema.from_django(case)
     assert case_schema.dict() == {
-        "related_experts": [{"id": 1, "name": "My Expert", "cases": 1}],
+        "related_experts": [{"id": 1, "name": "My Expert", "cases": [{'id': 1}]}],
         "id": 1,
         "name": "My Case",
         "details": "Some text data.",
     }
+
+
+@pytest.mark.django_db
+def test_alias():
+    class ProfileSchema(ModelSchema):
+        first_name: str = Field(alias='user__first_name')
+
+        class Config:
+            model = Profile
+
+    assert ProfileSchema.schema() == {
+        'title': 'ProfileSchema',
+        'description': "A user's profile.",
+        'type': 'object',
+        'properties': {
+            'id': {
+                'title': 'Id',
+                'description': 'id',
+                'type': 'integer'
+            },
+            'user': {
+                'title': 'User',
+                'description': 'id',
+                'type': 'integer'
+            },
+            'website': {
+                'title': 'Website',
+                'description': 'website',
+                'default': '', 'maxLength': 200,
+                'type': 'string'
+            },
+            'location': {
+                'title': 'Location',
+                'description': 'location',
+                'default': '',
+                'maxLength': 100,
+                'type': 'string'
+            },
+            'user__first_name': {
+                'title': 'User  First Name',
+                'type': 'string'
+            }
+        },
+        'required': ['user', 'user__first_name']
+    }
+
+    user = User.objects.create(first_name="Jack")
+    profile = Profile.objects.create(
+        user=user, website='www.github.com', location='Europe')
+    assert ProfileSchema.from_django(profile).dict() == {'first_name': 'Jack',
+                                                         'id': 1,
+                                                         'location': 'Europe',
+                                                         'user': 1,
+                                                         'website': 'www.github.com'}

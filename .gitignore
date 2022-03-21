@@ -131,3 +131,4 @@ dmypy.json
 .idea
 .DS_Store
 *.sublime-workspace
+.vscode
