@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import List
 
 import pytest
-from testapp.order import Order, OrderItem, OrderItemDetail, OrderUser, OrderUserFactory
+from testapp.order import Order, OrderItem, OrderItemDetail, OrderUser, OrderUserFactory, OrderUserProfile
 
 from djantic import ModelSchema
 
@@ -26,8 +26,14 @@ def test_multiple_level_relations():
         class Config:
             model = Order
 
+    class OrderUserProfileSchema(ModelSchema):
+
+        class Config:
+            model = OrderUserProfile
+
     class OrderUserSchema(ModelSchema):
         orders: List[OrderSchema]
+        profile: OrderUserProfileSchema
 
         class Config:
             model = OrderUser
@@ -39,6 +45,11 @@ def test_multiple_level_relations():
         'first_name': '',
         'last_name': None,
         'email': '',
+        'profile': {
+            'id': 1,
+            'address': '',
+            'user': 1
+        },
         'orders': [
             {
                 'id': 1,
@@ -152,6 +163,9 @@ def test_multiple_level_relations():
         "description": "OrderUser(id, first_name, last_name, email)",
         "type": "object",
         "properties": {
+            "profile": {
+                "$ref": "#/definitions/OrderUserProfileSchema"
+            },
             "orders": {
                 "title": "Orders",
                 "type": "array",
@@ -184,11 +198,39 @@ def test_multiple_level_relations():
             }
         },
         "required": [
+            "profile",
             "orders",
             "first_name",
             "email"
         ],
         "definitions": {
+            "OrderUserProfileSchema": {
+                "title": "OrderUserProfileSchema",
+                "description": "OrderUserProfile(id, address, user)",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "title": "Id",
+                        "description": "id",
+                        "type": "integer"
+                    },
+                    "address": {
+                        "title": "Address",
+                        "description": "address",
+                        "maxLength": 255,
+                        "type": "string"
+                    },
+                    "user": {
+                        "title": "User",
+                        "description": "id",
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "address",
+                    "user"
+                ]
+            },
             "OrderItemDetailSchema": {
                 "title": "OrderItemDetailSchema",
                 "description": "OrderItemDetail(id, name, value, quantity, order_item)",

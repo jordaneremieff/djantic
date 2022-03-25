@@ -8,6 +8,12 @@ class OrderUser(models.Model):
     last_name = models.CharField(max_length=50, null=True, blank=True)
     email = models.EmailField(unique=True)
 
+
+class OrderUserProfile(models.Model):
+    address = models.CharField(max_length=255)
+    user = models.OneToOneField(OrderUser, on_delete=models.CASCADE, related_name='profile')
+
+
 class Order(models.Model):
     total_price = models.DecimalField(max_digits=8, decimal_places=5, default=0)
     shipping_address = models.CharField(max_length=255)
@@ -81,6 +87,12 @@ class OrderFactory(DjangoModelFactory):
                      for i in range(0, 2)]
 
 
+class OrderUserProfileFactory(DjangoModelFactory):
+
+    class Meta:
+        model = OrderUserProfile
+
+
 class OrderUserFactory(DjangoModelFactory):
 
     class Meta:
@@ -90,3 +102,8 @@ class OrderUserFactory(DjangoModelFactory):
     def orders(self, create, orders, **kwargs):
         if orders is None:
             orders = [OrderFactory.create(user=self, **kwargs) for i in range(0, 2)]
+
+    @factory.post_generation
+    def profile(self, create, profile, **kwargs):
+        if profile is None:
+            profile = OrderUserProfileFactory.create(user=self, **kwargs)

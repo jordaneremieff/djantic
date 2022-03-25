@@ -43,7 +43,13 @@ class ModelSchemaMetaclass(ModelMetaclass):
                 and base == ModelSchema
             ):
 
-                config = namespace["Config"]
+                try:
+                    config = namespace["Config"]
+                except KeyError as exc:
+                    raise ConfigError(
+                        f"{exc} (Is `Config` class defined?)"
+                    )
+                    
                 include = getattr(config, "include", None)
                 exclude = getattr(config, "exclude", None)
 

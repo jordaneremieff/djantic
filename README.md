@@ -115,3 +115,111 @@ print(user_schema.json(indent=2))
 ```
 
 See https://pydantic-docs.helpmanual.io/usage/exporting_models/ for more.
+
+### Use multiple level relations
+
+Djantic supports multiple level relations. Given the following models:
+
+```python
+class OrderUser(models.Model):
+    email = models.EmailField(unique=True)
+
+
+class OrderUserProfile(models.Model):
+    address = models.CharField(max_length=255)
+    user = models.OneToOneField(OrderUser, on_delete=models.CASCADE, related_name='profile')
+
+
+class Order(models.Model):
+    total_price = models.DecimalField(max_digits=8, decimal_places=5, default=0)
+    user = models.ForeignKey(
+        OrderUser, on_delete=models.CASCADE, related_name="orders"
+    )
+
+
+class OrderItem(models.Model):
+    price = models.DecimalField(max_digits=8, decimal_places=5, default=0)
+    quantity = models.IntegerField(default=0)
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name="items"
+    )
+
+
+class OrderItemDetail(models.Model):
+    name = models.CharField(max_length=30)
+    order_item = models.ForeignKey(
+        OrderItem, on_delete=models.CASCADE, related_name="details"
+    )
+```
+
+Inverse ForeignKey relation (or M2M relation) type is a list of the Schema of this related object.
+
+OneToOne relation type is the Schema of this related object.
+
+```python
+class OrderItemDetailSchema(ModelSchema):
+    class Config:
+        model = OrderItemDetail
+
+class OrderItemSchema(ModelSchema):
+    details: List[OrderItemDetailSchema]
+
+    class Config:
+        model = OrderItem
+
+class OrderSchema(ModelSchema):
+    items: List[OrderItemSchema]
+
+    class Config:
+        model = Order
+
+class OrderUserProfileSchema(ModelSchema):
+    class Config:
+        model = OrderUserProfile
+
+class OrderUserSchema(ModelSchema):
+    orders: List[OrderSchema]
+    profile: OrderUserProfileSchema
+```
+
+**Calling:**
+
+```python
+user = OrderUser.objects.first()
+print(OrderUserSchema.from_orm(user).json(ident=4))
+```
+
+**Output:**
+```json
+{
+    "profile": {
+        "id": 1,
+        "address": "",
+        "user": 1
+    },
+    "orders": [
+        {
+            "items": [
+                {
+                    "details": [
+                        {
+                            "id": 1,
+                            "name": "",
+                            "order_item": 1
+                        }
+                    ],
+                    "id": 1,
+                    "price": 0.0,
+                    "quantity": 0,
+                    "order": 1
+                }
+            ],
+            "id": 1,
+            "total_price": 0.0,
+            "user": 1
+        }
+    ],
+    "id": 1,
+    "email": ""
+}
+```

@@ -12,6 +12,13 @@ def test_config_errors():
     """
 
     with pytest.raises(
+        ConfigError, match="(Is `Config` class defined?)"
+    ):
+
+        class InvalidModelErrorSchema(ModelSchema):
+            pass
+
+    with pytest.raises(
         ConfigError, match="(Is `Config.model` a valid Django model class?)"
     ):
 
