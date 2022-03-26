@@ -1,9 +1,7 @@
 from typing import List
 
 import pytest
-
-
-from testapp.models import User, Profile, Thread, Message, Tagged, Bookmark
+from testapp.models import Bookmark, Message, Profile, Tagged, Thread, User
 
 from djantic import ModelSchema
 
@@ -49,6 +47,7 @@ def test_get_instance_with_generic_foreign_key():
         "id": 1,
         "tags": [
             {
+                'content_object': 1,
                 "content_type": 20,
                 "id": 1,
                 "object_id": 1,
@@ -190,7 +189,8 @@ def test_get_queryset_with_reverse_foreign_key():
             model = Thread
 
     thread_schema_qs = ThreadSchema.from_django(threads, many=True)
-    assert thread_schema_qs == [
+    thread_schemas = [t.dict() for t in thread_schema_qs]
+    assert thread_schemas == [
         {
             "messages": [{"id": 2}, {"id": 4}, {"id": 6}],
             "id": 2,
@@ -256,5 +256,5 @@ def test_get_queryset_with_generic_foreign_key():
     schema.dict() == {
         "id": 1,
         "url": "https://github.com",
-        "tags": [{"pk": 1}, {"pk": 2}],
+        "tags": [{"id": 1}, {"id": 2}],
     }

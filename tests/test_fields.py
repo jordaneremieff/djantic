@@ -1,6 +1,6 @@
 import pytest
+from testapp.models import Configuration, Listing, Preference, Record, Searchable
 
-from testapp.models import Record, Configuration, Preference, Searchable, Listing
 from djantic import ModelSchema
 
 

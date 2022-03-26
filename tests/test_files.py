@@ -1,8 +1,8 @@
 from tempfile import NamedTemporaryFile
 
 import pytest
-
 from testapp.models import Attachment
+
 from djantic import ModelSchema
 
 

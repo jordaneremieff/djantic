@@ -1,8 +1,7 @@
 import pytest
-
+from pydantic import ConfigError
 from testapp.models import User
 
-from pydantic import ConfigError
 from djantic import ModelSchema
 
 
@@ -11,6 +10,13 @@ def test_config_errors():
     """
     Test the model config error exceptions.
     """
+
+    with pytest.raises(
+        ConfigError, match="(Is `Config` class defined?)"
+    ):
+
+        class InvalidModelErrorSchema(ModelSchema):
+            pass
 
     with pytest.raises(
         ConfigError, match="(Is `Config.model` a valid Django model class?)"
