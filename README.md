@@ -223,3 +223,35 @@ print(OrderUserSchema.from_orm(user).json(ident=4))
     "email": ""
 }
 ```
+
+
+### Include from annotations
+
+By default, a Schema without Config.include or Config.exclude defined will include all fields of the Config.model class.
+
+If you want to limit included fields to the annotations of the Schema without defining Config.include, use `Config.include = "__annotations__"`. 
+
+
+```python
+class ProfileSchema(ModelSchema):
+        website: str
+
+        class Config:
+            model = Profile
+            include = "__annotations__"
+
+    assert ProfileSchema.schema() == {
+        "title": "ProfileSchema",
+        "description": "A user's profile.",
+        "type": "object",
+        "properties": {
+            "website": {
+                "title": "Website",
+                "type": "string"
+            }
+        },
+        "required": [
+            "website"
+        ]
+    }
+```

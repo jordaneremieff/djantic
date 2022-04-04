@@ -380,3 +380,32 @@ def test_json():
   ]
 }"""
     assert ConfigurationSchema.schema_json(indent=2) == expected
+
+
+@pytest.mark.django_db
+def test_include_from_annotations():
+    """
+    Test include="__annotations__" config.
+    """
+
+    class ProfileSchema(ModelSchema):
+        website: str
+
+        class Config:
+            model = Profile
+            include = "__annotations__"
+
+    assert ProfileSchema.schema() == {
+        "title": "ProfileSchema",
+        "description": "A user's profile.",
+        "type": "object",
+        "properties": {
+            "website": {
+                "title": "Website",
+                "type": "string"
+            }
+        },
+        "required": [
+            "website"
+        ]
+    }

@@ -1,8 +1,9 @@
 
 from decimal import Decimal
-from typing import List
+from typing import List, Optional
 
 import pytest
+from pydantic import validator
 from testapp.order import Order, OrderItem, OrderItemDetail, OrderUser, OrderUserFactory, OrderUserProfile
 
 from djantic import ModelSchema
@@ -34,9 +35,23 @@ def test_multiple_level_relations():
     class OrderUserSchema(ModelSchema):
         orders: List[OrderSchema]
         profile: OrderUserProfileSchema
+        user_cache: Optional[dict]
 
         class Config:
             model = OrderUser
+            include = ('id',
+                       'first_name',
+                       'last_name',
+                       'email',
+                       'profile',
+                       'orders',
+                       'user_cache')
+
+        @validator('user_cache', pre=True, always=True)
+        def get_user_cache(cls, _):
+            return {
+                'has_order': True
+            }
 
     user = OrderUserFactory.create()
 
@@ -45,6 +60,7 @@ def test_multiple_level_relations():
         'first_name': '',
         'last_name': None,
         'email': '',
+        'user_cache': {'has_order': True},
         'profile': {
             'id': 1,
             'address': '',
@@ -195,6 +211,10 @@ def test_multiple_level_relations():
                 "description": "email",
                 "maxLength": 254,
                 "type": "string"
+            },
+            "user_cache": {
+                "title": "User Cache",
+                "type": "object"
             }
         },
         "required": [
