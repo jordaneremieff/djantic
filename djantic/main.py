@@ -27,6 +27,13 @@ class ModelSchemaJSONEncoder(DjangoJSONEncoder):
         return super().default(obj)
 
 
+def get_field_name(field) -> str:
+    if issubclass(field.__class__, ForeignObjectRel) and not issubclass(field.__class__, OneToOneRel):
+        return getattr(field, "related_name", None) or f"{field.name}_set"
+    else:
+        return getattr(field, "name", field)
+
+
 class ModelSchemaMetaclass(ModelMetaclass):
     @no_type_check
     def __new__(
@@ -49,7 +56,7 @@ class ModelSchemaMetaclass(ModelMetaclass):
                     raise ConfigError(
                         f"{exc} (Is `Config` class defined?)"
                     )
-                    
+
                 include = getattr(config, "include", None)
                 exclude = getattr(config, "exclude", None)
 
@@ -68,17 +75,18 @@ class ModelSchemaMetaclass(ModelMetaclass):
                         f"{exc} (Is `Config.model` a valid Django model class?)"
                     )
 
-                if include is None and exclude is None:
-                    cls.__config__.include = [f.name for f in fields]
+                if include == '__annotations__':
+                    include = list(annotations.keys())
+                    cls.__config__.include = include
+                elif include is None and exclude is None:
+                    include = list(annotations.keys()) + [get_field_name(f) for f in fields]
+                    cls.__config__.include = include
 
                 field_values = {}
                 _seen = set()
 
                 for field in chain(fields, annotations.copy()):
-                    if issubclass(field.__class__, ForeignObjectRel) and not issubclass(field.__class__, OneToOneRel):
-                        field_name = getattr(field, "related_name", None) or f"{field.name}_set"
-                    else:
-                        field_name = getattr(field, "name", field)
+                    field_name = get_field_name(field)
 
                     if (
                         field_name in _seen
@@ -114,6 +122,8 @@ class ModelSchemaMetaclass(ModelMetaclass):
 
                 cls.__doc__ = namespace.get("__doc__", config.model.__doc__)
                 cls.__fields__ = {}
+                cls.__alias_map__ = {getattr(model_field[1], 'alias', None) or field_name: field_name
+                                     for field_name, model_field in field_values.items()}
                 model_schema = create_model(
                     name, __base__=cls, __module__=cls.__module__, **field_values
                 )
@@ -129,14 +139,14 @@ class ProxyGetterNestedObj(GetterDict):
         self.schema_class = schema_class
 
     def get(self, key: Any, default: Any = None) -> Any:
+        alias = self.schema_class.__alias_map__[key]
+        outer_type_ = self.schema_class.__fields__[alias].outer_type_
         if "__" in key:
             # Allow double underscores aliases: `first_name: str = Field(alias="user__first_name")`
             keys_map = key.split("__")
             attr = reduce(lambda a, b: getattr(a, b, default), keys_map, self._obj)
-            outer_type_ = self.schema_class.__fields__["user"].outer_type_
         else:
-            attr = getattr(self._obj, key)
-            outer_type_ = self.schema_class.__fields__[key].outer_type_
+            attr = getattr(self._obj, key, None)
 
         is_manager = issubclass(attr.__class__, Manager)
 
