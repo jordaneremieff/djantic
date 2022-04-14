@@ -2,7 +2,7 @@
 
 The main functionality this library intends to provide is a means to automatically generate Pydantic models based on Django ORM model definitions. Most of the Pydantic [model properties](https://pydantic-docs.helpmanual.io/usage/models/#model-properties) are expected to work with the generated model schemas.
 
-In addition to this, the model schemas provide a `from_django` method for loading Django object instance data to be used with Pydantic's [model export](https://pydantic-docs.helpmanual.io/usage/exporting_models/) methods.
+In addition to this, the model schemas provide a `from_orm` method for loading Django object instance data to be used with Pydantic's [model export](https://pydantic-docs.helpmanual.io/usage/exporting_models/) methods.
 
 ## Creating a model schema
 
@@ -374,7 +374,7 @@ The above behaviour works similarly to one to many and many to many relations. Y
 
 ## Exporting model data
 
-Model schemas support a `from_django` method that allows loading Django model instances for export using the generated schema. This method is similar to Pydantic's builtin [from_orm](https://pydantic-docs.helpmanual.io/usage/models/#orm-mode-aka-arbitrary-class-instances), but very specific to Django's ORM.
+Model schemas support a `from_orm` method that allows loading Django model instances for export using the generated schema. This method is similar to Pydantic's builtin [from_orm](https://pydantic-docs.helpmanual.io/usage/models/#orm-mode-aka-arbitrary-class-instances), but very specific to Django's ORM.
 
 It is intended to provide support for all of Pydantic's [model export](https://pydantic-docs.helpmanual.io/usage/exporting_models/) methods.
 
@@ -390,7 +390,7 @@ user = User.objects.create(
 profile = Profile.objects.create(user=user, website="https://github.com", location="AU")
 ```
 
-Then use the `from_django` method to load this object:
+Then use the `from_orm` method to load this object:
 
 ```python
 from djantic import ModelSchema
@@ -408,7 +408,7 @@ class UserSchema(ModelSchema):
         model = User
 
 user = User.objects.get(id=1)
-obj = UserSchema.from_django(user)
+obj = UserSchema.from_orm(user)
 ```
 
 Now that the instance is loaded, it can be used with the various export methods to produce different outputs according to the schema definition. These outputs will be validated against the schema rules:
@@ -439,7 +439,6 @@ Output:
 print(obj.json(indent=2))
 ```
 
-
 Output:
 
 ```json
@@ -457,5 +456,3 @@ Output:
   "updated_at": "2021-04-04T08:47:39.567455+00:00"
 }
 ```
-
-***Note***: There is more here that should be documented (and tested).

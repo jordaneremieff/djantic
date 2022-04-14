@@ -1,16 +1,31 @@
-# Djantic
+<h1 style="text-align: center;">
+    Djantic
+</h1>
+<p style="text-align: center;">
+    <em><a href="https://pydantic-docs.helpmanual.io/">Pydantic</a> model support for <a href="https://www.djangoproject.com/"> Django</a></em>
+</p>
+<p style="text-align: center;">
+    <a href="https://github.com/jordaneremieff/djantic/actions/workflows/test.yml">
+    <img src="https://img.shields.io/github/workflow/status/jordaneremieff/djantic/Test/main" alt="GitHub Workflow Status (Test)" >
+    </a>
+    <a href="https://pypi.org/project/djantic" target="_blank">
+        <img src="https://img.shields.io/pypi/v/djantic" alt="PyPi package">
+    </a>
+    <a href="https://pypi.org/project/djantic" target="_blank">
+        <img src="https://img.shields.io/pypi/pyversions/djantic" alt="Supported Python versions">
+    </a>
+    <a href="https://pypi.org/project/djantic" target="_blank">
+        <img src="https://img.shields.io/pypi/djversions/djantic?label=django" alt="Supported Django versions">
+    </a>
+</p>
 
-[![PyPI version](https://badge.fury.io/py/djantic.svg)](https://badge.fury.io/py/djantic)
+---
 
 **Documentation**: https://jordaneremieff.github.io/djantic/
 
-**Requirements**: Python 3.7+, Django 3.0+
+---
 
-[Pydantic](https://pydantic-docs.helpmanual.io/) models for [Django](https://www.djangoproject.com/).
-
-This project should be considered a work-in-progress. It should be okay to use, but no specific version support has been determined ([#16](https://github.com/jordaneremieff/djantic/issues/16)) and the *default* model generation behaviour may change across releases.
-
-Please use the issues [tracker](https://github.com/jordaneremieff/djantic/issues) to report any bugs, or if something seems incorrect.
+Djantic is a library that provides a configurable utility class for automatically creating a Pydantic model instance for any Django model class. It is intended to support all of the underlying Pydantic model functionality such as JSON schema generation and introduces custom behaviour for exporting Django model instance data.
 
 ## Quickstart
 
@@ -20,12 +35,11 @@ Install using pip:
 pip install djantic
 ```
 
-### Generating schemas from models
-
-Configure a custom `ModelSchema` class for a Django model to generate a Pydantic model. This will allow using the Django model information with Pydantic model methods:
+Create a model schema:
 
 ```python
 from users.models import User
+
 from djantic import ModelSchema
 
 class UserSchema(ModelSchema):
@@ -33,7 +47,6 @@ class UserSchema(ModelSchema):
         model = User
         
 print(UserSchema.schema())
-
 ```
 
 **Output:**
@@ -83,10 +96,9 @@ print(UserSchema.schema())
 
 See https://pydantic-docs.helpmanual.io/usage/models/ for more.
 
-### Loading and exporting model data
+### Loading and exporting model instances
 
-Use the `from_django` method on a model schema class to load a Django model instance into a schema class:
-
+Use the `from_orm` method on the model schema to load a Django model instance for <a href="https://pydantic-docs.helpmanual.io/usage/exporting_models/">export</a>:
 
 ```python
 user = User.objects.create(
@@ -95,9 +107,8 @@ user = User.objects.create(
     email="jordan@eremieff.com"
 )
 
-user_schema = UserSchema.from_django(user)
+user_schema = UserSchema.from_orm(user)
 print(user_schema.json(indent=2))
-
 ```
 
 **Output:**
@@ -114,13 +125,16 @@ print(user_schema.json(indent=2))
 }
 ```
 
-See https://pydantic-docs.helpmanual.io/usage/exporting_models/ for more.
+### Using multiple level relations
 
-### Use multiple level relations
+Djantic supports multiple level relations. This includes foreign keys, many-to-many, and one-to-one relationships.
 
-Djantic supports multiple level relations. Given the following models:
+Consider the following example Django model and Djantic model schema definitions for a number of related database records:
 
 ```python
+# models.py
+from django.db import models
+
 class OrderUser(models.Model):
     email = models.EmailField(unique=True)
 
@@ -152,11 +166,13 @@ class OrderItemDetail(models.Model):
     )
 ```
 
-Inverse ForeignKey relation (or M2M relation) type is a list of the Schema of this related object.
-
-OneToOne relation type is the Schema of this related object.
-
 ```python
+# schemas.py
+from djantic import ModelSchema
+
+from orders.models import OrderItemDetail, OrderItem, Order, OrderUserProfile
+
+
 class OrderItemDetailSchema(ModelSchema):
     class Config:
         model = OrderItemDetail
@@ -182,7 +198,7 @@ class OrderUserSchema(ModelSchema):
     profile: OrderUserProfileSchema
 ```
 
-**Calling:**
+Now let's assume you're interested in exporting the order and profile information for a particular user into a JSON format that contains the details accross all of the related item objects:
 
 ```python
 user = OrderUser.objects.first()
@@ -224,13 +240,21 @@ print(OrderUserSchema.from_orm(user).json(ident=4))
 }
 ```
 
+The model schema definitions are composable and support customization of the output according to the auto-generated fields and any additional annotations.
 
-### Include from annotations
+### Including and excluding fields
 
-By default, a Schema without Config.include or Config.exclude defined will include all fields of the Config.model class.
+The fields exposed in the model instance may be configured using two options: `include` and `exclude`. These represent iterables that should contain a list of field name strings. Only one of these options may be set at the same time, and if neither are set then the default behaviour is to include all of the fields from the Django model.
 
-If you want to limit included fields to the annotations of the Schema without defining Config.include, use `Config.include = "__annotations__"`. 
+For example, to include all of the fields from a user model <i>except</i> a field named `email_address`, you would use the `exclude` option:
 
+```python
+class UserSchema(ModelSchema):
+    class Config:
+        exclude = ["email_address"]
+```
+
+In addition to this, you may also limit the fields to <i>only</i> include annotations from the model schema class by setting the `include` option to a special string value: `"__annotations__"`.
 
 ```python
 class ProfileSchema(ModelSchema):
