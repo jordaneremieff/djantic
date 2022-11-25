@@ -40,6 +40,33 @@ class UserSchema(ModelSchema):
 
 Once defined, the `UserSchema` can be used to perform various functions on the underlying Django model object, such as generating JSON schemas or exporting serialized instance data.
 
+### Custom subclasses
+
+Abstract subclasses can be defined to implement methods shared over for a number of ModelSchemata, note that they cannot be instantiated by themselves.
+
+```python
+from typing import Optional
+from django.db.models import Model
+from djantic import ModelSchema
+from myapp.models import User
+
+class BaseModelSchema(ModelSchema):
+    class Config:
+        model: Optional[Model] = None
+        abstract = True
+
+    def to_django(self) -> Model:
+        if self.Config.model is not None:
+            return self.Config.model.objects.create(**self.dict())
+        raise NotImplementedError()
+
+class CreateUserSchema(BaseModelSchema):
+    class Config:
+        model = User
+        
+```
+
+
 ### Basic schema usage
 
 The `UserSchema` above can be used to generate a JSON schema using Pydantic's [schema](https://pydantic-docs.helpmanual.io/usage/schema/) method:

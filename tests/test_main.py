@@ -37,6 +37,23 @@ def test_config_errors():
                 include = ["id"]
                 exclude = ["first_name"]
 
+    class AbstractModelSchema(ModelSchema):
+        class Config:
+            abstract = True
+
+    with pytest.raises(
+        ConfigError,
+        match="Abstract ModelSchema cannot be instantiated.",
+    ):
+        schema = AbstractModelSchema()
+
+    class InheritedSchema(AbstractModelSchema):
+        class Config:
+            model = User
+            include = ["id"]
+
+    schema = InheritedSchema(id=1)
+
 
 @pytest.mark.django_db
 def test_get_field_names():
