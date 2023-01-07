@@ -950,14 +950,14 @@ python-versions = "*"
 
 [[package]]
 name = "wheel"
-version = "0.36.2"
+version = "0.38.1"
 description = "A built-package format for Python"
 category = "dev"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
+python-versions = ">=3.7"
 
 [package.extras]
-test = ["pytest (>=3.0.0)", "pytest-cov"]
+test = ["pytest (>=3.0.0)"]
 
 [[package]]
 name = "zipp"
@@ -974,7 +974,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=4.6)", "pytest-black (
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "6f0da1af5bdb67f5b13220584e86f6bff6b91ba0e2a4f218c445693e7b209b0a"
+content-hash = "13fd000e918eaeb3b3834d3e06516a9d5277df386a5bd85317b3cc1b10351f45"
 
 [metadata.files]
 appdirs = [
@@ -1653,8 +1653,8 @@ webencodings = [
     {file = "webencodings-0.5.1.tar.gz", hash = "sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923"},
 ]
 wheel = [
-    {file = "wheel-0.36.2-py2.py3-none-any.whl", hash = "sha256:78b5b185f0e5763c26ca1e324373aadd49182ca90e825f7853f4b2509215dc0e"},
-    {file = "wheel-0.36.2.tar.gz", hash = "sha256:e11eefd162658ea59a60a0f6c7d493a7190ea4b9a85e335b33489d9f17e0245e"},
+    {file = "wheel-0.38.1-py3-none-any.whl", hash = "sha256:7a95f9a8dc0924ef318bd55b616112c70903192f524d120acc614f59547a9e1f"},
+    {file = "wheel-0.38.1.tar.gz", hash = "sha256:ea041edf63f4ccba53ad6e035427997b3bb10ee88a4cd014ae82aeb9eea77bb9"},
 ]
 zipp = [
     {file = "zipp-3.5.0-py3-none-any.whl", hash = "sha256:957cfda87797e389580cb8b9e3870841ca991e2125350677b2ca83a0e99390a3"},
