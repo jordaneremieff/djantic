@@ -57,6 +57,9 @@ class ModelSchemaMetaclass(ModelMetaclass):
                         f"{exc} (Is `Config` class defined?)"
                     )
 
+                if getattr(config, "abstract", False):
+                    continue
+
                 include = getattr(config, "include", None)
                 exclude = getattr(config, "exclude", None)
 
@@ -164,6 +167,12 @@ class ProxyGetterNestedObj(GetterDict):
 class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
     class Config:
         orm_mode = True
+
+    def __init__(self, **data):
+        if getattr(self.Config, "abstract", False):
+            raise ConfigError("Abstract ModelSchema cannot be instantiated.")
+
+        super().__init__(**data)
 
     @classmethod
     def schema_json(
