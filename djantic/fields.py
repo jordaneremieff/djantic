@@ -7,7 +7,8 @@ from uuid import UUID
 
 from django.utils.functional import Promise
 from pydantic import IPvAnyAddress, Json
-from pydantic.fields import FieldInfo, Required, Undefined
+from pydantic.fields import FieldInfo
+from pydantic.v1.fields import Required, Undefined
 
 logger = logging.getLogger("djantic")
 

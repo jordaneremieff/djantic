@@ -9,8 +9,9 @@ from django.db.models.fields.reverse_related import (ForeignObjectRel,
                                                      OneToOneRel)
 from django.utils.encoding import force_str
 from django.utils.functional import Promise
-from pydantic import BaseModel, ConfigError, create_model
-from pydantic.main import ModelMetaclass
+from pydantic import BaseModel, create_model
+from pydantic.errors import PydanticUserError
+from pydantic._internal._model_construction import ModelMetaclass
 from pydantic.utils import GetterDict
 
 from .fields import ModelSchemaField
@@ -53,7 +54,7 @@ class ModelSchemaMetaclass(ModelMetaclass):
                 try:
                     config = namespace["Config"]
                 except KeyError as exc:
-                    raise ConfigError(
+                    raise PydanticUserError(
                         f"{exc} (Is `Config` class defined?)"
                     )
 
@@ -61,7 +62,7 @@ class ModelSchemaMetaclass(ModelMetaclass):
                 exclude = getattr(config, "exclude", None)
 
                 if include and exclude:
-                    raise ConfigError(
+                    raise PydanticUserError(
                         "Only one of 'include' or 'exclude' should be set in "
                         "configuration."
                     )
@@ -71,7 +72,7 @@ class ModelSchemaMetaclass(ModelMetaclass):
                 try:
                     fields = config.model._meta.get_fields()
                 except AttributeError as exc:
-                    raise ConfigError(
+                    raise PydanticUserError(
                         f"{exc} (Is `Config.model` a valid Django model class?)"
                     )
 

@@ -6,8 +6,8 @@ authors = ["Jordan Eremieff <jordan@eremieff.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.7"
-pydantic = "^1.8.2"
+python = "^3.8"
+pydantic = "^2.6.2"
 Django = "~3"
 
 [tool.poetry.dev-dependencies]
