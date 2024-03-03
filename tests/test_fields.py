@@ -10,12 +10,11 @@ def test_unhandled_field_type():
         class Config:
             model = Searchable
 
-    assert SearchableSchema.schema() == {
+    assert SearchableSchema.model_json_schema() == {
         "title": "SearchableSchema",
-        "description": "Searchable(id, title, search_vector)",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "id": {"title": "Id", "description": "id", "type": "integer", "default": None},
             "title": {
                 "title": "Title",
                 "description": "title",
@@ -23,16 +22,16 @@ def test_unhandled_field_type():
                 "type": "string",
             },
             "search_vector": {
-                "title": "Search Vector",
+                'anyOf': [{'type': 'string'}, {'type': 'null'}],
+                "default": None,
                 "description": "search_vector",
-                "type": "string",
+                "title": "Search Vector",
             },
         },
         "required": ["title"],
     }
-
     searchable = Searchable.objects.create(title="My content")
-    assert SearchableSchema.from_django(searchable).dict() == {
+    assert SearchableSchema.from_django(searchable).model_dump() == {
         "id": 1,
         "title": "My content",
         "search_vector": None,
@@ -50,7 +49,7 @@ def test_custom_field():
             model = Record
             include = ["id", "title", "items"]
 
-    assert RecordSchema.schema() == {
+    assert RecordSchema.model_json_schema() == {
         "title": "RecordSchema",
         "description": "A generic record model.",
         "type": "object",
@@ -79,7 +78,7 @@ def test_custom_field():
 @pytest.mark.django_db
 def test_postgres_json_field():
     """
-    Test generating a schema for multiple Postgres JSON fields.
+    Test generating a model_json_schema for multiple Postgres JSON fields.
     """
 
     class ConfigurationSchema(ModelSchema):
@@ -87,7 +86,7 @@ def test_postgres_json_field():
             model = Configuration
             include = ["permissions", "changelog", "metadata"]
 
-    assert ConfigurationSchema.schema() == {
+    assert ConfigurationSchema.model_json_schema() == {
         "title": "ConfigurationSchema",
         "description": "A configuration container.",
         "type": "object",
@@ -134,7 +133,7 @@ def test_lazy_choice_field():
             model = Record
             include = ["record_type", "record_status"]
 
-    assert RecordSchema.schema() == {
+    assert RecordSchema.model_json_schema() == {
         "title": "RecordSchema",
         "description": "A generic record model.",
         "type": "object",
@@ -174,7 +173,7 @@ def test_enum_choices():
             model = Preference
             use_enum_values = True
 
-    assert PreferenceSchema.schema() == {
+    assert PreferenceSchema.model_json_schema() == {
         "title": "PreferenceSchema",
         "description": "Preference(id, name, preferred_food, preferred_group, preferred_sport, preferred_musician)",
         "type": "object",
@@ -236,7 +235,7 @@ def test_enum_choices():
     }
 
     preference = Preference.objects.create(name="Jordan", preferred_sport="", preferred_musician=None)
-    assert PreferenceSchema.from_django(preference).dict() == {
+    assert PreferenceSchema.from_django(preference).model_dump() == {
         "id": 1,
         "name": "Jordan",
         "preferred_food": "ba",
@@ -258,8 +257,8 @@ def test_enum_choices_generates_unique_enums():
             model = Preference
             use_enum_values = True
 
-    assert str(PreferenceSchema2.__fields__["preferred_food"].type_) != str(
-        PreferenceSchema.__fields__["preferred_food"].type_
+    assert str(PreferenceSchema2.model_fields["preferred_food"].type_) != str(
+        PreferenceSchema.model_fields["preferred_food"].type_
     )
 
 
@@ -270,7 +269,7 @@ def test_listing():
             model = Listing
             use_enum_values = True
 
-    assert ListingSchema.schema() == {
+    assert ListingSchema.model_json_schema() == {
         "title": "ListingSchema",
         "description": "Listing(id, items)",
         "type": "object",

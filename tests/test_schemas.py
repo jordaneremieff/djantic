@@ -117,7 +117,7 @@ def test_include_exclude():
             include = ["first_name", "email"]
 
     included = UserSchema.schema()["properties"].keys()
-    assert set(included) == set(UserSchema.__config__.include)
+    assert set(included) == set(UserSchema.model_config["include"])
     assert set(included) == set(["first_name", "email"])
 
     class UserSchema(ModelSchema):
@@ -137,7 +137,7 @@ def test_include_exclude():
         [
             field
             for field in all_user_fields
-            if field not in UserSchema.__config__.exclude
+            if field not in UserSchema.model_config["exclude"]
         ]
     )
     assert set(not_excluded) == set(["profile", "id"])

@@ -1,5 +1,6 @@
 import uuid
 import os.path
+from typing import Optional
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -248,6 +249,11 @@ class Searchable(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_field_types(self):
+        return {
+            "search_vector": Optional[str]
+        }
 
     class Meta:
         indexes = [GinIndex(fields=["search_vector"], name="search_vector_idx")]

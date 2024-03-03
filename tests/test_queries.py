@@ -21,7 +21,7 @@ def test_get_instance():
             model = User
             include = ["id", "first_name"]
 
-    assert UserSchema.from_django(user).dict() == {"first_name": "Jordan", "id": 1}
+    assert UserSchema.from_django(user).model_dump() == {"first_name": "Jordan", "id": 1}
 
 
 @pytest.mark.django_db
@@ -43,7 +43,7 @@ def test_get_instance_with_generic_foreign_key():
 
     bookmark_with_tagged_schema = BookmarkWithTaggedSchema.from_django(bookmark)
 
-    assert bookmark_with_tagged_schema.dict() == {
+    assert bookmark_with_tagged_schema.model_dump() == {
         "id": 1,
         "tags": [
             {
@@ -139,7 +139,7 @@ def test_get_queryset_with_foreign_key():
             exclude = ["created_at"]
 
     schema = MessageSchema.from_django(message_one)
-    assert schema.dict() == {"id": 5, "content": "lol", "thread": 1}
+    assert schema.model_dump() == {"id": 5, "content": "lol", "thread": 1}
 
     class ThreadSchema(ModelSchema):
         class Config:
@@ -154,7 +154,7 @@ def test_get_queryset_with_foreign_key():
             exclude = ["created_at"]
 
     schema = MessageWithThreadSchema.from_django(message_one)
-    assert schema.dict() == {
+    assert schema.model_dump() == {
         "id": 5,
         "content": "lol",
         "thread": {
@@ -189,7 +189,7 @@ def test_get_queryset_with_reverse_foreign_key():
             model = Thread
 
     thread_schema_qs = ThreadSchema.from_django(threads, many=True)
-    thread_schemas = [t.dict() for t in thread_schema_qs]
+    thread_schemas = [t.model_dump() for t in thread_schema_qs]
     assert thread_schemas == [
         {
             "messages": [{"id": 2}, {"id": 4}, {"id": 6}],
@@ -253,7 +253,7 @@ def test_get_queryset_with_generic_foreign_key():
             model = Bookmark
 
     schema = BookmarkSchema.from_django(bookmark)
-    schema.dict() == {
+    schema.model_dump() == {
         "id": 1,
         "url": "https://github.com",
         "tags": [{"id": 1}, {"id": 2}],

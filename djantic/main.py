@@ -13,6 +13,7 @@ from pydantic import BaseModel, create_model
 from pydantic.errors import PydanticUserError
 from pydantic._internal._model_construction import ModelMetaclass
 from pydantic.utils import GetterDict
+from pydantic.config import ConfigDict
 
 from .fields import ModelSchemaField
 
@@ -42,8 +43,9 @@ class ModelSchemaMetaclass(ModelMetaclass):
         name: str,
         bases: tuple,
         namespace: dict,
+        **kwargs
     ):
-        cls = super().__new__(mcs, name, bases, namespace)
+        cls = super().__new__(mcs, name, bases, namespace, **kwargs)
         for base in reversed(bases):
             if (
                 _is_base_model_class_defined
@@ -52,10 +54,10 @@ class ModelSchemaMetaclass(ModelMetaclass):
             ):
 
                 try:
-                    config = namespace["Config"]
+                    config = namespace["model_config"]
                 except KeyError as exc:
                     raise PydanticUserError(
-                        f"{exc} (Is `Config` class defined?)"
+                        f"{exc} (Is `Config` class defined?)", code="class-not-defined"
                     )
 
                 include = getattr(config, "include", None)
@@ -64,24 +66,24 @@ class ModelSchemaMetaclass(ModelMetaclass):
                 if include and exclude:
                     raise PydanticUserError(
                         "Only one of 'include' or 'exclude' should be set in "
-                        "configuration."
+                        "configuration.", code="include-exclude-mutually-exclusive"
                     )
 
                 annotations = namespace.get("__annotations__", {})
 
                 try:
-                    fields = config.model._meta.get_fields()
+                    fields = config["model"]._meta.get_fields()
                 except AttributeError as exc:
                     raise PydanticUserError(
-                        f"{exc} (Is `Config.model` a valid Django model class?)"
+                        f"{exc} (Is `Config.model` a valid Django model class?)", code="class-not-valid"
                     )
 
                 if include == '__annotations__':
                     include = list(annotations.keys())
-                    cls.__config__.include = include
+                    cls.model_config["include"] = include
                 elif include is None and exclude is None:
                     include = list(annotations.keys()) + [get_field_name(f) for f in fields]
-                    cls.__config__.include = include
+                    cls.model_config["include"] = include
 
                 field_values = {}
                 _seen = set()
@@ -121,14 +123,13 @@ class ModelSchemaMetaclass(ModelMetaclass):
 
                     field_values[field_name] = (python_type, pydantic_field)
 
-                cls.__doc__ = namespace.get("__doc__", config.model.__doc__)
-                cls.__fields__ = {}
+                cls.__doc__ = namespace.get("__doc__", config["model"].__doc__)
+                cls.model_fields = {}
                 cls.__alias_map__ = {getattr(model_field[1], 'alias', None) or field_name: field_name
                                      for field_name, model_field in field_values.items()}
                 model_schema = create_model(
                     name, __base__=cls, __module__=cls.__module__, **field_values
                 )
-
                 return model_schema
 
         return cls
@@ -141,7 +142,7 @@ class ProxyGetterNestedObj(GetterDict):
 
     def get(self, key: Any, default: Any = None) -> Any:
         alias = self.schema_class.__alias_map__[key]
-        outer_type_ = self.schema_class.__fields__[alias].outer_type_
+        outer_type_ = self.schema_class.model_fields[alias].outer_type_
         if "__" in key:
             # Allow double underscores aliases: `first_name: str = Field(alias="user__first_name")`
             keys_map = key.split("__")
@@ -163,8 +164,7 @@ class ProxyGetterNestedObj(GetterDict):
 
 
 class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def schema_json(
@@ -205,7 +205,15 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
             return result_objs
 
         cls.instance = objs
-        return super().from_orm(ProxyGetterNestedObj(objs, cls))
+        # NOTE question mark around the code above.
+
+        data = {}
+        for field in objs._meta.fields:
+            value = field.to_python(getattr(objs, field.name))
+            data[field.name] = value
+
+        instance = cls(**data)
+        return cls.model_validate(instance)
 
 
 _is_base_model_class_defined = True

@@ -8,7 +8,14 @@ from uuid import UUID
 from django.utils.functional import Promise
 from pydantic import IPvAnyAddress, Json
 from pydantic.fields import FieldInfo
-from pydantic.v1.fields import Required, Undefined
+from pydantic.v1.fields import Required
+from pydantic_core import PydanticUndefined
+
+try:
+    from django.db.models.fields import NOT_PROVIDED
+except ImportError:
+    class NOT_PROVIDED:
+        pass
 
 logger = logging.getLogger("djantic")
 
@@ -146,13 +153,13 @@ def ModelSchemaField(field: Any, schema_name: str) -> tuple:
         if default is Required and field.has_default():
             if callable(field.default):
                 default_factory = field.default
-                default = Undefined
+                default = PydanticUndefined
             else:
                 default = field.default
         elif field.primary_key or blank or null:
             default = None
 
-        if default is not None and field.null:
+        if (default is not None or NOT_PROVIDED) and field.null:
             python_type = Union[python_type, None]
 
         description = field.help_text
@@ -164,7 +171,7 @@ def ModelSchemaField(field: Any, schema_name: str) -> tuple:
     return (
         python_type,
         FieldInfo(
-            default,
+            default=default,
             default_factory=default_factory,
             title=title,
             description=str(description),
