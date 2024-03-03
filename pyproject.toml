@@ -28,7 +28,7 @@ pymdown-extensions = "^8.2"
 rich = "^10.6.0"
 django-stubs = "^1.8.0"
 pytest-django = "^4.4.0"
-psycopg2 = "^2.9.1"
+psycopg2-binary = "^2.9.1"
 bump2version = "^1.0.1"
 factory-boy = "^3.2.1"
 
