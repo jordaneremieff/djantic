@@ -21,7 +21,10 @@ def test_get_instance():
             model = User
             include = ["id", "first_name"]
 
-    assert UserSchema.from_django(user).model_dump() == {"first_name": "Jordan", "id": 1}
+    assert UserSchema.from_django(user).model_dump() == {
+        "first_name": "Jordan",
+        "id": 1,
+    }
 
 
 @pytest.mark.django_db
@@ -47,7 +50,7 @@ def test_get_instance_with_generic_foreign_key():
         "id": 1,
         "tags": [
             {
-                'content_object': 1,
+                "content_object": 1,
                 "content_type": 20,
                 "id": 1,
                 "object_id": 1,

@@ -14,7 +14,7 @@ from testapp.models import (
     Publication,
     Tagged,
     Thread,
-    User
+    User,
 )
 
 from djantic import ModelSchema
@@ -135,7 +135,9 @@ def test_m2m():
         "id": 1,
         "headline": "My Headline",
         "pub_date": datetime.date(2021, 3, 20),
-        "publications": [{"article_set": [{'id': 1}], "id": 1, "title": "My Publication"}],
+        "publications": [
+            {"article_set": [{"id": 1}], "id": 1, "title": "My Publication"}
+        ],
     }
 
 
@@ -849,7 +851,7 @@ def test_m2m_reverse():
 
     case_schema = CaseSchema.from_django(case)
     assert case_schema.dict() == {
-        "related_experts": [{"id": 1, "name": "My Expert", "cases": [{'id': 1}]}],
+        "related_experts": [{"id": 1, "name": "My Expert", "cases": [{"id": 1}]}],
         "id": 1,
         "name": "My Case",
         "details": "Some text data.",
@@ -859,52 +861,45 @@ def test_m2m_reverse():
 @pytest.mark.django_db
 def test_alias():
     class ProfileSchema(ModelSchema):
-        first_name: str = Field(alias='user__first_name')
+        first_name: str = Field(alias="user__first_name")
 
         class Config:
             model = Profile
 
     assert ProfileSchema.schema() == {
-        'title': 'ProfileSchema',
-        'description': "A user's profile.",
-        'type': 'object',
-        'properties': {
-            'id': {
-                'title': 'Id',
-                'description': 'id',
-                'type': 'integer'
+        "title": "ProfileSchema",
+        "description": "A user's profile.",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "user": {"title": "User", "description": "id", "type": "integer"},
+            "website": {
+                "title": "Website",
+                "description": "website",
+                "default": "",
+                "maxLength": 200,
+                "type": "string",
             },
-            'user': {
-                'title': 'User',
-                'description': 'id',
-                'type': 'integer'
+            "location": {
+                "title": "Location",
+                "description": "location",
+                "default": "",
+                "maxLength": 100,
+                "type": "string",
             },
-            'website': {
-                'title': 'Website',
-                'description': 'website',
-                'default': '', 'maxLength': 200,
-                'type': 'string'
-            },
-            'location': {
-                'title': 'Location',
-                'description': 'location',
-                'default': '',
-                'maxLength': 100,
-                'type': 'string'
-            },
-            'user__first_name': {
-                'title': 'User  First Name',
-                'type': 'string'
-            }
+            "user__first_name": {"title": "User  First Name", "type": "string"},
         },
-        'required': ['user', 'user__first_name']
+        "required": ["user", "user__first_name"],
     }
 
     user = User.objects.create(first_name="Jack")
     profile = Profile.objects.create(
-        user=user, website='www.github.com', location='Europe')
-    assert ProfileSchema.from_django(profile).dict() == {'first_name': 'Jack',
-                                                         'id': 1,
-                                                         'location': 'Europe',
-                                                         'user': 1,
-                                                         'website': 'www.github.com'}
+        user=user, website="www.github.com", location="Europe"
+    )
+    assert ProfileSchema.from_django(profile).dict() == {
+        "first_name": "Jack",
+        "id": 1,
+        "location": "Europe",
+        "user": 1,
+        "website": "www.github.com",
+    }

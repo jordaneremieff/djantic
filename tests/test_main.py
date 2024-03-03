@@ -11,9 +11,7 @@ def test_config_errors():
     Test the model config error exceptions.
     """
 
-    with pytest.raises(
-        PydanticUserError, match="(Is `Config` class defined?)"
-    ):
+    with pytest.raises(PydanticUserError, match="(Is `Config` class defined?)"):
 
         class InvalidModelErrorSchema(ModelSchema):
             pass

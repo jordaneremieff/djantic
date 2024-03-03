@@ -11,36 +11,34 @@ class OrderUser(models.Model):
 
 class OrderUserProfile(models.Model):
     address = models.CharField(max_length=255)
-    user = models.OneToOneField(OrderUser, on_delete=models.CASCADE, related_name='profile')
+    user = models.OneToOneField(
+        OrderUser, on_delete=models.CASCADE, related_name="profile"
+    )
 
 
 class Order(models.Model):
     total_price = models.DecimalField(max_digits=8, decimal_places=5, default=0)
     shipping_address = models.CharField(max_length=255)
-    user = models.ForeignKey(
-        OrderUser, on_delete=models.CASCADE, related_name="orders"
-    )
+    user = models.ForeignKey(OrderUser, on_delete=models.CASCADE, related_name="orders")
 
     class Meta:
         ordering = ["total_price"]
 
     def __str__(self):
-        return f'{self.order.id} - {self.name}'
+        return f"{self.order.id} - {self.name}"
 
 
 class OrderItem(models.Model):
     name = models.CharField(max_length=30)
     price = models.DecimalField(max_digits=8, decimal_places=5, default=0)
     quantity = models.IntegerField(default=0)
-    order = models.ForeignKey(
-        Order, on_delete=models.CASCADE, related_name="items"
-    )
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
 
     class Meta:
         ordering = ["order"]
 
     def __str__(self):
-        return f'{self.order.id} - {self.name}'
+        return f"{self.order.id} - {self.name}"
 
 
 class OrderItemDetail(models.Model):
@@ -55,7 +53,7 @@ class OrderItemDetail(models.Model):
         ordering = ["order_item"]
 
     def __str__(self):
-        return f'{self.order_item.id} - {self.name}'
+        return f"{self.order_item.id} - {self.name}"
 
 
 class OrderItemDetailFactory(DjangoModelFactory):
@@ -72,7 +70,10 @@ class OrderItemFactory(DjangoModelFactory):
     @factory.post_generation
     def details(self, create, details, **kwargs):
         if details is None:
-            details = [OrderItemDetailFactory.create(order_item=self, **kwargs) for i in range(0, 2)]
+            details = [
+                OrderItemDetailFactory.create(order_item=self, **kwargs)
+                for i in range(0, 2)
+            ]
 
 
 class OrderFactory(DjangoModelFactory):
@@ -83,8 +84,7 @@ class OrderFactory(DjangoModelFactory):
     @factory.post_generation
     def items(self, create, items, **kwargs):
         if items is None:
-            items = [OrderItemFactory.create(order=self, **kwargs)
-                     for i in range(0, 2)]
+            items = [OrderItemFactory.create(order=self, **kwargs) for i in range(0, 2)]
 
 
 class OrderUserProfileFactory(DjangoModelFactory):

@@ -11,7 +11,7 @@ pydantic = "^2.6.2"
 Django = "~3"
 
 [tool.poetry.dev-dependencies]
-black = "^21.7b0"
+black = "^24.2.0"
 setuptools = "^65.5.1"
 twine = "^3.4.1"
 wheel = "^0.38.1"

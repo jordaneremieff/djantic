@@ -399,13 +399,6 @@ def test_include_from_annotations():
         "title": "ProfileSchema",
         "description": "A user's profile.",
         "type": "object",
-        "properties": {
-            "website": {
-                "title": "Website",
-                "type": "string"
-            }
-        },
-        "required": [
-            "website"
-        ]
+        "properties": {"website": {"title": "Website", "type": "string"}},
+        "required": ["website"],
     }

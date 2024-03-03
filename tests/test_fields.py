@@ -14,7 +14,12 @@ def test_unhandled_field_type():
         "title": "SearchableSchema",
         "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer", "default": None},
+            "id": {
+                "title": "Id",
+                "description": "id",
+                "type": "integer",
+                "default": None,
+            },
             "title": {
                 "title": "Title",
                 "description": "title",
@@ -22,7 +27,7 @@ def test_unhandled_field_type():
                 "type": "string",
             },
             "search_vector": {
-                'anyOf': [{'type': 'string'}, {'type': 'null'}],
+                "anyOf": [{"type": "string"}, {"type": "null"}],
                 "default": None,
                 "description": "search_vector",
                 "title": "Search Vector",
@@ -50,28 +55,60 @@ def test_custom_field():
             include = ["id", "title", "items"]
 
     assert RecordSchema.model_json_schema() == {
-        "title": "RecordSchema",
-        "description": "A generic record model.",
-        "type": "object",
+        "$defs": {
+            "RecordSchemaRecordStatusEnum": {
+                "enum": [0, 1, 2],
+                "title": "RecordSchemaRecordStatusEnum",
+                "type": "integer",
+            },
+            "RecordSchemaRecordTypeEnum": {
+                "enum": ["NEW", "OLD"],
+                "title": "RecordSchemaRecordTypeEnum",
+                "type": "string",
+            },
+        },
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "id": {
+                "default": None,
+                "description": "id",
+                "title": "Id",
+                "type": "integer",
+            },
             "title": {
-                "title": "Title",
                 "description": "title",
                 "maxLength": 20,
+                "title": "Title",
                 "type": "string",
             },
             "items": {
-                "title": "Items",
-                "description": "items",
                 "anyOf": [
-                    {"type": "string", "format": "json-string"},
+                    {
+                        "contentMediaType": "application/json",
+                        "contentSchema": {},
+                        "type": "string",
+                    },
                     {"type": "object"},
-                    {"type": "array", "items": {}},
+                    {"items": {}, "type": "array"},
                 ],
+                "description": "items",
+                "title": "Items",
+            },
+            "record_type": {
+                "allOf": [{"$ref": "#/$defs/RecordSchemaRecordTypeEnum"}],
+                "default": "NEW",
+                "description": "record_type",
+                "title": "Record Type",
+            },
+            "record_status": {
+                "allOf": [{"$ref": "#/$defs/RecordSchemaRecordStatusEnum"}],
+                "default": 0,
+                "description": "record_status",
+                "title": "Record Status",
             },
         },
         "required": ["title"],
+        "title": "RecordSchema",
+        "type": "object",
     }
 
 
@@ -87,38 +124,76 @@ def test_postgres_json_field():
             include = ["permissions", "changelog", "metadata"]
 
     assert ConfigurationSchema.model_json_schema() == {
-        "title": "ConfigurationSchema",
-        "description": "A configuration container.",
-        "type": "object",
         "properties": {
+            "id": {
+                "default": None,
+                "description": "id",
+                "title": "Id",
+                "type": "integer",
+            },
+            "config_id": {
+                "description": "Unique id of the configuration.",
+                "format": "uuid",
+                "title": "Config Id",
+                "type": "string",
+            },
+            "name": {
+                "description": "name",
+                "maxLength": 100,
+                "title": "Name",
+                "type": "string",
+            },
             "permissions": {
-                "title": "Permissions",
-                "description": "permissions",
                 "anyOf": [
-                    {"type": "string", "format": "json-string"},
+                    {
+                        "contentMediaType": "application/json",
+                        "contentSchema": {},
+                        "type": "string",
+                    },
                     {"type": "object"},
-                    {"type": "array", "items": {}},
+                    {"items": {}, "type": "array"},
                 ],
+                "description": "permissions",
+                "title": "Permissions",
             },
             "changelog": {
-                "title": "Changelog",
-                "description": "changelog",
                 "anyOf": [
-                    {"type": "string", "format": "json-string"},
+                    {
+                        "contentMediaType": "application/json",
+                        "contentSchema": {},
+                        "type": "string",
+                    },
                     {"type": "object"},
-                    {"type": "array", "items": {}},
+                    {"items": {}, "type": "array"},
                 ],
+                "description": "changelog",
+                "title": "Changelog",
             },
             "metadata": {
-                "title": "Metadata",
-                "description": "metadata",
                 "anyOf": [
-                    {"type": "string", "format": "json-string"},
+                    {
+                        "contentMediaType": "application/json",
+                        "contentSchema": {},
+                        "type": "string",
+                    },
                     {"type": "object"},
-                    {"type": "array", "items": {}},
+                    {"items": {}, "type": "array"},
                 ],
+                "default": None,
+                "description": "metadata",
+                "title": "Metadata",
+            },
+            "version": {
+                "default": "0.0.1",
+                "description": "version",
+                "maxLength": 5,
+                "title": "Version",
+                "type": "string",
             },
         },
+        "required": ["name"],
+        "title": "ConfigurationSchema",
+        "type": "object",
     }
 
 
@@ -134,35 +209,60 @@ def test_lazy_choice_field():
             include = ["record_type", "record_status"]
 
     assert RecordSchema.model_json_schema() == {
-        "title": "RecordSchema",
-        "description": "A generic record model.",
-        "type": "object",
+        "$defs": {
+            "RecordSchemaRecordStatusEnum": {
+                "enum": [0, 1, 2],
+                "title": "RecordSchemaRecordStatusEnum",
+                "type": "integer",
+            },
+            "RecordSchemaRecordTypeEnum": {
+                "enum": ["NEW", "OLD"],
+                "title": "RecordSchemaRecordTypeEnum",
+                "type": "string",
+            },
+        },
         "properties": {
+            "id": {
+                "default": None,
+                "description": "id",
+                "title": "Id",
+                "type": "integer",
+            },
+            "title": {
+                "description": "title",
+                "maxLength": 20,
+                "title": "Title",
+                "type": "string",
+            },
+            "items": {
+                "anyOf": [
+                    {
+                        "contentMediaType": "application/json",
+                        "contentSchema": {},
+                        "type": "string",
+                    },
+                    {"type": "object"},
+                    {"items": {}, "type": "array"},
+                ],
+                "description": "items",
+                "title": "Items",
+            },
             "record_type": {
-                "title": "Record Type",
-                "description": "record_type",
+                "allOf": [{"$ref": "#/$defs/RecordSchemaRecordTypeEnum"}],
                 "default": "NEW",
-                "allOf": [{"$ref": "#/definitions/RecordSchemaRecordTypeEnum"}],
+                "description": "record_type",
+                "title": "Record Type",
             },
             "record_status": {
-                "title": "Record Status",
-                "description": "record_status",
+                "allOf": [{"$ref": "#/$defs/RecordSchemaRecordStatusEnum"}],
                 "default": 0,
-                "allOf": [{"$ref": "#/definitions/RecordSchemaRecordStatusEnum"}],
+                "description": "record_status",
+                "title": "Record Status",
             },
         },
-        "definitions": {
-            "RecordSchemaRecordTypeEnum": {
-                "title": "RecordSchemaRecordTypeEnum",
-                "description": "An enumeration.",
-                "enum": ["NEW", "OLD"],
-            },
-            "RecordSchemaRecordStatusEnum": {
-                "title": "RecordSchemaRecordStatusEnum",
-                "description": "An enumeration.",
-                "enum": [0, 1, 2],
-            },
-        },
+        "required": ["title"],
+        "title": "RecordSchema",
+        "type": "object",
     }
 
 
@@ -174,74 +274,84 @@ def test_enum_choices():
             use_enum_values = True
 
     assert PreferenceSchema.model_json_schema() == {
-        "title": "PreferenceSchema",
-        "description": "Preference(id, name, preferred_food, preferred_group, preferred_sport, preferred_musician)",
-        "type": "object",
+        "$defs": {
+            "PreferenceSchemaPreferredFoodEnum": {
+                "enum": ["ba", "ap"],
+                "title": "PreferenceSchemaPreferredFoodEnum",
+                "type": "string",
+            },
+            "PreferenceSchemaPreferredGroupEnum": {
+                "enum": [1, 2],
+                "title": "PreferenceSchemaPreferredGroupEnum",
+                "type": "integer",
+            },
+            "PreferenceSchemaPreferredMusicianEnum": {
+                "enum": ["tom_jobim", "sinatra", ""],
+                "title": "PreferenceSchemaPreferredMusicianEnum",
+                "type": "string",
+            },
+            "PreferenceSchemaPreferredSportEnum": {
+                "enum": ["football", "basketball", ""],
+                "title": "PreferenceSchemaPreferredSportEnum",
+                "type": "string",
+            },
+        },
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "id": {
+                "default": None,
+                "description": "id",
+                "title": "Id",
+                "type": "integer",
+            },
             "name": {
-                "title": "Name",
                 "description": "name",
                 "maxLength": 128,
+                "title": "Name",
                 "type": "string",
             },
             "preferred_food": {
-                "title": "Preferred Food",
-                "description": "preferred_food",
+                "allOf": [{"$ref": "#/$defs/PreferenceSchemaPreferredFoodEnum"}],
                 "default": "ba",
-                "allOf": [{"$ref": "#/definitions/PreferenceSchemaPreferredFoodEnum"}],
+                "description": "preferred_food",
+                "title": "Preferred Food",
             },
             "preferred_group": {
-                "title": "Preferred Group",
-                "description": "preferred_group",
+                "allOf": [{"$ref": "#/$defs/PreferenceSchemaPreferredGroupEnum"}],
                 "default": 1,
-                "allOf": [{"$ref": "#/definitions/PreferenceSchemaPreferredGroupEnum"}],
+                "description": "preferred_group",
+                "title": "Preferred Group",
             },
             "preferred_sport": {
-                "title": "Preferred Sport",
+                "allOf": [{"$ref": "#/$defs/PreferenceSchemaPreferredSportEnum"}],
+                "default": None,
                 "description": "preferred_sport",
-                "allOf": [{"$ref": "#/definitions/PreferenceSchemaPreferredSportEnum"}],
+                "title": "Preferred Sport",
             },
             "preferred_musician": {
-                "allOf": [{"$ref": "#/definitions/PreferenceSchemaPreferredMusicianEnum"}],
-                'default': '',
+                "anyOf": [
+                    {"$ref": "#/$defs/PreferenceSchemaPreferredMusicianEnum"},
+                    {"type": "null"},
+                ],
+                "default": "",
                 "description": "preferred_musician",
-                "title": "Preferred Musician"
+                "title": "Preferred Musician",
             },
         },
         "required": ["name"],
-        "definitions": {
-            "PreferenceSchemaPreferredFoodEnum": {
-                "title": "PreferenceSchemaPreferredFoodEnum",
-                "description": "An enumeration.",
-                "enum": ["ba", "ap"],
-            },
-            "PreferenceSchemaPreferredGroupEnum": {
-                "title": "PreferenceSchemaPreferredGroupEnum",
-                "description": "An enumeration.",
-                "enum": [1, 2],
-            },
-            "PreferenceSchemaPreferredSportEnum": {
-                "title": "PreferenceSchemaPreferredSportEnum",
-                "description": "An enumeration.",
-                "enum": ["football", "basketball", ""],
-            },
-            "PreferenceSchemaPreferredMusicianEnum": {
-                "title": "PreferenceSchemaPreferredMusicianEnum",
-                "description": "An enumeration.",
-                "enum": ["tom_jobim", "sinatra", ""],
-            }
-        },
+        "title": "PreferenceSchema",
+        "type": "object",
     }
 
-    preference = Preference.objects.create(name="Jordan", preferred_sport="", preferred_musician=None)
+    preference = Preference.objects.create(
+        name="Jordan", preferred_sport="", preferred_musician=None
+    )
     assert PreferenceSchema.from_django(preference).model_dump() == {
         "id": 1,
         "name": "Jordan",
         "preferred_food": "ba",
         "preferred_group": 1,
         "preferred_sport": "",
-        'preferred_musician': None
+        "preferred_musician": None,
     }
 
 

@@ -236,10 +236,17 @@ class Preference(models.Model):
         choices=GroupChoices.choices, default=GroupChoices.GROUP_1
     )
     preferred_sport = models.CharField(
-        max_length=255, choices=SportChoices.choices, default=SportChoices.FOOTBALL, blank=True
+        max_length=255,
+        choices=SportChoices.choices,
+        default=SportChoices.FOOTBALL,
+        blank=True,
     )
     preferred_musician = models.CharField(
-        max_length=255, choices=MusicianChoices.choices, null=True, blank=True, default=""
+        max_length=255,
+        choices=MusicianChoices.choices,
+        null=True,
+        blank=True,
+        default="",
     )
 
 
@@ -251,9 +258,7 @@ class Searchable(models.Model):
         return self.title
 
     def get_field_types(self):
-        return {
-            "search_vector": Optional[str]
-        }
+        return {"search_vector": Optional[str]}
 
     class Meta:
         indexes = [GinIndex(fields=["search_vector"], name="search_vector_idx")]

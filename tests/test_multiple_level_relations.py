@@ -1,10 +1,16 @@
-
 from decimal import Decimal
 from typing import List, Optional
 
 import pytest
 from pydantic import validator
-from testapp.order import Order, OrderItem, OrderItemDetail, OrderUser, OrderUserFactory, OrderUserProfile
+from testapp.order import (
+    Order,
+    OrderItem,
+    OrderItemDetail,
+    OrderUser,
+    OrderUserFactory,
+    OrderUserProfile,
+)
 
 from djantic import ModelSchema
 
@@ -39,139 +45,139 @@ def test_multiple_level_relations():
 
         class Config:
             model = OrderUser
-            include = ('id',
-                       'first_name',
-                       'last_name',
-                       'email',
-                       'profile',
-                       'orders',
-                       'user_cache')
+            include = (
+                "id",
+                "first_name",
+                "last_name",
+                "email",
+                "profile",
+                "orders",
+                "user_cache",
+            )
 
-        @validator('user_cache', pre=True, always=True)
+        @validator("user_cache", pre=True, always=True)
         def get_user_cache(cls, _):
-            return {
-                'has_order': True
-            }
+            return {"has_order": True}
 
     user = OrderUserFactory.create()
 
     assert OrderUserSchema.from_django(user).dict() == {
-        'id': 1,
-        'first_name': '',
-        'last_name': None,
-        'email': '',
-        'user_cache': {'has_order': True},
-        'profile': {
-            'id': 1,
-            'address': '',
-            'user': 1
-        },
-        'orders': [
+        "id": 1,
+        "first_name": "",
+        "last_name": None,
+        "email": "",
+        "user_cache": {"has_order": True},
+        "profile": {"id": 1, "address": "", "user": 1},
+        "orders": [
             {
-                'id': 1,
-                'total_price': Decimal('0.00000'),
-                'shipping_address': '',
-                'user': 1,
-                'items': [
+                "id": 1,
+                "total_price": Decimal("0.00000"),
+                "shipping_address": "",
+                "user": 1,
+                "items": [
                     {
-                        'id': 1,
-                        'name': '',
-                        'price': Decimal('0.00000'),
-                        'quantity': 0,
-                        'order': 1,
-                        'details': [
+                        "id": 1,
+                        "name": "",
+                        "price": Decimal("0.00000"),
+                        "quantity": 0,
+                        "order": 1,
+                        "details": [
                             {
-                                'id': 1,
-                                'name': '',
-                                'value': 0,
-                                'quantity': 0,
-                                'order_item': 1
+                                "id": 1,
+                                "name": "",
+                                "value": 0,
+                                "quantity": 0,
+                                "order_item": 1,
                             },
                             {
-                                'id': 2,
-                                'name': '',
-                                'value': 0,
-                                'quantity': 0,
-                                'order_item': 1
-                            }
-                        ]
+                                "id": 2,
+                                "name": "",
+                                "value": 0,
+                                "quantity": 0,
+                                "order_item": 1,
+                            },
+                        ],
                     },
                     {
-                        'details': [
+                        "details": [
                             {
-                                'id': 3,
-                                'name': '',
-                                'value': 0,
-                                'quantity': 0,
-                                'order_item': 2
+                                "id": 3,
+                                "name": "",
+                                "value": 0,
+                                "quantity": 0,
+                                "order_item": 2,
                             },
                             {
-                                'id': 4,
-                                'name': '',
-                                'value': 0,
-                                'quantity': 0,
-                                'order_item': 2
-                            }
+                                "id": 4,
+                                "name": "",
+                                "value": 0,
+                                "quantity": 0,
+                                "order_item": 2,
+                            },
                         ],
-                        'id': 2,
-                        'name': '',
-                        'price': Decimal('0.00000'),
-                        'quantity': 0,
-                        'order': 1
-                    }
+                        "id": 2,
+                        "name": "",
+                        "price": Decimal("0.00000"),
+                        "quantity": 0,
+                        "order": 1,
+                    },
                 ],
-
             },
             {
-                'id': 2,
-                'total_price': Decimal('0.00000'),
-                'shipping_address': '',
-                'user': 1,
-                'items': [
+                "id": 2,
+                "total_price": Decimal("0.00000"),
+                "shipping_address": "",
+                "user": 1,
+                "items": [
                     {
-                        'id': 3,
-                        'name': '',
-                        'price': Decimal('0.00000'),
-                        'quantity': 0,
-                        'order': 2,
-                        'details': [
+                        "id": 3,
+                        "name": "",
+                        "price": Decimal("0.00000"),
+                        "quantity": 0,
+                        "order": 2,
+                        "details": [
                             {
-                                'id': 5,
-                                'name': '',
-                                'value': 0,
-                                'quantity': 0,
-                                'order_item': 3},
+                                "id": 5,
+                                "name": "",
+                                "value": 0,
+                                "quantity": 0,
+                                "order_item": 3,
+                            },
                             {
-                                'id': 6,
-                                'name': '',
-                                'value': 0,
-                                'quantity': 0,
-                                'order_item': 3}
-                        ]
+                                "id": 6,
+                                "name": "",
+                                "value": 0,
+                                "quantity": 0,
+                                "order_item": 3,
+                            },
+                        ],
                     },
                     {
-                        'id': 4,
-                        'name': '',
-                        'price': Decimal('0.00000'),
-                        'quantity': 0,
-                        'order': 2,
-                        'details': [
+                        "id": 4,
+                        "name": "",
+                        "price": Decimal("0.00000"),
+                        "quantity": 0,
+                        "order": 2,
+                        "details": [
                             {
-                                'id': 7,
-                                'name': '',
-                                'value': 0,
-                                'quantity': 0,
-                                'order_item': 4},
+                                "id": 7,
+                                "name": "",
+                                "value": 0,
+                                "quantity": 0,
+                                "order_item": 4,
+                            },
                             {
-                                'id': 8,
-                                'name': '',
-                                'value': 0,
-                                'quantity': 0,
-                                'order_item': 4}]
-                    }
-                ]
-            }
-        ]
+                                "id": 8,
+                                "name": "",
+                                "value": 0,
+                                "quantity": 0,
+                                "order_item": 4,
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
     }
 
     assert OrderUserSchema.schema() == {
@@ -179,116 +185,82 @@ def test_multiple_level_relations():
         "description": "OrderUser(id, first_name, last_name, email)",
         "type": "object",
         "properties": {
-            "profile": {
-                "$ref": "#/definitions/OrderUserProfileSchema"
-            },
+            "profile": {"$ref": "#/definitions/OrderUserProfileSchema"},
             "orders": {
                 "title": "Orders",
                 "type": "array",
-                "items": {
-                    "$ref": "#/definitions/OrderSchema"
-                }
+                "items": {"$ref": "#/definitions/OrderSchema"},
             },
-            "id": {
-                "title": "Id",
-                "description": "id",
-                "type": "integer"
-            },
+            "id": {"title": "Id", "description": "id", "type": "integer"},
             "first_name": {
                 "title": "First Name",
                 "description": "first_name",
                 "maxLength": 50,
-                "type": "string"
+                "type": "string",
             },
             "last_name": {
                 "title": "Last Name",
                 "description": "last_name",
                 "maxLength": 50,
-                "type": "string"
+                "type": "string",
             },
             "email": {
                 "title": "Email",
                 "description": "email",
                 "maxLength": 254,
-                "type": "string"
+                "type": "string",
             },
-            "user_cache": {
-                "title": "User Cache",
-                "type": "object"
-            }
+            "user_cache": {"title": "User Cache", "type": "object"},
         },
-        "required": [
-            "profile",
-            "orders",
-            "first_name",
-            "email"
-        ],
+        "required": ["profile", "orders", "first_name", "email"],
         "definitions": {
             "OrderUserProfileSchema": {
                 "title": "OrderUserProfileSchema",
                 "description": "OrderUserProfile(id, address, user)",
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "title": "Id",
-                        "description": "id",
-                        "type": "integer"
-                    },
+                    "id": {"title": "Id", "description": "id", "type": "integer"},
                     "address": {
                         "title": "Address",
                         "description": "address",
                         "maxLength": 255,
-                        "type": "string"
+                        "type": "string",
                     },
-                    "user": {
-                        "title": "User",
-                        "description": "id",
-                        "type": "integer"
-                    }
+                    "user": {"title": "User", "description": "id", "type": "integer"},
                 },
-                "required": [
-                    "address",
-                    "user"
-                ]
+                "required": ["address", "user"],
             },
             "OrderItemDetailSchema": {
                 "title": "OrderItemDetailSchema",
                 "description": "OrderItemDetail(id, name, value, quantity, order_item)",
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "title": "Id",
-                        "description": "id",
-                        "type": "integer"
-                    },
+                    "id": {"title": "Id", "description": "id", "type": "integer"},
                     "name": {
                         "title": "Name",
                         "description": "name",
                         "maxLength": 30,
-                        "type": "string"
+                        "type": "string",
                     },
                     "value": {
                         "title": "Value",
                         "description": "value",
                         "default": 0,
-                        "type": "integer"
+                        "type": "integer",
                     },
                     "quantity": {
                         "title": "Quantity",
                         "description": "quantity",
                         "default": 0,
-                        "type": "integer"
+                        "type": "integer",
                     },
                     "order_item": {
                         "title": "Order Item",
                         "description": "id",
-                        "type": "integer"
-                    }
+                        "type": "integer",
+                    },
                 },
-                "required": [
-                    "name",
-                    "order_item"
-                ]
+                "required": ["name", "order_item"],
             },
             "OrderItemSchema": {
                 "title": "OrderItemSchema",
@@ -298,44 +270,30 @@ def test_multiple_level_relations():
                     "details": {
                         "title": "Details",
                         "type": "array",
-                        "items": {
-                            "$ref": "#/definitions/OrderItemDetailSchema"
-                        }
+                        "items": {"$ref": "#/definitions/OrderItemDetailSchema"},
                     },
-                    "id": {
-                        "title": "Id",
-                        "description": "id",
-                        "type": "integer"
-                    },
+                    "id": {"title": "Id", "description": "id", "type": "integer"},
                     "name": {
                         "title": "Name",
                         "description": "name",
                         "maxLength": 30,
-                        "type": "string"
+                        "type": "string",
                     },
                     "price": {
                         "title": "Price",
                         "description": "price",
                         "default": 0,
-                        "type": "number"
+                        "type": "number",
                     },
                     "quantity": {
                         "title": "Quantity",
                         "description": "quantity",
                         "default": 0,
-                        "type": "integer"
+                        "type": "integer",
                     },
-                    "order": {
-                        "title": "Order",
-                        "description": "id",
-                        "type": "integer"
-                    }
+                    "order": {"title": "Order", "description": "id", "type": "integer"},
                 },
-                "required": [
-                    "details",
-                    "name",
-                    "order"
-                ]
+                "required": ["details", "name", "order"],
             },
             "OrderSchema": {
                 "title": "OrderSchema",
@@ -345,38 +303,24 @@ def test_multiple_level_relations():
                     "items": {
                         "title": "Items",
                         "type": "array",
-                        "items": {
-                            "$ref": "#/definitions/OrderItemSchema"
-                        }
+                        "items": {"$ref": "#/definitions/OrderItemSchema"},
                     },
-                    "id": {
-                        "title": "Id",
-                        "description": "id",
-                        "type": "integer"
-                    },
+                    "id": {"title": "Id", "description": "id", "type": "integer"},
                     "total_price": {
                         "title": "Total Price",
                         "description": "total_price",
                         "default": 0,
-                        "type": "number"
+                        "type": "number",
                     },
                     "shipping_address": {
                         "title": "Shipping Address",
                         "description": "shipping_address",
                         "maxLength": 255,
-                        "type": "string"
+                        "type": "string",
                     },
-                    "user": {
-                        "title": "User",
-                        "description": "id",
-                        "type": "integer"
-                    }
+                    "user": {"title": "User", "description": "id", "type": "integer"},
                 },
-                "required": [
-                    "items",
-                    "shipping_address",
-                    "user"
-                ]
-            }
-        }
+                "required": ["items", "shipping_address", "user"],
+            },
+        },
     }
