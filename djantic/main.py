@@ -214,18 +214,21 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         return result
 
     @classmethod
-    def schema_json(
-        cls,
-        *,
-        by_alias: bool = True,
-        encoder_cls: Any = ModelSchemaJSONEncoder,
-        **dumps_kwargs: Any,
-    ) -> str:
+    def model_json_schema(cls, *args, **kwargs):
+        result = super().model_json_schema(*args, **kwargs)
+        if cls.model_config.get("include"):
+            include = cls.model_config.get("include", [])
+            for key in list(result["properties"].keys()):
+                if key not in include:
+                    del result["properties"][key]
 
-        # TODO this would error
-        return cls.__config__.json_dumps(
-            cls.schema(by_alias=by_alias), cls=encoder_cls, **dumps_kwargs
-        )
+        if cls.model_config.get("exclude"):
+            exclude = cls.model_config.get("exclude")
+            for key in list(result["properties"].keys()):
+                if key in exclude:
+                    del result["properties"][key]
+
+        return result
 
     @classmethod
     @no_type_check
