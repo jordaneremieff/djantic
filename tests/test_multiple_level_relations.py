@@ -12,40 +12,33 @@ from testapp.order import (
     OrderUserProfile,
 )
 
+from pydantic import ConfigDict
 from djantic import ModelSchema
 
 
 @pytest.mark.django_db
 def test_multiple_level_relations():
     class OrderItemDetailSchema(ModelSchema):
-        class Config:
-            model = OrderItemDetail
+        model_config = ConfigDict(model=OrderItemDetail)
 
     class OrderItemSchema(ModelSchema):
         details: List[OrderItemDetailSchema]
-
-        class Config:
-            model = OrderItem
+        model_config = ConfigDict(model=OrderItem)
 
     class OrderSchema(ModelSchema):
         items: List[OrderItemSchema]
-
-        class Config:
-            model = Order
+        model_config = ConfigDict(model=Order)
 
     class OrderUserProfileSchema(ModelSchema):
-
-        class Config:
-            model = OrderUserProfile
+        model_config = ConfigDict(model=OrderUserProfile)
 
     class OrderUserSchema(ModelSchema):
         orders: List[OrderSchema]
         profile: OrderUserProfileSchema
         user_cache: Optional[dict]
-
-        class Config:
-            model = OrderUser
-            include = (
+        model_config = ConfigDict(
+            model=OrderUser,
+            include=(
                 "id",
                 "first_name",
                 "last_name",
@@ -54,6 +47,7 @@ def test_multiple_level_relations():
                 "orders",
                 "user_cache",
             )
+        )
 
         @validator("user_cache", pre=True, always=True)
         def get_user_cache(cls, _):
@@ -180,7 +174,7 @@ def test_multiple_level_relations():
         ],
     }
 
-    assert OrderUserSchema.schema() == {
+    assert OrderUserSchema.model_json_schema() == {
         "title": "OrderUserSchema",
         "description": "OrderUser(id, first_name, last_name, email)",
         "type": "object",

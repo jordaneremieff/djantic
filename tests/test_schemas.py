@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 from testapp.models import User, Profile, Configuration
 
+from pydantic import ConfigDict
 from djantic import ModelSchema
 
 
@@ -19,28 +20,23 @@ def test_description():
         """
         Pydantic profile docstring.
         """
+        model_config = ConfigDict(model=Profile)
 
-        class Config:
-            model = Profile
-
-    assert ProfileSchema.schema()["description"] == "Pydantic profile docstring."
+    assert ProfileSchema.model_json_schema()["description"] == "Pydantic profile docstring."
 
     class UserSchema(ModelSchema):
         """
         Pydantic user docstring.
         """
+        model_config = ConfigDict(model=User)
 
-        class Config:
-            model = User
-
-    assert UserSchema.schema()["description"] == "Pydantic user docstring."
+    assert UserSchema.model_json_schema()["description"] == "Pydantic user docstring."
 
     # Default will be the model docstring
     class UserSchema(ModelSchema):
-        class Config:
-            model = User
+        model_config = ConfigDict(model=User)
 
-    assert UserSchema.schema()["description"] == "A user of the application."
+    assert UserSchema.model_json_schema()["description"] == "A user of the application."
 
 
 @pytest.mark.django_db
@@ -50,9 +46,7 @@ def test_cache():
     """
 
     class UserSchema(ModelSchema):
-        class Config:
-            model = User
-            include = ["id", "first_name"]
+        model_config = ConfigDict(model=User, include=["id", "first_name"])
 
     expected = {
         "title": "UserSchema",
@@ -72,9 +66,9 @@ def test_cache():
 
     assert True not in UserSchema.__schema_cache__
     assert False not in UserSchema.__schema_cache__
-    assert UserSchema.schema() == expected
+    assert UserSchema.model_json_schema() == expected
     assert UserSchema.__schema_cache__.keys() == {(True, "#/definitions/{model}")}
-    assert UserSchema.schema() == expected
+    assert UserSchema.model_json_schema() == expected
 
 
 @pytest.mark.django_db
@@ -89,21 +83,17 @@ def test_include_exclude():
         """
         All fields are included by default.
         """
+        model_config = ConfigDict(model=User)
 
-        class Config:
-            model = User
-
-    assert set(UserSchema.schema()["properties"].keys()) == set(all_user_fields)
+    assert set(UserSchema.model_json_schema()["properties"].keys()) == set(all_user_fields)
 
     class UserSchema(ModelSchema):
         """
         All fields are included explicitly.
         """
+        model_config = ConfigDict(model=User)
 
-        class Config:
-            model = User
-
-    assert set(UserSchema.schema()["properties"].keys()) == set(all_user_fields)
+    assert set(UserSchema.model_json_schema()["properties"].keys()) == set(all_user_fields)
 
     class UserSchema(ModelSchema):
         """
@@ -111,12 +101,9 @@ def test_include_exclude():
         """
 
         last_name: str  # Fields annotations follow the same config rules
+        model_config = ConfigDict(model=User, include=["first_name", "email"])
 
-        class Config:
-            model = User
-            include = ["first_name", "email"]
-
-    included = UserSchema.schema()["properties"].keys()
+    included = UserSchema.model_json_schema()["properties"].keys()
     assert set(included) == set(UserSchema.model_config["include"])
     assert set(included) == set(["first_name", "email"])
 
@@ -127,12 +114,12 @@ def test_include_exclude():
 
         first_name: str
         last_name: str
+        model_config = ConfigDict(
+            model=User,
+            exclude=["first_name", "last_name", "email", "created_at", "updated_at"]
+        )
 
-        class Config:
-            model = User
-            exclude = ["first_name", "last_name", "email", "created_at", "updated_at"]
-
-    not_excluded = UserSchema.schema()["properties"].keys()
+    not_excluded = UserSchema.model_json_schema()["properties"].keys()
     assert set(not_excluded) == set(
         [
             field
@@ -159,12 +146,12 @@ def test_annotations():
 
         first_name: Optional[str]
         last_name: str
+        model_config = ConfigDict(
+            model=User,
+            include=["first_name", "last_name"]
+        )
 
-        class Config:
-            model = User
-            include = ["first_name", "last_name"]
-
-    assert UserSchema.schema()["required"] == ["last_name"]
+    assert UserSchema.model_json_schema()["required"] == ["last_name"]
 
     updated_at_dt = datetime.datetime(2020, 12, 31, 0, 0)
 
@@ -178,11 +165,9 @@ def test_annotations():
         email: str = Field(default_factory=lambda: "jordan@eremieff.com")
         created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
         updated_at: datetime.datetime = updated_at_dt
+        model_config = ConfigDict(model=User)
 
-        class Config:
-            model = User
-
-    schema = UserSchema.schema()
+    schema = UserSchema.model_json_schema()
 
     props = schema["properties"]
     assert "default" in props["created_at"]
@@ -197,6 +182,7 @@ def test_by_alias_generator():
         """
         Test alias generator.
         """
+        # TODO What happens here?
 
         class Config:
             model = User
@@ -206,7 +192,7 @@ def test_by_alias_generator():
             def alias_generator(x):
                 return x.upper()
 
-    assert UserSchema.schema() == {
+    assert UserSchema.model_json_schema() == {
         "title": "UserSchema",
         "description": "Test alias generator.",
         "type": "object",
@@ -226,7 +212,7 @@ def test_by_alias_generator():
         },
         "required": ["FIRST_NAME"],
     }
-    assert set(UserSchema.schema()["properties"].keys()) == set(
+    assert set(UserSchema.model_json_schema()["properties"].keys()) == set(
         ["FIRST_NAME", "LAST_NAME"]
     )
     assert set(UserSchema.schema(by_alias=False)["properties"].keys()) == set(
@@ -250,20 +236,14 @@ def test_sub_model():
         """
         Django model relation as a sub-model.
         """
-
-        class Config:
-            model = Profile
-            include = ["id"]
+        model_config = ConfigDict(model=Profile, include=["id"])
 
     class UserSchema(ModelSchema):
         sign_up: SignUp
         profile: ProfileSchema
+        model_config = ConfigDict(model=User, include=["id", "sign_up", "profile"])
 
-        class Config:
-            model = User
-            include = ["id", "sign_up", "profile"]
-
-    assert set(UserSchema.schema()["definitions"].keys()) == set(
+    assert set(UserSchema.model_json_schema()["definitions"].keys()) == set(
         ["ProfileSchema", "SignUp"]
     )
 
@@ -276,10 +256,10 @@ def test_sub_model():
         content: str
         sent_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
-    assert set(Notification.schema()["properties"].keys()) == set(
+    assert set(Notification.model_json_schema()["properties"].keys()) == set(
         ["user", "content", "sent_at"]
     )
-    assert set(Notification.schema()["definitions"].keys()) == set(
+    assert set(Notification.model_json_schema()["definitions"].keys()) == set(
         ["ProfileSchema", "SignUp", "UserSchema"]
     )
 
@@ -290,6 +270,7 @@ def test_json():
         """
         Test JSON schema.
         """
+        model_config = ConfigDict(model=Configuration)
 
         class Config:
             model = Configuration
@@ -390,12 +371,9 @@ def test_include_from_annotations():
 
     class ProfileSchema(ModelSchema):
         website: str
+        model_config = ConfigDict(model=Profile, include="__annotations__")
 
-        class Config:
-            model = Profile
-            include = "__annotations__"
-
-    assert ProfileSchema.schema() == {
+    assert ProfileSchema.model_json_schema() == {
         "title": "ProfileSchema",
         "description": "A user's profile.",
         "type": "object",

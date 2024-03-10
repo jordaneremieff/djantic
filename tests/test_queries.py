@@ -3,6 +3,7 @@ from typing import List
 import pytest
 from testapp.models import Bookmark, Message, Profile, Tagged, Thread, User
 
+from pydantic import ConfigDict
 from djantic import ModelSchema
 
 
@@ -17,9 +18,7 @@ def test_get_instance():
     )
 
     class UserSchema(ModelSchema):
-        class Config:
-            model = User
-            include = ["id", "first_name"]
+        model_config = ConfigDict(model=User, include=["id", "first_name"])
 
     assert UserSchema.from_django(user).model_dump() == {
         "first_name": "Jordan",
@@ -34,15 +33,12 @@ def test_get_instance_with_generic_foreign_key():
     Tagged.objects.create(content_object=bookmark, slug="django")
 
     class TaggedSchema(ModelSchema):
-        class Config:
-            model = Tagged
+        model_config = ConfigDict(model=Tagged)
 
     class BookmarkWithTaggedSchema(ModelSchema):
 
         tags: List[TaggedSchema]
-
-        class Config:
-            model = Bookmark
+        model_config = ConfigDict(model=Bookmark)
 
     bookmark_with_tagged_schema = BookmarkWithTaggedSchema.from_django(bookmark)
 
@@ -75,9 +71,10 @@ def test_get_queryset_with_reverse_one_to_one():
         Profile.objects.create(user=user, location="Australia")
 
     class UserSchema(ModelSchema):
-        class Config:
-            model = User
-            include = ["id", "email", "first_name", "profile"]
+        model_config = ConfigDict(
+            model=User,
+            include=["id", "email", "first_name", "profile"]
+        )
 
     users = User.objects.all()
     user_schema_qs = UserSchema.from_django(users, many=True)
@@ -93,17 +90,14 @@ def test_get_queryset_with_reverse_one_to_one():
 
     # Test when using a declared sub-model
     class ProfileSchema(ModelSchema):
-        class Config:
-            model = Profile
-            include = ["id", "location"]
+        model_config = ConfigDict(model=Profile, include=["id", "location"])
 
     class UserWithProfileSchema(ModelSchema):
-
         profile: ProfileSchema
-
-        class Config:
-            model = User
-            exclude = ["created_at", "updated_at", "last_name"]
+        model_config = ConfigDict(
+            model=User,
+            exclude=["created_at", "updated_at", "last_name"]
+        )
 
     users = User.objects.all()
 
@@ -137,24 +131,17 @@ def test_get_queryset_with_foreign_key():
         Message.objects.create(content=content, thread=thread2)
 
     class MessageSchema(ModelSchema):
-        class Config:
-            model = Message
-            exclude = ["created_at"]
+        model_config = ConfigDict(model=Message, exclude=["created_at"])
 
     schema = MessageSchema.from_django(message_one)
     assert schema.model_dump() == {"id": 5, "content": "lol", "thread": 1}
 
     class ThreadSchema(ModelSchema):
-        class Config:
-            model = Thread
-            exclude = ["created_at"]
+        model_config = ConfigDict(model=Thread, exclude=["created_at"])
 
     class MessageWithThreadSchema(ModelSchema):
         thread: ThreadSchema
-
-        class Config:
-            model = Message
-            exclude = ["created_at"]
+        model_config = ConfigDict(model=Message, exclude=["created_at"])
 
     schema = MessageWithThreadSchema.from_django(message_one)
     assert schema.model_dump() == {
@@ -183,13 +170,10 @@ def test_get_queryset_with_reverse_foreign_key():
     threads = Thread.objects.all()
 
     class MessageSchema(ModelSchema):
-        class Config:
-            model = Message
-            include = ["id", "content"]
+        model_config = ConfigDict(model=Message, include=["id", "content"])
 
     class ThreadSchema(ModelSchema):
-        class Config:
-            model = Thread
+        model_config = ConfigDict(model=Thread)
 
     thread_schema_qs = ThreadSchema.from_django(threads, many=True)
     thread_schemas = [t.model_dump() for t in thread_schema_qs]
@@ -209,10 +193,7 @@ def test_get_queryset_with_reverse_foreign_key():
     # Test when using a declared sub-model
     class ThreadWithMessageListSchema(ModelSchema):
         messages: List[MessageSchema]
-
-        class Config:
-            model = Thread
-            exclude = ["created_at", "updated_at"]
+        model_config = ConfigDict(model=Thread, exclude=["created_at", "updated_at"])
 
     thread_with_message_list_schema_qs = ThreadWithMessageListSchema.from_django(
         threads, many=True
@@ -248,12 +229,10 @@ def test_get_queryset_with_generic_foreign_key():
     bookmark.tags.create(slug="tag-2")
 
     class TaggedSchema(ModelSchema):
-        class Config:
-            model = Tagged
+        model_config = ConfigDict(model=Tagged)
 
     class BookmarkSchema(ModelSchema):
-        class Config:
-            model = Bookmark
+        model_config = ConfigDict(model=Bookmark)
 
     schema = BookmarkSchema.from_django(bookmark)
     schema.model_dump() == {

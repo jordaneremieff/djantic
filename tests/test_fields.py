@@ -1,14 +1,14 @@
 import pytest
 from testapp.models import Configuration, Listing, Preference, Record, Searchable
 
+from pydantic import ConfigDict
 from djantic import ModelSchema
 
 
 @pytest.mark.django_db
 def test_unhandled_field_type():
     class SearchableSchema(ModelSchema):
-        class Config:
-            model = Searchable
+        model_config = ConfigDict(model=Searchable)
 
     assert SearchableSchema.model_json_schema() == {
         "title": "SearchableSchema",
@@ -50,9 +50,7 @@ def test_custom_field():
     """
 
     class RecordSchema(ModelSchema):
-        class Config:
-            model = Record
-            include = ["id", "title", "items"]
+        model_config = ConfigDict(model=Record, include=["id", "title", "items"])
 
     assert RecordSchema.model_json_schema() == {
         "$defs": {
@@ -119,9 +117,7 @@ def test_postgres_json_field():
     """
 
     class ConfigurationSchema(ModelSchema):
-        class Config:
-            model = Configuration
-            include = ["permissions", "changelog", "metadata"]
+        model_config = ConfigDict(model=Configuration, include=["permissions", "changelog", "metadata"])
 
     assert ConfigurationSchema.model_json_schema() == {
         "properties": {
@@ -204,9 +200,7 @@ def test_lazy_choice_field():
     """
 
     class RecordSchema(ModelSchema):
-        class Config:
-            model = Record
-            include = ["record_type", "record_status"]
+        model_config = ConfigDict(model=Record, include=["record_type", "record_status"])
 
     assert RecordSchema.model_json_schema() == {
         "$defs": {
@@ -269,9 +263,7 @@ def test_lazy_choice_field():
 @pytest.mark.django_db
 def test_enum_choices():
     class PreferenceSchema(ModelSchema):
-        class Config:
-            model = Preference
-            use_enum_values = True
+        model_config = ConfigDict(model=Preference, use_enum_values=True)
 
     assert PreferenceSchema.model_json_schema() == {
         "$defs": {
@@ -358,14 +350,10 @@ def test_enum_choices():
 @pytest.mark.django_db
 def test_enum_choices_generates_unique_enums():
     class PreferenceSchema(ModelSchema):
-        class Config:
-            model = Preference
-            use_enum_values = True
+        model_config = ConfigDict(model=Preference, use_enum_values=True)
 
     class PreferenceSchema2(ModelSchema):
-        class Config:
-            model = Preference
-            use_enum_values = True
+        model_config = ConfigDict(model=Preference, use_enum_values=True)
 
     assert str(PreferenceSchema2.model_fields["preferred_food"].type_) != str(
         PreferenceSchema.model_fields["preferred_food"].type_
@@ -375,9 +363,7 @@ def test_enum_choices_generates_unique_enums():
 @pytest.mark.django_db
 def test_listing():
     class ListingSchema(ModelSchema):
-        class Config:
-            model = Listing
-            use_enum_values = True
+        model_config = ConfigDict(model=Listing, use_enum_values=True)
 
     assert ListingSchema.model_json_schema() == {
         "title": "ListingSchema",

@@ -17,6 +17,7 @@ from testapp.models import (
     User,
 )
 
+from pydantic import ConfigDict
 from djantic import ModelSchema
 
 
@@ -27,10 +28,9 @@ def test_m2m():
     """
 
     class ArticleSchema(ModelSchema):
-        class Config:
-            model = Article
+        model_config = ConfigDict(model=Article)
 
-    assert ArticleSchema.schema() == {
+    assert ArticleSchema.model_json_schema() == {
         "title": "ArticleSchema",
         "description": "A news article.",
         "type": "object",
@@ -67,11 +67,9 @@ def test_m2m():
 
     class ArticleWithPublicationListSchema(ModelSchema):
         publications: List[PublicationSchema]
+        model_config = ConfigDict(model=Article)
 
-        class Config:
-            model = Article
-
-    assert ArticleWithPublicationListSchema.schema() == {
+    assert ArticleWithPublicationListSchema.model_json_schema() == {
         "title": "ArticleWithPublicationListSchema",
         "description": "A news article.",
         "type": "object",
@@ -148,14 +146,12 @@ def test_foreign_key():
     """
 
     class ThreadSchema(ModelSchema):
-        class Config:
-            model = Thread
+        model_config = ConfigDict(model=Thread)
 
     class MessageSchema(ModelSchema):
-        class Config:
-            model = Message
+        model_config = ConfigDict(model=Message)
 
-    assert MessageSchema.schema() == {
+    assert MessageSchema.model_json_schema() == {
         "title": "MessageSchema",
         "description": "A message posted in a thread.",
         "type": "object",
@@ -174,13 +170,10 @@ def test_foreign_key():
     }
 
     class MessageWithThreadSchema(ModelSchema):
-
         thread: ThreadSchema
+        model_config = ConfigDict(model=Message)
 
-        class Config:
-            model = Message
-
-    assert MessageWithThreadSchema.schema() == {
+    assert MessageWithThreadSchema.model_json_schema() == {
         "title": "MessageWithThreadSchema",
         "description": "A message posted in a thread.",
         "type": "object",
@@ -226,11 +219,9 @@ def test_foreign_key():
 
     class ThreadWithMessageListSchema(ModelSchema):
         messages: List[MessageSchema]
+        model_config = ConfigDict(model=Thread)
 
-        class Config:
-            model = Thread
-
-    assert ThreadWithMessageListSchema.schema() == {
+    assert ThreadWithMessageListSchema.model_json_schema() == {
         "title": "ThreadWithMessageListSchema",
         "description": "A thread of messages.",
         "type": "object",
@@ -286,14 +277,12 @@ def test_one_to_one():
     """
 
     class UserSchema(ModelSchema):
-        class Config:
-            model = User
+        model_config = ConfigDict(model=User)
 
     class ProfileSchema(ModelSchema):
-        class Config:
-            model = Profile
+        model_config = ConfigDict(model=Profile)
 
-    assert ProfileSchema.schema() == {
+    assert ProfileSchema.model_json_schema() == {
         "title": "ProfileSchema",
         "description": "A user's profile.",
         "type": "object",
@@ -320,11 +309,9 @@ def test_one_to_one():
 
     class ProfileWithUserSchema(ModelSchema):
         user: UserSchema
+        model_config = ConfigDict(model=Profile)
 
-        class Config:
-            model = Profile
-
-    assert ProfileWithUserSchema.schema() == {
+    assert ProfileWithUserSchema.model_json_schema() == {
         "title": "ProfileWithUserSchema",
         "description": "A user's profile.",
         "type": "object",
@@ -403,14 +390,12 @@ def test_one_to_one_reverse():
     """
 
     class ProfileSchema(ModelSchema):
-        class Config:
-            model = Profile
+        model_config = ConfigDict(model=Profile)
 
     class UserSchema(ModelSchema):
-        class Config:
-            model = User
+        model_config = ConfigDict(model=User)
 
-    assert ProfileSchema.schema() == {
+    assert ProfileSchema.model_json_schema() == {
         "title": "ProfileSchema",
         "description": "A user's profile.",
         "type": "object",
@@ -437,11 +422,9 @@ def test_one_to_one_reverse():
 
     class UserWithProfileSchema(ModelSchema):
         profile: ProfileSchema
+        model_config = ConfigDict(model=User)
 
-        class Config:
-            model = User
-
-    assert UserWithProfileSchema.schema() == {
+    assert UserWithProfileSchema.model_json_schema() == {
         "title": "UserWithProfileSchema",
         "description": "A user of the application.",
         "type": "object",
@@ -516,10 +499,9 @@ def test_generic_relation():
     """
 
     class TaggedSchema(ModelSchema):
-        class Config:
-            model = Tagged
+        model_config = ConfigDict(model=Tagged)
 
-    assert TaggedSchema.schema() == {
+    assert TaggedSchema.model_json_schema() == {
         "title": "TaggedSchema",
         "description": "Tagged(id, slug, content_type, object_id)",
         "type": "object",
@@ -554,11 +536,9 @@ def test_generic_relation():
         # FIXME: I added this because for some reason in 2.2 the GenericRelation field
         # ends up required, but in 3 it does not.
         tags: List[Dict[str, int]] = None
+        model_config = ConfigDict(model=Bookmark)
 
-        class Config:
-            model = Bookmark
-
-    assert BookmarkSchema.schema() == {
+    assert BookmarkSchema.model_json_schema() == {
         "title": "BookmarkSchema",
         "description": "Bookmark(id, url)",
         "type": "object",
@@ -585,11 +565,9 @@ def test_generic_relation():
     class BookmarkWithTaggedSchema(ModelSchema):
 
         tags: List[TaggedSchema]
+        model_config = ConfigDict(model=Bookmark)
 
-        class Config:
-            model = Bookmark
-
-    assert BookmarkWithTaggedSchema.schema() == {
+    assert BookmarkWithTaggedSchema.model_json_schema() == {
         "title": "BookmarkWithTaggedSchema",
         "description": "Bookmark(id, url)",
         "type": "object",
@@ -645,12 +623,10 @@ def test_generic_relation():
     class ItemSchema(ModelSchema):
 
         tags: List[TaggedSchema]
-
-        class Config:
-            model = Item
+        model_config = ConfigDict(model=Item)
 
     # Test without defining a GenericRelation on the model
-    assert ItemSchema.schema() == {
+    assert ItemSchema.model_json_schema() == {
         "title": "ItemSchema",
         "description": "Item(id, name, item_list)",
         "type": "object",
@@ -712,14 +688,12 @@ def test_generic_relation():
 @pytest.mark.django_db
 def test_m2m_reverse():
     class ExpertSchema(ModelSchema):
-        class Config:
-            model = Expert
+        model_config = ConfigDict(model=Expert)
 
     class CaseSchema(ModelSchema):
-        class Config:
-            model = Case
+        model_config = ConfigDict(model=Case)
 
-    assert ExpertSchema.schema() == {
+    assert ExpertSchema.model_json_schema() == {
         "title": "ExpertSchema",
         "description": "Expert(id, name)",
         "type": "object",
@@ -744,7 +718,7 @@ def test_m2m_reverse():
         "required": ["name", "cases"],
     }
 
-    assert CaseSchema.schema() == {
+    assert CaseSchema.model_json_schema() == {
         "title": "CaseSchema",
         "description": "Case(id, name, details)",
         "type": "object",
@@ -794,19 +768,14 @@ def test_m2m_reverse():
 
     class CustomExpertSchema(ModelSchema):
         """Custom schema"""
-
         name: Optional[str]
-
-        class Config:
-            model = Expert
+        model_config = ConfigDict(model=Expert)
 
     class CaseSchema(ModelSchema):
         related_experts: List[CustomExpertSchema]
+        model_config = ConfigDict(model=Case)
 
-        class Config:
-            model = Case
-
-    assert CaseSchema.schema() == {
+    assert CaseSchema.model_json_schema() == {
         "title": "CaseSchema",
         "description": "Case(id, name, details)",
         "type": "object",
@@ -862,11 +831,9 @@ def test_m2m_reverse():
 def test_alias():
     class ProfileSchema(ModelSchema):
         first_name: str = Field(alias="user__first_name")
+        model_config = ConfigDict(model=Profile)
 
-        class Config:
-            model = Profile
-
-    assert ProfileSchema.schema() == {
+    assert ProfileSchema.model_json_schema() == {
         "title": "ProfileSchema",
         "description": "A user's profile.",
         "type": "object",

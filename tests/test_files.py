@@ -3,14 +3,14 @@ from tempfile import NamedTemporaryFile
 import pytest
 from testapp.models import Attachment
 
+from pydantic import ConfigDict
 from djantic import ModelSchema
 
 
 @pytest.mark.django_db
 def test_image_field_schema():
     class AttachmentSchema(ModelSchema):
-        class Config:
-            model = Attachment
+        model_config = ConfigDict(model=Attachment)
 
     image_file = NamedTemporaryFile(suffix=".jpg")
     attachment = Attachment.objects.create(
@@ -18,7 +18,7 @@ def test_image_field_schema():
         image=image_file.name,
     )
 
-    assert AttachmentSchema.schema() == {
+    assert AttachmentSchema.model_json_schema() == {
         "title": "AttachmentSchema",
         "description": "Attachment(id, description, image)",
         "type": "object",

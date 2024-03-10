@@ -2,6 +2,7 @@ import pytest
 from pydantic.errors import PydanticUserError
 from testapp.models import User
 
+from pydantic import ConfigDict
 from djantic import ModelSchema
 
 
@@ -20,9 +21,8 @@ def test_config_errors():
         PydanticUserError, match="(Is `Config.model` a valid Django model class?)"
     ):
 
-        class InvalidModelErrorSchema(ModelSchema):
-            class Config:
-                model = "Ok"
+        class InvalidModelErrorSchema2(ModelSchema):
+            model_config = ConfigDict(model="Ok")
 
     with pytest.raises(
         PydanticUserError,
@@ -30,10 +30,7 @@ def test_config_errors():
     ):
 
         class IncludeExcludeErrorSchema(ModelSchema):
-            class Config:
-                model = User
-                include = ["id"]
-                exclude = ["first_name"]
+            model_config = ConfigDict(model=User, include=["id"], exclude=["first_name"])
 
 
 @pytest.mark.django_db
@@ -43,16 +40,12 @@ def test_get_field_names():
     """
 
     class UserSchema(ModelSchema):
-        class Config:
-            model = User
-            include = ["id"]
+        model_config = ConfigDict(model=User, include=["id"])
 
     assert UserSchema.get_field_names() == ["id"]
 
     class UserSchema(ModelSchema):
-        class Config:
-            model = User
-            exclude = ["id"]
+        model_config = ConfigDict(model=User, include=["id"])
 
     assert UserSchema.get_field_names() == [
         "profile",
