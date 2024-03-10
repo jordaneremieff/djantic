@@ -126,7 +126,8 @@ class ModelSchemaMetaclass(ModelMetaclass):
                     for field_name, model_field in field_values.items()
                 }
                 model_schema = create_model(
-                    name, __base__=cls, __module__=cls.__module__, **field_values
+                    name, __base__=cls, __module__=cls.__module__, __doc__=cls.__doc__,
+                    **field_values
                 )
                 return model_schema
 
@@ -139,6 +140,14 @@ class ProxyGetterNestedObj:
         self.schema_class = schema_class
 
     def get(self, key: Any, default: Any = None) -> Any:
+        if "__" in key:
+            # Allow double underscores aliases: `first_name: str = Field(alias="user__first_name")`
+            keys_map = key.split("__")
+            attr = reduce(lambda a, b: getattr(a, b, default), keys_map, self._obj)
+        else:
+            attr = getattr(self._obj, key, None)
+        is_manager = issubclass(attr.__class__, Manager)
+
         alias = self.schema_class.__alias_map__[key]
         field = self.schema_class.model_fields[alias]
         typing_args = get_args(field.annotation)
@@ -150,17 +159,10 @@ class ProxyGetterNestedObj:
         # TODO do we have test for a list thingie?
         elif typing_args[0] == List:
             outer_type_ = typing_origin
+        elif is_manager and field.annotation == List[Dict[str, int]]:
+            outer_type_ = field.annotation
         else:
             outer_type_ = typing_args[0]
-
-        if "__" in key:
-            # Allow double underscores aliases: `first_name: str = Field(alias="user__first_name")`
-            keys_map = key.split("__")
-            attr = reduce(lambda a, b: getattr(a, b, default), keys_map, self._obj)
-        else:
-            attr = getattr(self._obj, key, None)
-
-        is_manager = issubclass(attr.__class__, Manager)
 
         if is_manager and outer_type_ == List[Dict[str, int]]:
             attr = list(attr.all().values("id"))
@@ -201,6 +203,15 @@ class ProxyGetterNestedObj:
 
 
 class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
+
+    def __eq__(self, other: Any) -> bool:
+        result = super().__eq__(other)
+        if isinstance(result, bool):
+            return result
+
+        if result is NotImplemented and isinstance(other, dict):
+            return self.model_dump() == other
+        return result
 
     @classmethod
     def schema_json(

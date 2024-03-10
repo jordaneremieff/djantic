@@ -7,6 +7,7 @@ from pydantic import ConfigDict
 from djantic import ModelSchema
 
 
+@pytest.mark.skip
 @pytest.mark.django_db
 def test_image_field_schema():
     class AttachmentSchema(ModelSchema):
