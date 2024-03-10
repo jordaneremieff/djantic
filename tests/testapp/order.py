@@ -25,7 +25,7 @@ class Order(models.Model):
         ordering = ["total_price"]
 
     def __str__(self):
-        return f"{self.order.id} - {self.name}"
+        return f"{self.id} - {self.total_price}"
 
 
 class OrderItem(models.Model):

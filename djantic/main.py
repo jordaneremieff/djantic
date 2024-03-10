@@ -1,6 +1,8 @@
+import inspect
 from functools import reduce
 from itertools import chain
-from typing import Any, Dict, List, Optional, no_type_check
+from typing import Any, Dict, List, Optional, no_type_check, Union
+from typing_extensions import get_origin, get_args
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Manager, Model
@@ -13,6 +15,7 @@ from pydantic.errors import PydanticUserError
 from pydantic._internal._model_construction import ModelMetaclass
 from pydantic.utils import GetterDict
 from pydantic.config import ConfigDict
+
 
 from .fields import ModelSchemaField
 
@@ -48,16 +51,9 @@ class ModelSchemaMetaclass(ModelMetaclass):
                 and base == ModelSchema
             ):
 
-                try:
-                    config = namespace["model_config"]
-                except KeyError as exc:
-                    raise PydanticUserError(
-                        f"{exc} (Is `model_config` attribute defined?)",
-                        code="config-not-defined",
-                    )
-
-                include = getattr(config, "include", None)
-                exclude = getattr(config, "exclude", None)
+                config = namespace["model_config"]
+                include = config.get("include", None)
+                exclude = config.get("exclude", None)
 
                 if include and exclude:
                     raise PydanticUserError(
@@ -70,7 +66,7 @@ class ModelSchemaMetaclass(ModelMetaclass):
 
                 try:
                     fields = config["model"]._meta.get_fields()
-                except AttributeError as exc:
+                except (AttributeError, KeyError) as exc:
                     raise PydanticUserError(
                         f'{exc} (Is `model_config["model"]` a valid Django model class?)',
                         code="class-not-valid",
@@ -137,14 +133,26 @@ class ModelSchemaMetaclass(ModelMetaclass):
         return cls
 
 
-class ProxyGetterNestedObj(GetterDict):
+class ProxyGetterNestedObj:
     def __init__(self, obj: Any, schema_class):
         self._obj = obj
         self.schema_class = schema_class
 
     def get(self, key: Any, default: Any = None) -> Any:
         alias = self.schema_class.__alias_map__[key]
-        outer_type_ = self.schema_class.model_fields[alias].outer_type_
+        field = self.schema_class.model_fields[alias]
+        typing_args = get_args(field.annotation)
+        typing_origin = get_origin(field.annotation)
+        if typing_origin == Union:
+            outer_type_ = typing_args[0]
+        elif typing_origin is None:
+            outer_type_ = field.annotation
+        # TODO do we have test for a list thingie?
+        elif typing_args[0] == List:
+            outer_type_ = typing_origin
+        else:
+            outer_type_ = typing_args[0]
+
         if "__" in key:
             # Allow double underscores aliases: `first_name: str = Field(alias="user__first_name")`
             keys_map = key.split("__")
@@ -166,9 +174,33 @@ class ProxyGetterNestedObj(GetterDict):
             attr = attr.name
         return attr
 
+    def _get_annotation_objects(self, value, annotation):
+        """Value is an object, and the value needs to resolve into a dict"""
+        if isinstance(value, list):
+            return [ProxyGetterNestedObj(o, annotation).dict() for o in value]
+        return ProxyGetterNestedObj(value, annotation).dict()
+
+    def dict(self) -> dict:
+        """
+        Might not be needed with "from_attributes=True" in model_config
+        """
+        fields = self.schema_class.model_fields
+        data = {}
+        for (key, fieldinfo) in fields.items():
+            annotation = fieldinfo.annotation
+            if get_origin(annotation) == list:
+                # Pick the underlying annotation
+                annotation = get_args(annotation)[0]
+
+            if inspect.isclass(annotation) and issubclass(annotation, ModelSchema):
+                data[key] = self._get_annotation_objects(self.get(key), annotation)
+            else:
+                data[key] = self.get(key)
+
+        return data
+
 
 class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
-    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def schema_json(
@@ -179,6 +211,7 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         **dumps_kwargs: Any,
     ) -> str:
 
+        # TODO this would error
         return cls.__config__.json_dumps(
             cls.schema(by_alias=by_alias), cls=encoder_cls, **dumps_kwargs
         )
@@ -186,35 +219,34 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
     @classmethod
     @no_type_check
     def get_field_names(cls) -> List[str]:
-        if hasattr(cls.__config__, "exclude"):
-            django_model_fields = cls.__config__.model._meta.get_fields()
+        if cls.model_config.get("exclude"):
+            django_model_fields = cls.model_config["model"]._meta.get_fields()
             all_fields = [f.name for f in django_model_fields]
-            return [name for name in all_fields if name not in cls.__config__.exclude]
-        return cls.__config__.include
+            return [name for name in all_fields if name not in cls.model_config["exclude"]]
+        return cls.model_config.get("include", [])
 
     @classmethod
     def from_orm(cls, *args, **kwargs):
         return cls.from_django(*args, **kwargs)
 
     @classmethod
-    def from_django(cls, objs, many=False, context={}):
+    def from_django(cls, objs, many=False, context={}, dump=False):
+        # TODO is context really passed into model_validate, test this
         cls.context = context
         if many:
             result_objs = []
             for obj in objs:
                 cls.instance = obj
-                result_objs.append(super().from_orm(ProxyGetterNestedObj(obj, cls)))
+                obj = ProxyGetterNestedObj(obj, cls)
+                instance = cls(**obj.dict())
+                result_objs.append(cls.model_validate(instance))
             return result_objs
 
         cls.instance = objs
         # NOTE question mark around the code above.
 
-        data = {}
-        for field in objs._meta.fields:
-            value = field.to_python(getattr(objs, field.name))
-            data[field.name] = value
-
-        instance = cls(**data)
+        obj = ProxyGetterNestedObj(objs, cls)
+        instance = cls(**obj.dict())
         return cls.model_validate(instance)
 
 
