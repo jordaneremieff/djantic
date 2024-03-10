@@ -768,6 +768,7 @@ def test_m2m_reverse():
 
     class CustomExpertSchema(ModelSchema):
         """Custom schema"""
+
         name: Optional[str]
         model_config = ConfigDict(model=Expert)
 

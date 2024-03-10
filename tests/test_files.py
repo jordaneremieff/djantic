@@ -19,25 +19,29 @@ def test_image_field_schema():
     )
 
     assert AttachmentSchema.model_json_schema() == {
-        "title": "AttachmentSchema",
-        "description": "Attachment(id, description, image)",
-        "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
             "description": {
-                "title": "Description",
                 "description": "description",
                 "maxLength": 255,
+                "title": "Description",
                 "type": "string",
             },
             "image": {
-                "title": "Image",
+                "anyOf": [{"maxLength": 100, "type": "string"}, {"type": "null"}],
+                "default": None,
                 "description": "image",
-                "maxLength": 100,
-                "type": "string",
+                "title": "Image",
             },
         },
         "required": ["description"],
+        "title": "AttachmentSchema",
+        "type": "object",
     }
 
     assert AttachmentSchema.from_django(attachment).dict() == {

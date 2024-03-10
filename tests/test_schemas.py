@@ -20,14 +20,19 @@ def test_description():
         """
         Pydantic profile docstring.
         """
+
         model_config = ConfigDict(model=Profile)
 
-    assert ProfileSchema.model_json_schema()["description"] == "Pydantic profile docstring."
+    assert (
+        ProfileSchema.model_json_schema()["description"]
+        == "Pydantic profile docstring."
+    )
 
     class UserSchema(ModelSchema):
         """
         Pydantic user docstring.
         """
+
         model_config = ConfigDict(model=User)
 
     assert UserSchema.model_json_schema()["description"] == "Pydantic user docstring."
@@ -83,17 +88,23 @@ def test_include_exclude():
         """
         All fields are included by default.
         """
+
         model_config = ConfigDict(model=User)
 
-    assert set(UserSchema.model_json_schema()["properties"].keys()) == set(all_user_fields)
+    assert set(UserSchema.model_json_schema()["properties"].keys()) == set(
+        all_user_fields
+    )
 
     class UserSchema(ModelSchema):
         """
         All fields are included explicitly.
         """
+
         model_config = ConfigDict(model=User)
 
-    assert set(UserSchema.model_json_schema()["properties"].keys()) == set(all_user_fields)
+    assert set(UserSchema.model_json_schema()["properties"].keys()) == set(
+        all_user_fields
+    )
 
     class UserSchema(ModelSchema):
         """
@@ -116,7 +127,7 @@ def test_include_exclude():
         last_name: str
         model_config = ConfigDict(
             model=User,
-            exclude=["first_name", "last_name", "email", "created_at", "updated_at"]
+            exclude=["first_name", "last_name", "email", "created_at", "updated_at"],
         )
 
     not_excluded = UserSchema.model_json_schema()["properties"].keys()
@@ -146,10 +157,7 @@ def test_annotations():
 
         first_name: Optional[str]
         last_name: str
-        model_config = ConfigDict(
-            model=User,
-            include=["first_name", "last_name"]
-        )
+        model_config = ConfigDict(model=User, include=["first_name", "last_name"])
 
     assert UserSchema.model_json_schema()["required"] == ["last_name"]
 
@@ -182,6 +190,7 @@ def test_by_alias_generator():
         """
         Test alias generator.
         """
+
         # TODO What happens here?
 
         class Config:
@@ -236,6 +245,7 @@ def test_sub_model():
         """
         Django model relation as a sub-model.
         """
+
         model_config = ConfigDict(model=Profile, include=["id"])
 
     class UserSchema(ModelSchema):
@@ -270,6 +280,7 @@ def test_json():
         """
         Test JSON schema.
         """
+
         model_config = ConfigDict(model=Configuration)
 
         class Config:

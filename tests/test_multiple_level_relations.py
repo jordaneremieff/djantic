@@ -46,7 +46,7 @@ def test_multiple_level_relations():
                 "profile",
                 "orders",
                 "user_cache",
-            )
+            ),
         )
 
         @validator("user_cache", pre=True, always=True)

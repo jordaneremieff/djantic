@@ -30,7 +30,9 @@ def test_config_errors():
     ):
 
         class IncludeExcludeErrorSchema(ModelSchema):
-            model_config = ConfigDict(model=User, include=["id"], exclude=["first_name"])
+            model_config = ConfigDict(
+                model=User, include=["id"], exclude=["first_name"]
+            )
 
 
 @pytest.mark.django_db

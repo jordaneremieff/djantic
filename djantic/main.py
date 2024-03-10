@@ -5,8 +5,7 @@ from typing import Any, Dict, List, Optional, no_type_check
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Manager, Model
 from django.db.models.fields.files import ImageFieldFile
-from django.db.models.fields.reverse_related import (ForeignObjectRel,
-                                                     OneToOneRel)
+from django.db.models.fields.reverse_related import ForeignObjectRel, OneToOneRel
 from django.utils.encoding import force_str
 from django.utils.functional import Promise
 from pydantic import BaseModel, create_model
@@ -30,7 +29,9 @@ class ModelSchemaJSONEncoder(DjangoJSONEncoder):
 
 
 def get_field_name(field) -> str:
-    if issubclass(field.__class__, ForeignObjectRel) and not issubclass(field.__class__, OneToOneRel):
+    if issubclass(field.__class__, ForeignObjectRel) and not issubclass(
+        field.__class__, OneToOneRel
+    ):
         return getattr(field, "related_name", None) or f"{field.name}_set"
     else:
         return getattr(field, "name", field)
@@ -38,13 +39,7 @@ def get_field_name(field) -> str:
 
 class ModelSchemaMetaclass(ModelMetaclass):
     @no_type_check
-    def __new__(
-        mcs,
-        name: str,
-        bases: tuple,
-        namespace: dict,
-        **kwargs
-    ):
+    def __new__(mcs, name: str, bases: tuple, namespace: dict, **kwargs):
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
         for base in reversed(bases):
             if (
@@ -57,7 +52,8 @@ class ModelSchemaMetaclass(ModelMetaclass):
                     config = namespace["model_config"]
                 except KeyError as exc:
                     raise PydanticUserError(
-                        f"{exc} (Is `Config` class defined?)", code="class-not-defined"
+                        f"{exc} (Is `model_config` attribute defined?)",
+                        code="config-not-defined",
                     )
 
                 include = getattr(config, "include", None)
@@ -66,7 +62,8 @@ class ModelSchemaMetaclass(ModelMetaclass):
                 if include and exclude:
                     raise PydanticUserError(
                         "Only one of 'include' or 'exclude' should be set in "
-                        "configuration.", code="include-exclude-mutually-exclusive"
+                        "configuration.",
+                        code="include-exclude-mutually-exclusive",
                     )
 
                 annotations = namespace.get("__annotations__", {})
@@ -75,14 +72,17 @@ class ModelSchemaMetaclass(ModelMetaclass):
                     fields = config["model"]._meta.get_fields()
                 except AttributeError as exc:
                     raise PydanticUserError(
-                        f"{exc} (Is `Config.model` a valid Django model class?)", code="class-not-valid"
+                        f'{exc} (Is `model_config["model"]` a valid Django model class?)',
+                        code="class-not-valid",
                     )
 
-                if include == '__annotations__':
+                if include == "__annotations__":
                     include = list(annotations.keys())
                     cls.model_config["include"] = include
                 elif include is None and exclude is None:
-                    include = list(annotations.keys()) + [get_field_name(f) for f in fields]
+                    include = list(annotations.keys()) + [
+                        get_field_name(f) for f in fields
+                    ]
                     cls.model_config["include"] = include
 
                 field_values = {}
@@ -125,8 +125,10 @@ class ModelSchemaMetaclass(ModelMetaclass):
 
                 cls.__doc__ = namespace.get("__doc__", config["model"].__doc__)
                 cls.model_fields = {}
-                cls.__alias_map__ = {getattr(model_field[1], 'alias', None) or field_name: field_name
-                                     for field_name, model_field in field_values.items()}
+                cls.__alias_map__ = {
+                    getattr(model_field[1], "alias", None) or field_name: field_name
+                    for field_name, model_field in field_values.items()
+                }
                 model_schema = create_model(
                     name, __base__=cls, __module__=cls.__module__, **field_values
                 )
@@ -158,7 +160,9 @@ class ProxyGetterNestedObj(GetterDict):
             attr = list(attr.all())
         elif outer_type_ == int and issubclass(type(attr), Model):
             attr = attr.id
-        elif issubclass(attr.__class__, ImageFieldFile) and issubclass(outer_type_, str):
+        elif issubclass(attr.__class__, ImageFieldFile) and issubclass(
+            outer_type_, str
+        ):
             attr = attr.name
         return attr
 
@@ -185,9 +189,7 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         if hasattr(cls.__config__, "exclude"):
             django_model_fields = cls.__config__.model._meta.get_fields()
             all_fields = [f.name for f in django_model_fields]
-            return [
-                name for name in all_fields if name not in cls.__config__.exclude
-            ]
+            return [name for name in all_fields if name not in cls.__config__.exclude]
         return cls.__config__.include
 
     @classmethod

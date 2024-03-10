@@ -14,8 +14,10 @@ from pydantic_core import PydanticUndefined
 try:
     from django.db.models.fields import NOT_PROVIDED
 except ImportError:
+
     class NOT_PROVIDED:
         pass
+
 
 logger = logging.getLogger("djantic")
 
@@ -54,6 +56,7 @@ FIELD_TYPES = {
     "UUIDField": UUID,
     "JSONField": Union[Json, dict, list],  # TODO: Configure this using default
     "ArrayField": List,
+    # "IntegerRangeField",
     # "BigIntegerRangeField",
     # "CICharField",
     # "CIEmailField",
@@ -64,7 +67,6 @@ FIELD_TYPES = {
     # "DecimalRangeField",
     # "FloatRangeField",
     # "HStoreField",
-    # "IntegerRangeField",
     # "RangeBoundary",
     # "RangeField",
     # "RangeOperators",
@@ -104,7 +106,7 @@ def ModelSchemaField(field: Any, schema_name: str) -> tuple:
                     v = str(v)
                 enum_choices[v] = k
             if field.blank:
-                enum_choices['_blank'] = ''
+                enum_choices["_blank"] = ""
 
             enum_prefix = (
                 f"{schema_name.replace('_', '')}{field.name.title().replace('_', '')}"
@@ -158,6 +160,7 @@ def ModelSchemaField(field: Any, schema_name: str) -> tuple:
                 default = field.default
         elif field.primary_key or blank or null:
             default = None
+            python_type = Union[python_type, None]
 
         if (default is not None or NOT_PROVIDED) and field.null:
             python_type = Union[python_type, None]
