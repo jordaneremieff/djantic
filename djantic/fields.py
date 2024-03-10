@@ -73,6 +73,29 @@ FIELD_TYPES = {
 }
 
 
+def get_internal_type(field):
+    python_type = None
+    internal_type = field.get_internal_type()
+    if internal_type in STR_TYPES:
+        python_type = str
+
+    elif internal_type in INT_TYPES:
+        python_type = int
+
+    elif internal_type in FIELD_TYPES:
+        python_type = FIELD_TYPES[internal_type]
+
+    else:  # pragma: nocover
+        for field_class in type(field).__mro__:
+            get_internal_type = getattr(field_class, "get_internal_type", None)
+            if get_internal_type:
+                _internal_type = get_internal_type(field_class())
+                if _internal_type in FIELD_TYPES:
+                    python_type = FIELD_TYPES[_internal_type]
+                    break
+    return python_type
+
+
 def ModelSchemaField(field: Any, schema_name: str) -> tuple:
     default = Required
     default_factory = None
@@ -120,26 +143,9 @@ def ModelSchemaField(field: Any, schema_name: str) -> tuple:
             if field.has_default() and isinstance(field.default, Enum):
                 default = field.default.value
         else:
-            internal_type = field.get_internal_type()
-            if internal_type in STR_TYPES:
-                python_type = str
-                if not field.choices:
-                    max_length = field.max_length
-
-            elif internal_type in INT_TYPES:
-                python_type = int
-
-            elif internal_type in FIELD_TYPES:
-                python_type = FIELD_TYPES[internal_type]
-
-            else:  # pragma: nocover
-                for field_class in type(field).__mro__:
-                    get_internal_type = getattr(field_class, "get_internal_type", None)
-                    if get_internal_type:
-                        _internal_type = get_internal_type(field_class())
-                        if _internal_type in FIELD_TYPES:
-                            python_type = FIELD_TYPES[_internal_type]
-                            break
+            python_type = get_internal_type(field)
+            if field.get_internal_type() == "ArrayField":
+                python_type = List[get_internal_type(field.base_field)]
 
         if python_type is None:
             logger.warning(
@@ -170,6 +176,12 @@ def ModelSchemaField(field: Any, schema_name: str) -> tuple:
 
     if not description:
         description = field.name
+
+    if (
+        getattr(field, "get_internal_type", lambda: None)() in STR_TYPES
+        and not field.choices
+    ):
+        max_length = field.max_length
 
     return (
         python_type,

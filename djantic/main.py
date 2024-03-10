@@ -13,8 +13,6 @@ from django.utils.functional import Promise
 from pydantic import BaseModel, create_model
 from pydantic.errors import PydanticUserError
 from pydantic._internal._model_construction import ModelMetaclass
-from pydantic.utils import GetterDict
-from pydantic.config import ConfigDict
 
 
 from .fields import ModelSchemaField
@@ -126,8 +124,11 @@ class ModelSchemaMetaclass(ModelMetaclass):
                     for field_name, model_field in field_values.items()
                 }
                 model_schema = create_model(
-                    name, __base__=cls, __module__=cls.__module__, __doc__=cls.__doc__,
-                    **field_values
+                    name,
+                    __base__=cls,
+                    __module__=cls.__module__,
+                    __doc__=cls.__doc__,
+                    **field_values,
                 )
                 return model_schema
 
@@ -188,7 +189,7 @@ class ProxyGetterNestedObj:
         """
         fields = self.schema_class.model_fields
         data = {}
-        for (key, fieldinfo) in fields.items():
+        for key, fieldinfo in fields.items():
             annotation = fieldinfo.annotation
             if get_origin(annotation) == list:
                 # Pick the underlying annotation
@@ -236,7 +237,9 @@ class ModelSchema(BaseModel, metaclass=ModelSchemaMetaclass):
         if cls.model_config.get("exclude"):
             django_model_fields = cls.model_config["model"]._meta.get_fields()
             all_fields = [f.name for f in django_model_fields]
-            return [name for name in all_fields if name not in cls.model_config["exclude"]]
+            return [
+                name for name in all_fields if name not in cls.model_config["exclude"]
+            ]
         return cls.model_config.get("include", [])
 
     @classmethod
