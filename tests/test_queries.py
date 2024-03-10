@@ -72,7 +72,8 @@ def test_get_queryset_with_reverse_one_to_one():
 
     class UserSchema(ModelSchema):
         model_config = ConfigDict(
-            model=User, include=["id", "email", "first_name", "profile"],
+            model=User,
+            include=["id", "email", "first_name", "profile"],
         )
 
     users = User.objects.all()

@@ -6,26 +6,24 @@ from pydantic import ConfigDict
 from djantic import ModelSchema
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_unhandled_field_type():
     class SearchableSchema(ModelSchema):
         model_config = ConfigDict(model=Searchable)
 
     assert SearchableSchema.model_json_schema() == {
-        "title": "SearchableSchema",
-        "type": "object",
+        "description": "Searchable(id, title, search_vector)",
         "properties": {
             "id": {
-                "title": "Id",
-                "description": "id",
-                "type": "integer",
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
                 "default": None,
+                "description": "id",
+                "title": "Id",
             },
             "title": {
-                "title": "Title",
                 "description": "title",
                 "maxLength": 255,
+                "title": "Title",
                 "type": "string",
             },
             "search_vector": {
@@ -36,6 +34,8 @@ def test_unhandled_field_type():
             },
         },
         "required": ["title"],
+        "title": "SearchableSchema",
+        "type": "object",
     }
     searchable = Searchable.objects.create(title="My content")
     assert SearchableSchema.from_django(searchable).model_dump() == {
@@ -45,7 +45,6 @@ def test_unhandled_field_type():
     }
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_custom_field():
     """
@@ -56,24 +55,13 @@ def test_custom_field():
         model_config = ConfigDict(model=Record, include=["id", "title", "items"])
 
     assert RecordSchema.model_json_schema() == {
-        "$defs": {
-            "RecordSchemaRecordStatusEnum": {
-                "enum": [0, 1, 2],
-                "title": "RecordSchemaRecordStatusEnum",
-                "type": "integer",
-            },
-            "RecordSchemaRecordTypeEnum": {
-                "enum": ["NEW", "OLD"],
-                "title": "RecordSchemaRecordTypeEnum",
-                "type": "string",
-            },
-        },
+        "description": "A generic record model.",
         "properties": {
             "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
                 "default": None,
                 "description": "id",
                 "title": "Id",
-                "type": "integer",
             },
             "title": {
                 "description": "title",
@@ -94,18 +82,6 @@ def test_custom_field():
                 "description": "items",
                 "title": "Items",
             },
-            "record_type": {
-                "allOf": [{"$ref": "#/$defs/RecordSchemaRecordTypeEnum"}],
-                "default": "NEW",
-                "description": "record_type",
-                "title": "Record Type",
-            },
-            "record_status": {
-                "allOf": [{"$ref": "#/$defs/RecordSchemaRecordStatusEnum"}],
-                "default": 0,
-                "description": "record_status",
-                "title": "Record Status",
-            },
         },
         "required": ["title"],
         "title": "RecordSchema",
@@ -113,7 +89,6 @@ def test_custom_field():
     }
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_postgres_json_field():
     """
@@ -126,25 +101,8 @@ def test_postgres_json_field():
         )
 
     assert ConfigurationSchema.model_json_schema() == {
+        "description": "A configuration container.",
         "properties": {
-            "id": {
-                "default": None,
-                "description": "id",
-                "title": "Id",
-                "type": "integer",
-            },
-            "config_id": {
-                "description": "Unique id of the configuration.",
-                "format": "uuid",
-                "title": "Config Id",
-                "type": "string",
-            },
-            "name": {
-                "description": "name",
-                "maxLength": 100,
-                "title": "Name",
-                "type": "string",
-            },
             "permissions": {
                 "anyOf": [
                     {
@@ -180,26 +138,18 @@ def test_postgres_json_field():
                     },
                     {"type": "object"},
                     {"items": {}, "type": "array"},
+                    {"type": "null"},
                 ],
                 "default": None,
                 "description": "metadata",
                 "title": "Metadata",
             },
-            "version": {
-                "default": "0.0.1",
-                "description": "version",
-                "maxLength": 5,
-                "title": "Version",
-                "type": "string",
-            },
         },
-        "required": ["name"],
         "title": "ConfigurationSchema",
         "type": "object",
     }
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_lazy_choice_field():
     """
@@ -224,32 +174,8 @@ def test_lazy_choice_field():
                 "type": "string",
             },
         },
+        "description": "A generic record model.",
         "properties": {
-            "id": {
-                "default": None,
-                "description": "id",
-                "title": "Id",
-                "type": "integer",
-            },
-            "title": {
-                "description": "title",
-                "maxLength": 20,
-                "title": "Title",
-                "type": "string",
-            },
-            "items": {
-                "anyOf": [
-                    {
-                        "contentMediaType": "application/json",
-                        "contentSchema": {},
-                        "type": "string",
-                    },
-                    {"type": "object"},
-                    {"items": {}, "type": "array"},
-                ],
-                "description": "items",
-                "title": "Items",
-            },
             "record_type": {
                 "allOf": [{"$ref": "#/$defs/RecordSchemaRecordTypeEnum"}],
                 "default": "NEW",
@@ -263,13 +189,11 @@ def test_lazy_choice_field():
                 "title": "Record Status",
             },
         },
-        "required": ["title"],
         "title": "RecordSchema",
         "type": "object",
     }
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_enum_choices():
     class PreferenceSchema(ModelSchema):
@@ -298,12 +222,13 @@ def test_enum_choices():
                 "type": "string",
             },
         },
+        "description": "Preference(id, name, preferred_food, preferred_group, preferred_sport, preferred_musician)",
         "properties": {
             "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
                 "default": None,
                 "description": "id",
                 "title": "Id",
-                "type": "integer",
             },
             "name": {
                 "description": "name",
@@ -324,7 +249,10 @@ def test_enum_choices():
                 "title": "Preferred Group",
             },
             "preferred_sport": {
-                "allOf": [{"$ref": "#/$defs/PreferenceSchemaPreferredSportEnum"}],
+                "anyOf": [
+                    {"$ref": "#/$defs/PreferenceSchemaPreferredSportEnum"},
+                    {"type": "null"},
+                ],
                 "default": None,
                 "description": "preferred_sport",
                 "title": "Preferred Sport",
@@ -371,13 +299,13 @@ def test_enum_choices_generates_unique_enums():
     )
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_listing():
     class ListingSchema(ModelSchema):
         model_config = ConfigDict(model=Listing, use_enum_values=True)
 
     assert ListingSchema.model_json_schema() == {
+        "description": "Listing(id, items)",
         "properties": {
             "id": {
                 "anyOf": [{"type": "integer"}, {"type": "null"}],
@@ -387,7 +315,7 @@ def test_listing():
             },
             "items": {
                 "description": "items",
-                "items": {},
+                "items": {"type": "string"},
                 "title": "Items",
                 "type": "array",
             },

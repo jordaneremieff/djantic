@@ -21,7 +21,6 @@ from pydantic import ConfigDict
 from djantic import ModelSchema
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_m2m():
     """
@@ -32,34 +31,39 @@ def test_m2m():
         model_config = ConfigDict(model=Article)
 
     assert ArticleSchema.model_json_schema() == {
-        "title": "ArticleSchema",
         "description": "A news article.",
-        "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
             "headline": {
-                "title": "Headline",
                 "description": "headline",
                 "maxLength": 100,
+                "title": "Headline",
                 "type": "string",
             },
             "pub_date": {
-                "title": "Pub Date",
                 "description": "pub_date",
-                "type": "string",
                 "format": "date",
+                "title": "Pub Date",
+                "type": "string",
             },
             "publications": {
-                "title": "Publications",
                 "description": "id",
-                "type": "array",
                 "items": {
-                    "type": "object",
                     "additionalProperties": {"type": "integer"},
+                    "type": "object",
                 },
+                "title": "Publications",
+                "type": "array",
             },
         },
         "required": ["headline", "pub_date", "publications"],
+        "title": "ArticleSchema",
+        "type": "object",
     }
 
     class PublicationSchema(ModelSchema):
@@ -71,56 +75,67 @@ def test_m2m():
         model_config = ConfigDict(model=Article)
 
     assert ArticleWithPublicationListSchema.model_json_schema() == {
-        "title": "ArticleWithPublicationListSchema",
-        "description": "A news article.",
-        "type": "object",
-        "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "headline": {
-                "title": "Headline",
-                "description": "headline",
-                "maxLength": 100,
-                "type": "string",
-            },
-            "pub_date": {
-                "title": "Pub Date",
-                "description": "pub_date",
-                "type": "string",
-                "format": "date",
-            },
-            "publications": {
-                "title": "Publications",
-                "type": "array",
-                "items": {"$ref": "#/definitions/PublicationSchema"},
-            },
-        },
-        "required": ["headline", "pub_date", "publications"],
-        "definitions": {
+        "$defs": {
             "PublicationSchema": {
-                "title": "PublicationSchema",
                 "description": "A news publication.",
-                "type": "object",
                 "properties": {
                     "article_set": {
-                        "title": "Article Set",
+                        "default": None,
                         "description": "id",
-                        "type": "array",
                         "items": {
-                            "type": "object",
                             "additionalProperties": {"type": "integer"},
+                            "type": "object",
                         },
+                        "title": "Article Set",
+                        "type": "array",
                     },
-                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "id": {
+                        "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
+                        "description": "id",
+                        "title": "Id",
+                    },
                     "title": {
-                        "title": "Title",
                         "description": "title",
                         "maxLength": 30,
+                        "title": "Title",
                         "type": "string",
                     },
                 },
                 "required": ["title"],
+                "title": "PublicationSchema",
+                "type": "object",
             }
         },
+        "description": "A news article.",
+        "properties": {
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
+            "headline": {
+                "description": "headline",
+                "maxLength": 100,
+                "title": "Headline",
+                "type": "string",
+            },
+            "pub_date": {
+                "description": "pub_date",
+                "format": "date",
+                "title": "Pub Date",
+                "type": "string",
+            },
+            "publications": {
+                "items": {"$ref": "#/$defs/PublicationSchema"},
+                "title": "Publications",
+                "type": "array",
+            },
+        },
+        "required": ["headline", "pub_date", "publications"],
+        "title": "ArticleWithPublicationListSchema",
+        "type": "object",
     }
 
     article = Article.objects.create(
@@ -140,7 +155,6 @@ def test_m2m():
     }
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_foreign_key():
     """
@@ -154,21 +168,26 @@ def test_foreign_key():
         model_config = ConfigDict(model=Message)
 
     assert MessageSchema.model_json_schema() == {
-        "title": "MessageSchema",
         "description": "A message posted in a thread.",
-        "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "content": {"title": "Content", "description": "content", "type": "string"},
-            "created_at": {
-                "title": "Created At",
-                "description": "created_at",
-                "type": "string",
-                "format": "date-time",
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
             },
-            "thread": {"title": "Thread", "description": "id", "type": "integer"},
+            "content": {"description": "content", "title": "Content", "type": "string"},
+            "created_at": {
+                "description": "created_at",
+                "format": "date-time",
+                "title": "Created At",
+                "type": "string",
+            },
+            "thread": {"description": "id", "title": "Thread", "type": "integer"},
         },
         "required": ["content", "created_at", "thread"],
+        "title": "MessageSchema",
+        "type": "object",
     }
 
     class MessageWithThreadSchema(ModelSchema):
@@ -176,47 +195,58 @@ def test_foreign_key():
         model_config = ConfigDict(model=Message)
 
     assert MessageWithThreadSchema.model_json_schema() == {
-        "title": "MessageWithThreadSchema",
-        "description": "A message posted in a thread.",
-        "type": "object",
-        "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "content": {"title": "Content", "description": "content", "type": "string"},
-            "created_at": {
-                "title": "Created At",
-                "description": "created_at",
-                "type": "string",
-                "format": "date-time",
-            },
-            "thread": {"$ref": "#/definitions/ThreadSchema"},
-        },
-        "required": ["content", "created_at", "thread"],
-        "definitions": {
+        "$defs": {
             "ThreadSchema": {
-                "title": "ThreadSchema",
                 "description": "A thread of messages.",
-                "type": "object",
                 "properties": {
                     "messages": {
-                        "title": "Messages",
+                        "default": None,
                         "description": "id",
-                        "type": "array",
                         "items": {
-                            "type": "object",
                             "additionalProperties": {"type": "integer"},
+                            "type": "object",
                         },
+                        "title": "Messages",
+                        "type": "array",
                     },
-                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "id": {
+                        "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
+                        "description": "id",
+                        "title": "Id",
+                    },
                     "title": {
-                        "title": "Title",
                         "description": "title",
                         "maxLength": 30,
+                        "title": "Title",
                         "type": "string",
                     },
                 },
                 "required": ["title"],
+                "title": "ThreadSchema",
+                "type": "object",
             }
         },
+        "description": "A message posted in a thread.",
+        "properties": {
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
+            "content": {"description": "content", "title": "Content", "type": "string"},
+            "created_at": {
+                "description": "created_at",
+                "format": "date-time",
+                "title": "Created At",
+                "type": "string",
+            },
+            "thread": {"$ref": "#/$defs/ThreadSchema"},
+        },
+        "required": ["content", "created_at", "thread"],
+        "title": "MessageWithThreadSchema",
+        "type": "object",
     }
 
     class ThreadWithMessageListSchema(ModelSchema):
@@ -224,52 +254,63 @@ def test_foreign_key():
         model_config = ConfigDict(model=Thread)
 
     assert ThreadWithMessageListSchema.model_json_schema() == {
-        "title": "ThreadWithMessageListSchema",
-        "description": "A thread of messages.",
-        "type": "object",
-        "properties": {
-            "messages": {
-                "title": "Messages",
-                "type": "array",
-                "items": {"$ref": "#/definitions/MessageSchema"},
-            },
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "title": {
-                "title": "Title",
-                "description": "title",
-                "maxLength": 30,
-                "type": "string",
-            },
-        },
-        "required": ["messages", "title"],
-        "definitions": {
+        "$defs": {
             "MessageSchema": {
-                "title": "MessageSchema",
                 "description": "A message posted in a thread.",
-                "type": "object",
                 "properties": {
-                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "id": {
+                        "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
+                        "description": "id",
+                        "title": "Id",
+                    },
                     "content": {
-                        "title": "Content",
                         "description": "content",
+                        "title": "Content",
                         "type": "string",
                     },
                     "created_at": {
-                        "title": "Created At",
                         "description": "created_at",
-                        "type": "string",
                         "format": "date-time",
+                        "title": "Created At",
+                        "type": "string",
                     },
                     "thread": {
-                        "title": "Thread",
                         "description": "id",
+                        "title": "Thread",
                         "type": "integer",
                     },
                 },
                 "required": ["content", "created_at", "thread"],
+                "title": "MessageSchema",
+                "type": "object",
             }
         },
+        "description": "A thread of messages.",
+        "properties": {
+            "messages": {
+                "items": {"$ref": "#/$defs/MessageSchema"},
+                "title": "Messages",
+                "type": "array",
+            },
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
+            "title": {
+                "description": "title",
+                "maxLength": 30,
+                "title": "Title",
+                "type": "string",
+            },
+        },
+        "required": ["messages", "title"],
+        "title": "ThreadWithMessageListSchema",
+        "type": "object",
     }
+
 
 @pytest.mark.skip
 @pytest.mark.django_db
@@ -384,6 +425,7 @@ def test_one_to_one():
         },
     }
 
+
 @pytest.mark.skip
 @pytest.mark.django_db
 def test_one_to_one_reverse():
@@ -492,6 +534,7 @@ def test_one_to_one_reverse():
             }
         },
     }
+
 
 @pytest.mark.skip
 @pytest.mark.django_db
@@ -686,6 +729,7 @@ def test_generic_relation():
         },
     }
 
+
 @pytest.mark.skip
 @pytest.mark.django_db
 def test_m2m_reverse():
@@ -828,6 +872,7 @@ def test_m2m_reverse():
         "name": "My Case",
         "details": "Some text data.",
     }
+
 
 @pytest.mark.skip
 @pytest.mark.django_db

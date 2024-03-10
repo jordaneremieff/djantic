@@ -181,6 +181,7 @@ def test_annotations():
     assert props["updated_at"]["default"] == updated_at_dt.strftime("%Y-%m-%dT00:00:00")
     assert set(schema["required"]) == set(["last_name"])
 
+
 @pytest.mark.skip
 def test_by_alias_generator():
     class UserSchema(ModelSchema):

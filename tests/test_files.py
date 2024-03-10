@@ -7,7 +7,6 @@ from pydantic import ConfigDict
 from djantic import ModelSchema
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_image_field_schema():
     class AttachmentSchema(ModelSchema):
@@ -20,6 +19,7 @@ def test_image_field_schema():
     )
 
     assert AttachmentSchema.model_json_schema() == {
+        "description": "Attachment(id, description, image)",
         "properties": {
             "id": {
                 "anyOf": [{"type": "integer"}, {"type": "null"}],
