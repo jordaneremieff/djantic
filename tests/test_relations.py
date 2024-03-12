@@ -312,7 +312,6 @@ def test_foreign_key():
     }
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_one_to_one():
     """
@@ -326,28 +325,33 @@ def test_one_to_one():
         model_config = ConfigDict(model=Profile)
 
     assert ProfileSchema.model_json_schema() == {
-        "title": "ProfileSchema",
         "description": "A user's profile.",
-        "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "user": {"title": "User", "description": "id", "type": "integer"},
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
+            "user": {"description": "id", "title": "User", "type": "integer"},
             "website": {
-                "title": "Website",
-                "description": "website",
                 "default": "",
+                "description": "website",
                 "maxLength": 200,
+                "title": "Website",
                 "type": "string",
             },
             "location": {
-                "title": "Location",
-                "description": "location",
                 "default": "",
+                "description": "location",
                 "maxLength": 100,
+                "title": "Location",
                 "type": "string",
             },
         },
         "required": ["user"],
+        "title": "ProfileSchema",
+        "type": "object",
     }
 
     class ProfileWithUserSchema(ModelSchema):
@@ -355,78 +359,91 @@ def test_one_to_one():
         model_config = ConfigDict(model=Profile)
 
     assert ProfileWithUserSchema.model_json_schema() == {
-        "title": "ProfileWithUserSchema",
+        "$defs": {
+            "UserSchema": {
+                "description": "A user of the application.",
+                "properties": {
+                    "profile": {
+                        "default": None,
+                        "description": "id",
+                        "title": "Profile",
+                        "type": "integer",
+                    },
+                    "id": {
+                        "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
+                        "description": "id",
+                        "title": "Id",
+                    },
+                    "first_name": {
+                        "description": "first_name",
+                        "maxLength": 50,
+                        "title": "First Name",
+                        "type": "string",
+                    },
+                    "last_name": {
+                        "anyOf": [
+                            {"maxLength": 50, "type": "string"},
+                            {"type": "null"},
+                        ],
+                        "default": None,
+                        "description": "last_name",
+                        "title": "Last Name",
+                    },
+                    "email": {
+                        "description": "email",
+                        "maxLength": 254,
+                        "title": "Email",
+                        "type": "string",
+                    },
+                    "created_at": {
+                        "description": "created_at",
+                        "format": "date-time",
+                        "title": "Created At",
+                        "type": "string",
+                    },
+                    "updated_at": {
+                        "description": "updated_at",
+                        "format": "date-time",
+                        "title": "Updated At",
+                        "type": "string",
+                    },
+                },
+                "required": ["first_name", "email", "created_at", "updated_at"],
+                "title": "UserSchema",
+                "type": "object",
+            }
+        },
         "description": "A user's profile.",
-        "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "user": {"$ref": "#/definitions/UserSchema"},
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
+            "user": {"$ref": "#/$defs/UserSchema"},
             "website": {
-                "title": "Website",
-                "description": "website",
                 "default": "",
+                "description": "website",
                 "maxLength": 200,
+                "title": "Website",
                 "type": "string",
             },
             "location": {
-                "title": "Location",
-                "description": "location",
                 "default": "",
+                "description": "location",
                 "maxLength": 100,
+                "title": "Location",
                 "type": "string",
             },
         },
         "required": ["user"],
-        "definitions": {
-            "UserSchema": {
-                "title": "UserSchema",
-                "description": "A user of the application.",
-                "type": "object",
-                "properties": {
-                    "profile": {
-                        "title": "Profile",
-                        "description": "id",
-                        "type": "integer",
-                    },
-                    "id": {"title": "Id", "description": "id", "type": "integer"},
-                    "first_name": {
-                        "title": "First Name",
-                        "description": "first_name",
-                        "maxLength": 50,
-                        "type": "string",
-                    },
-                    "last_name": {
-                        "title": "Last Name",
-                        "description": "last_name",
-                        "maxLength": 50,
-                        "type": "string",
-                    },
-                    "email": {
-                        "title": "Email",
-                        "description": "email",
-                        "maxLength": 254,
-                        "type": "string",
-                    },
-                    "created_at": {
-                        "title": "Created At",
-                        "description": "created_at",
-                        "type": "string",
-                        "format": "date-time",
-                    },
-                    "updated_at": {
-                        "title": "Updated At",
-                        "description": "updated_at",
-                        "type": "string",
-                        "format": "date-time",
-                    },
-                },
-                "required": ["first_name", "email", "created_at", "updated_at"],
-            }
-        },
+        "title": "ProfileWithUserSchema",
+        "type": "object",
     }
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_one_to_one_reverse():
     """
@@ -440,28 +457,33 @@ def test_one_to_one_reverse():
         model_config = ConfigDict(model=User)
 
     assert ProfileSchema.model_json_schema() == {
-        "title": "ProfileSchema",
         "description": "A user's profile.",
-        "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "user": {"title": "User", "description": "id", "type": "integer"},
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
+            "user": {"description": "id", "title": "User", "type": "integer"},
             "website": {
-                "title": "Website",
-                "description": "website",
                 "default": "",
+                "description": "website",
                 "maxLength": 200,
+                "title": "Website",
                 "type": "string",
             },
             "location": {
-                "title": "Location",
-                "description": "location",
                 "default": "",
+                "description": "location",
                 "maxLength": 100,
+                "title": "Location",
                 "type": "string",
             },
         },
         "required": ["user"],
+        "title": "ProfileSchema",
+        "type": "object",
     }
 
     class UserWithProfileSchema(ModelSchema):
@@ -469,74 +491,83 @@ def test_one_to_one_reverse():
         model_config = ConfigDict(model=User)
 
     assert UserWithProfileSchema.model_json_schema() == {
-        "title": "UserWithProfileSchema",
-        "description": "A user of the application.",
-        "type": "object",
-        "properties": {
-            "profile": {"$ref": "#/definitions/ProfileSchema"},
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "first_name": {
-                "title": "First Name",
-                "description": "first_name",
-                "maxLength": 50,
-                "type": "string",
-            },
-            "last_name": {
-                "title": "Last Name",
-                "description": "last_name",
-                "maxLength": 50,
-                "type": "string",
-            },
-            "email": {
-                "title": "Email",
-                "description": "email",
-                "maxLength": 254,
-                "type": "string",
-            },
-            "created_at": {
-                "title": "Created At",
-                "description": "created_at",
-                "type": "string",
-                "format": "date-time",
-            },
-            "updated_at": {
-                "title": "Updated At",
-                "description": "updated_at",
-                "type": "string",
-                "format": "date-time",
-            },
-        },
-        "required": ["profile", "first_name", "email", "created_at", "updated_at"],
-        "definitions": {
+        "$defs": {
             "ProfileSchema": {
-                "title": "ProfileSchema",
                 "description": "A user's profile.",
-                "type": "object",
                 "properties": {
-                    "id": {"title": "Id", "description": "id", "type": "integer"},
-                    "user": {"title": "User", "description": "id", "type": "integer"},
+                    "id": {
+                        "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
+                        "description": "id",
+                        "title": "Id",
+                    },
+                    "user": {"description": "id", "title": "User", "type": "integer"},
                     "website": {
-                        "title": "Website",
-                        "description": "website",
                         "default": "",
+                        "description": "website",
                         "maxLength": 200,
+                        "title": "Website",
                         "type": "string",
                     },
                     "location": {
-                        "title": "Location",
-                        "description": "location",
                         "default": "",
+                        "description": "location",
                         "maxLength": 100,
+                        "title": "Location",
                         "type": "string",
                     },
                 },
                 "required": ["user"],
+                "title": "ProfileSchema",
+                "type": "object",
             }
         },
+        "description": "A user of the application.",
+        "properties": {
+            "profile": {"$ref": "#/$defs/ProfileSchema"},
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
+            "first_name": {
+                "description": "first_name",
+                "maxLength": 50,
+                "title": "First Name",
+                "type": "string",
+            },
+            "last_name": {
+                "anyOf": [{"maxLength": 50, "type": "string"}, {"type": "null"}],
+                "default": None,
+                "description": "last_name",
+                "title": "Last Name",
+            },
+            "email": {
+                "description": "email",
+                "maxLength": 254,
+                "title": "Email",
+                "type": "string",
+            },
+            "created_at": {
+                "description": "created_at",
+                "format": "date-time",
+                "title": "Created At",
+                "type": "string",
+            },
+            "updated_at": {
+                "description": "updated_at",
+                "format": "date-time",
+                "title": "Updated At",
+                "type": "string",
+            },
+        },
+        "required": ["profile", "first_name", "email", "created_at", "updated_at"],
+        "title": "UserWithProfileSchema",
+        "type": "object",
     }
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_generic_relation():
     """
@@ -547,34 +578,39 @@ def test_generic_relation():
         model_config = ConfigDict(model=Tagged)
 
     assert TaggedSchema.model_json_schema() == {
-        "title": "TaggedSchema",
         "description": "Tagged(id, slug, content_type, object_id)",
-        "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
             "slug": {
-                "title": "Slug",
                 "description": "slug",
                 "maxLength": 50,
+                "title": "Slug",
                 "type": "string",
             },
             "content_type": {
-                "title": "Content Type",
                 "description": "id",
+                "title": "Content Type",
                 "type": "integer",
             },
             "object_id": {
-                "title": "Object Id",
                 "description": "object_id",
+                "title": "Object Id",
                 "type": "integer",
             },
             "content_object": {
-                "title": "Content Object",
                 "description": "content_object",
+                "title": "Content Object",
                 "type": "integer",
             },
         },
         "required": ["slug", "content_type", "object_id", "content_object"],
+        "title": "TaggedSchema",
+        "type": "object",
     }
 
     class BookmarkSchema(ModelSchema):
@@ -584,27 +620,33 @@ def test_generic_relation():
         model_config = ConfigDict(model=Bookmark)
 
     assert BookmarkSchema.model_json_schema() == {
-        "title": "BookmarkSchema",
         "description": "Bookmark(id, url)",
-        "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
             "url": {
-                "title": "Url",
                 "description": "url",
                 "maxLength": 200,
+                "title": "Url",
                 "type": "string",
             },
             "tags": {
+                "default": None,
+                "items": {
+                    "additionalProperties": {"type": "integer"},
+                    "type": "object",
+                },
                 "title": "Tags",
                 "type": "array",
-                "items": {
-                    "type": "object",
-                    "additionalProperties": {"type": "integer"},
-                },
             },
         },
         "required": ["url"],
+        "title": "BookmarkSchema",
+        "type": "object",
     }
 
     class BookmarkWithTaggedSchema(ModelSchema):
@@ -613,56 +655,66 @@ def test_generic_relation():
         model_config = ConfigDict(model=Bookmark)
 
     assert BookmarkWithTaggedSchema.model_json_schema() == {
-        "title": "BookmarkWithTaggedSchema",
-        "description": "Bookmark(id, url)",
-        "type": "object",
-        "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "url": {
-                "title": "Url",
-                "description": "url",
-                "maxLength": 200,
-                "type": "string",
-            },
-            "tags": {
-                "title": "Tags",
-                "type": "array",
-                "items": {"$ref": "#/definitions/TaggedSchema"},
-            },
-        },
-        "required": ["url", "tags"],
-        "definitions": {
+        "$defs": {
             "TaggedSchema": {
-                "title": "TaggedSchema",
                 "description": "Tagged(id, slug, content_type, object_id)",
-                "type": "object",
                 "properties": {
-                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "id": {
+                        "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
+                        "description": "id",
+                        "title": "Id",
+                    },
                     "slug": {
-                        "title": "Slug",
                         "description": "slug",
                         "maxLength": 50,
+                        "title": "Slug",
                         "type": "string",
                     },
                     "content_type": {
-                        "title": "Content Type",
                         "description": "id",
+                        "title": "Content Type",
                         "type": "integer",
                     },
                     "object_id": {
-                        "title": "Object Id",
                         "description": "object_id",
+                        "title": "Object Id",
                         "type": "integer",
                     },
                     "content_object": {
-                        "title": "Content Object",
                         "description": "content_object",
+                        "title": "Content Object",
                         "type": "integer",
                     },
                 },
                 "required": ["slug", "content_type", "object_id", "content_object"],
+                "title": "TaggedSchema",
+                "type": "object",
             }
         },
+        "description": "Bookmark(id, url)",
+        "properties": {
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
+            "url": {
+                "description": "url",
+                "maxLength": 200,
+                "title": "Url",
+                "type": "string",
+            },
+            "tags": {
+                "items": {"$ref": "#/$defs/TaggedSchema"},
+                "title": "Tags",
+                "type": "array",
+            },
+        },
+        "required": ["url", "tags"],
+        "title": "BookmarkWithTaggedSchema",
+        "type": "object",
     }
 
     class ItemSchema(ModelSchema):
@@ -672,65 +724,70 @@ def test_generic_relation():
 
     # Test without defining a GenericRelation on the model
     assert ItemSchema.model_json_schema() == {
-        "title": "ItemSchema",
-        "description": "Item(id, name, item_list)",
-        "type": "object",
-        "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "name": {
-                "title": "Name",
-                "description": "name",
-                "maxLength": 100,
-                "type": "string",
-            },
-            "item_list": {
-                "title": "Item List",
-                "description": "id",
-                "type": "integer",
-            },
-            "tags": {
-                "title": "Tags",
-                "type": "array",
-                "items": {"$ref": "#/definitions/TaggedSchema"},
-            },
-        },
-        "required": ["name", "item_list", "tags"],
-        "definitions": {
+        "$defs": {
             "TaggedSchema": {
-                "title": "TaggedSchema",
                 "description": "Tagged(id, slug, content_type, object_id)",
-                "type": "object",
                 "properties": {
-                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "id": {
+                        "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
+                        "description": "id",
+                        "title": "Id",
+                    },
                     "slug": {
-                        "title": "Slug",
                         "description": "slug",
                         "maxLength": 50,
+                        "title": "Slug",
                         "type": "string",
                     },
                     "content_type": {
-                        "title": "Content Type",
                         "description": "id",
+                        "title": "Content Type",
                         "type": "integer",
                     },
                     "object_id": {
-                        "title": "Object Id",
                         "description": "object_id",
+                        "title": "Object Id",
                         "type": "integer",
                     },
                     "content_object": {
-                        "title": "Content Object",
                         "description": "content_object",
+                        "title": "Content Object",
                         "type": "integer",
                     },
                 },
                 "required": ["slug", "content_type", "object_id", "content_object"],
+                "title": "TaggedSchema",
+                "type": "object",
             }
         },
+        "description": "Item(id, name, item_list)",
+        "properties": {
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
+            "name": {
+                "description": "name",
+                "maxLength": 100,
+                "title": "Name",
+                "type": "string",
+            },
+            "item_list": {"description": "id", "title": "Item List", "type": "integer"},
+            "tags": {
+                "items": {"$ref": "#/$defs/TaggedSchema"},
+                "title": "Tags",
+                "type": "array",
+            },
+        },
+        "required": ["name", "item_list", "tags"],
+        "title": "ItemSchema",
+        "type": "object",
     }
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_m2m_reverse():
     class ExpertSchema(ModelSchema):
@@ -740,54 +797,65 @@ def test_m2m_reverse():
         model_config = ConfigDict(model=Case)
 
     assert ExpertSchema.model_json_schema() == {
-        "title": "ExpertSchema",
         "description": "Expert(id, name)",
-        "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
             "name": {
-                "title": "Name",
                 "description": "name",
                 "maxLength": 128,
+                "title": "Name",
                 "type": "string",
             },
             "cases": {
-                "title": "Cases",
                 "description": "id",
-                "type": "array",
                 "items": {
-                    "type": "object",
                     "additionalProperties": {"type": "integer"},
+                    "type": "object",
                 },
+                "title": "Cases",
+                "type": "array",
             },
         },
         "required": ["name", "cases"],
+        "title": "ExpertSchema",
+        "type": "object",
     }
 
     assert CaseSchema.model_json_schema() == {
-        "title": "CaseSchema",
         "description": "Case(id, name, details)",
-        "type": "object",
         "properties": {
             "related_experts": {
-                "title": "Related Experts",
+                "default": None,
                 "description": "id",
-                "type": "array",
                 "items": {
-                    "type": "object",
                     "additionalProperties": {"type": "integer"},
+                    "type": "object",
                 },
+                "title": "Related Experts",
+                "type": "array",
             },
-            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
             "name": {
-                "title": "Name",
                 "description": "name",
                 "maxLength": 128,
+                "title": "Name",
                 "type": "string",
             },
-            "details": {"title": "Details", "description": "details", "type": "string"},
+            "details": {"description": "details", "title": "Details", "type": "string"},
         },
         "required": ["name", "details"],
+        "title": "CaseSchema",
+        "type": "object",
     }
     case = Case.objects.create(name="My Case", details="Some text data.")
     expert = Expert.objects.create(name="My Expert")
@@ -823,46 +891,60 @@ def test_m2m_reverse():
         model_config = ConfigDict(model=Case)
 
     assert CaseSchema.model_json_schema() == {
-        "title": "CaseSchema",
-        "description": "Case(id, name, details)",
-        "type": "object",
-        "properties": {
-            "related_experts": {
-                "title": "Related Experts",
-                "type": "array",
-                "items": {"$ref": "#/definitions/CustomExpertSchema"},
-            },
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "name": {
-                "title": "Name",
-                "description": "name",
-                "maxLength": 128,
-                "type": "string",
-            },
-            "details": {"title": "Details", "description": "details", "type": "string"},
-        },
-        "required": ["related_experts", "name", "details"],
-        "definitions": {
+        "$defs": {
             "CustomExpertSchema": {
-                "title": "CustomExpertSchema",
                 "description": "Custom schema",
-                "type": "object",
                 "properties": {
-                    "id": {"title": "Id", "description": "id", "type": "integer"},
-                    "name": {"title": "Name", "type": "string"},
-                    "cases": {
-                        "title": "Cases",
+                    "id": {
+                        "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
                         "description": "id",
-                        "type": "array",
+                        "title": "Id",
+                    },
+                    "name": {
+                        "anyOf": [{"type": "string"}, {"type": "null"}],
+                        "default": None,
+                        "title": "Name",
+                    },
+                    "cases": {
+                        "description": "id",
                         "items": {
-                            "type": "object",
                             "additionalProperties": {"type": "integer"},
+                            "type": "object",
                         },
+                        "title": "Cases",
+                        "type": "array",
                     },
                 },
                 "required": ["cases"],
+                "title": "CustomExpertSchema",
+                "type": "object",
             }
         },
+        "description": "Case(id, name, details)",
+        "properties": {
+            "related_experts": {
+                "items": {"$ref": "#/$defs/CustomExpertSchema"},
+                "title": "Related Experts",
+                "type": "array",
+            },
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
+            "name": {
+                "description": "name",
+                "maxLength": 128,
+                "title": "Name",
+                "type": "string",
+            },
+            "details": {"description": "details", "title": "Details", "type": "string"},
+        },
+        "required": ["related_experts", "name", "details"],
+        "title": "CaseSchema",
+        "type": "object",
     }
 
     case_schema = CaseSchema.from_django(case)
@@ -874,7 +956,6 @@ def test_m2m_reverse():
     }
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_alias():
     class ProfileSchema(ModelSchema):
@@ -882,29 +963,33 @@ def test_alias():
         model_config = ConfigDict(model=Profile)
 
     assert ProfileSchema.model_json_schema() == {
-        "title": "ProfileSchema",
         "description": "A user's profile.",
-        "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "user": {"title": "User", "description": "id", "type": "integer"},
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
+            "user": {"description": "id", "title": "User", "type": "integer"},
             "website": {
-                "title": "Website",
-                "description": "website",
                 "default": "",
+                "description": "website",
                 "maxLength": 200,
+                "title": "Website",
                 "type": "string",
             },
             "location": {
-                "title": "Location",
-                "description": "location",
                 "default": "",
+                "description": "location",
                 "maxLength": 100,
+                "title": "Location",
                 "type": "string",
             },
-            "user__first_name": {"title": "User  First Name", "type": "string"},
         },
         "required": ["user", "user__first_name"],
+        "title": "ProfileSchema",
+        "type": "object",
     }
 
     user = User.objects.create(first_name="Jack")

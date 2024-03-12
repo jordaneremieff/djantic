@@ -16,7 +16,6 @@ from pydantic import ConfigDict
 from djantic import ModelSchema
 
 
-@pytest.mark.skip(reason="json dump schema")
 @pytest.mark.django_db
 def test_multiple_level_relations():
     class OrderItemDetailSchema(ModelSchema):
@@ -57,25 +56,11 @@ def test_multiple_level_relations():
     user = OrderUserFactory.create()
 
     assert OrderUserSchema.from_django(user).dict() == {
-        "id": 1,
-        "first_name": "",
-        "last_name": None,
-        "email": "",
-        "user_cache": {"has_order": True},
         "profile": {"id": 1, "address": "", "user": 1},
         "orders": [
             {
-                "id": 1,
-                "total_price": Decimal("0.00000"),
-                "shipping_address": "",
-                "user": 1,
                 "items": [
                     {
-                        "id": 1,
-                        "name": "",
-                        "price": Decimal("0.00000"),
-                        "quantity": 0,
-                        "order": 1,
                         "details": [
                             {
                                 "id": 1,
@@ -92,6 +77,11 @@ def test_multiple_level_relations():
                                 "order_item": 1,
                             },
                         ],
+                        "id": 1,
+                        "name": "",
+                        "price": Decimal("0.00000"),
+                        "quantity": 0,
+                        "order": 1,
                     },
                     {
                         "details": [
@@ -117,19 +107,14 @@ def test_multiple_level_relations():
                         "order": 1,
                     },
                 ],
-            },
-            {
-                "id": 2,
+                "id": 1,
                 "total_price": Decimal("0.00000"),
                 "shipping_address": "",
                 "user": 1,
+            },
+            {
                 "items": [
                     {
-                        "id": 3,
-                        "name": "",
-                        "price": Decimal("0.00000"),
-                        "quantity": 0,
-                        "order": 2,
                         "details": [
                             {
                                 "id": 5,
@@ -146,13 +131,13 @@ def test_multiple_level_relations():
                                 "order_item": 3,
                             },
                         ],
-                    },
-                    {
-                        "id": 4,
+                        "id": 3,
                         "name": "",
                         "price": Decimal("0.00000"),
                         "quantity": 0,
                         "order": 2,
+                    },
+                    {
                         "details": [
                             {
                                 "id": 7,
@@ -169,153 +154,196 @@ def test_multiple_level_relations():
                                 "order_item": 4,
                             },
                         ],
+                        "id": 4,
+                        "name": "",
+                        "price": Decimal("0.00000"),
+                        "quantity": 0,
+                        "order": 2,
                     },
                 ],
+                "id": 2,
+                "total_price": Decimal("0.00000"),
+                "shipping_address": "",
+                "user": 1,
             },
         ],
+        "id": 1,
+        "first_name": "",
+        "last_name": None,
+        "email": "",
+        "user_cache": {"has_order": True},
     }
 
     assert OrderUserSchema.model_json_schema() == {
-        "title": "OrderUserSchema",
-        "description": "OrderUser(id, first_name, last_name, email)",
-        "type": "object",
-        "properties": {
-            "profile": {"$ref": "#/definitions/OrderUserProfileSchema"},
-            "orders": {
-                "title": "Orders",
-                "type": "array",
-                "items": {"$ref": "#/definitions/OrderSchema"},
-            },
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "first_name": {
-                "title": "First Name",
-                "description": "first_name",
-                "maxLength": 50,
-                "type": "string",
-            },
-            "last_name": {
-                "title": "Last Name",
-                "description": "last_name",
-                "maxLength": 50,
-                "type": "string",
-            },
-            "email": {
-                "title": "Email",
-                "description": "email",
-                "maxLength": 254,
-                "type": "string",
-            },
-            "user_cache": {"title": "User Cache", "type": "object"},
-        },
-        "required": ["profile", "orders", "first_name", "email"],
-        "definitions": {
-            "OrderUserProfileSchema": {
-                "title": "OrderUserProfileSchema",
-                "description": "OrderUserProfile(id, address, user)",
-                "type": "object",
-                "properties": {
-                    "id": {"title": "Id", "description": "id", "type": "integer"},
-                    "address": {
-                        "title": "Address",
-                        "description": "address",
-                        "maxLength": 255,
-                        "type": "string",
-                    },
-                    "user": {"title": "User", "description": "id", "type": "integer"},
-                },
-                "required": ["address", "user"],
-            },
+        "$defs": {
             "OrderItemDetailSchema": {
-                "title": "OrderItemDetailSchema",
                 "description": "OrderItemDetail(id, name, value, quantity, order_item)",
-                "type": "object",
                 "properties": {
-                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "id": {
+                        "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
+                        "description": "id",
+                        "title": "Id",
+                    },
                     "name": {
-                        "title": "Name",
                         "description": "name",
                         "maxLength": 30,
+                        "title": "Name",
                         "type": "string",
                     },
                     "value": {
-                        "title": "Value",
-                        "description": "value",
                         "default": 0,
+                        "description": "value",
+                        "title": "Value",
                         "type": "integer",
                     },
                     "quantity": {
-                        "title": "Quantity",
-                        "description": "quantity",
                         "default": 0,
+                        "description": "quantity",
+                        "title": "Quantity",
                         "type": "integer",
                     },
                     "order_item": {
-                        "title": "Order Item",
                         "description": "id",
+                        "title": "Order Item",
                         "type": "integer",
                     },
                 },
                 "required": ["name", "order_item"],
+                "title": "OrderItemDetailSchema",
+                "type": "object",
             },
             "OrderItemSchema": {
-                "title": "OrderItemSchema",
                 "description": "OrderItem(id, name, price, quantity, order)",
-                "type": "object",
                 "properties": {
                     "details": {
+                        "items": {"$ref": "#/$defs/OrderItemDetailSchema"},
                         "title": "Details",
                         "type": "array",
-                        "items": {"$ref": "#/definitions/OrderItemDetailSchema"},
                     },
-                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "id": {
+                        "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
+                        "description": "id",
+                        "title": "Id",
+                    },
                     "name": {
-                        "title": "Name",
                         "description": "name",
                         "maxLength": 30,
+                        "title": "Name",
                         "type": "string",
                     },
                     "price": {
-                        "title": "Price",
-                        "description": "price",
+                        "anyOf": [{"type": "number"}, {"type": "string"}],
                         "default": 0,
-                        "type": "number",
+                        "description": "price",
+                        "title": "Price",
                     },
                     "quantity": {
-                        "title": "Quantity",
-                        "description": "quantity",
                         "default": 0,
+                        "description": "quantity",
+                        "title": "Quantity",
                         "type": "integer",
                     },
-                    "order": {"title": "Order", "description": "id", "type": "integer"},
+                    "order": {"description": "id", "title": "Order", "type": "integer"},
                 },
                 "required": ["details", "name", "order"],
+                "title": "OrderItemSchema",
+                "type": "object",
             },
             "OrderSchema": {
-                "title": "OrderSchema",
                 "description": "Order(id, total_price, shipping_address, user)",
-                "type": "object",
                 "properties": {
                     "items": {
+                        "items": {"$ref": "#/$defs/OrderItemSchema"},
                         "title": "Items",
                         "type": "array",
-                        "items": {"$ref": "#/definitions/OrderItemSchema"},
                     },
-                    "id": {"title": "Id", "description": "id", "type": "integer"},
+                    "id": {
+                        "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
+                        "description": "id",
+                        "title": "Id",
+                    },
                     "total_price": {
-                        "title": "Total Price",
-                        "description": "total_price",
+                        "anyOf": [{"type": "number"}, {"type": "string"}],
                         "default": 0,
-                        "type": "number",
+                        "description": "total_price",
+                        "title": "Total Price",
                     },
                     "shipping_address": {
-                        "title": "Shipping Address",
                         "description": "shipping_address",
                         "maxLength": 255,
+                        "title": "Shipping Address",
                         "type": "string",
                     },
-                    "user": {"title": "User", "description": "id", "type": "integer"},
+                    "user": {"description": "id", "title": "User", "type": "integer"},
                 },
                 "required": ["items", "shipping_address", "user"],
+                "title": "OrderSchema",
+                "type": "object",
+            },
+            "OrderUserProfileSchema": {
+                "description": "OrderUserProfile(id, address, user)",
+                "properties": {
+                    "id": {
+                        "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
+                        "description": "id",
+                        "title": "Id",
+                    },
+                    "address": {
+                        "description": "address",
+                        "maxLength": 255,
+                        "title": "Address",
+                        "type": "string",
+                    },
+                    "user": {"description": "id", "title": "User", "type": "integer"},
+                },
+                "required": ["address", "user"],
+                "title": "OrderUserProfileSchema",
+                "type": "object",
             },
         },
+        "description": "OrderUser(id, first_name, last_name, email)",
+        "properties": {
+            "profile": {"$ref": "#/$defs/OrderUserProfileSchema"},
+            "orders": {
+                "items": {"$ref": "#/$defs/OrderSchema"},
+                "title": "Orders",
+                "type": "array",
+            },
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
+            "first_name": {
+                "description": "first_name",
+                "maxLength": 50,
+                "title": "First Name",
+                "type": "string",
+            },
+            "last_name": {
+                "anyOf": [{"maxLength": 50, "type": "string"}, {"type": "null"}],
+                "default": None,
+                "description": "last_name",
+                "title": "Last Name",
+            },
+            "email": {
+                "description": "email",
+                "maxLength": 254,
+                "title": "Email",
+                "type": "string",
+            },
+            "user_cache": {
+                "anyOf": [{"type": "object"}, {"type": "null"}],
+                "default": None,
+                "title": "User Cache",
+            },
+        },
+        "required": ["profile", "orders", "first_name", "email"],
+        "title": "OrderUserSchema",
+        "type": "object",
     }

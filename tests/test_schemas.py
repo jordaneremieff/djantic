@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from testapp.models import User, Profile, Configuration
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, AliasGenerator
 from djantic import ModelSchema
 
 
@@ -44,7 +44,6 @@ def test_description():
     assert UserSchema.model_json_schema()["description"] == "A user of the application."
 
 
-@pytest.mark.skip
 @pytest.mark.django_db
 def test_cache():
     """
@@ -55,19 +54,24 @@ def test_cache():
         model_config = ConfigDict(model=User, include=["id", "first_name"])
 
     expected = {
-        "title": "UserSchema",
         "description": "A user of the application.",
-        "type": "object",
         "properties": {
-            "id": {"title": "Id", "description": "id", "type": "integer"},
+            "id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "id",
+                "title": "Id",
+            },
             "first_name": {
-                "title": "First Name",
                 "description": "first_name",
                 "maxLength": 50,
+                "title": "First Name",
                 "type": "string",
             },
         },
         "required": ["first_name"],
+        "title": "UserSchema",
+        "type": "object",
     }
 
     assert UserSchema.model_json_schema() == expected
@@ -182,24 +186,20 @@ def test_annotations():
     assert set(schema["required"]) == set(["last_name"])
 
 
-@pytest.mark.skip
+@pytest.mark.skip(reason="Dumping by alias for model json schema seems to not work")
 def test_by_alias_generator():
     class UserSchema(ModelSchema):
         """
         Test alias generator.
         """
 
-        # TODO What happens here?
+        model_config = ConfigDict(
+            model=User,
+            include=["first_name", "last_name"],
+            alias_generator=AliasGenerator(serialization_alias=(lambda x: x.upper())),
+        )
 
-        class Config:
-            model = User
-            include = ["first_name", "last_name"]
-
-            @staticmethod
-            def alias_generator(x):
-                return x.upper()
-
-    assert UserSchema.model_json_schema() == {
+    assert UserSchema.model_json_schema(by_alias=True) == {
         "title": "UserSchema",
         "description": "Test alias generator.",
         "type": "object",
@@ -270,104 +270,6 @@ def test_sub_model():
     assert set(Notification.model_json_schema()["$defs"].keys()) == set(
         ["ProfileSchema", "SignUp", "UserSchema"]
     )
-
-
-@pytest.mark.skip
-@pytest.mark.django_db
-def test_json():
-    class ConfigurationSchema(ModelSchema):
-        """
-        Test JSON schema.
-        """
-
-        model_config = ConfigDict(model=Configuration)
-
-    expected = """{
-  "title": "ConfigurationSchema",
-  "description": "Test JSON schema.",
-  "type": "object",
-  "properties": {
-    "id": {
-      "title": "Id",
-      "description": "id",
-      "type": "integer"
-    },
-    "config_id": {
-      "title": "Config Id",
-      "description": "Unique id of the configuration.",
-      "type": "string",
-      "format": "uuid"
-    },
-    "name": {
-      "title": "Name",
-      "description": "name",
-      "maxLength": 100,
-      "type": "string"
-    },
-    "permissions": {
-      "title": "Permissions",
-      "description": "permissions",
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "json-string"
-        },
-        {
-          "type": "object"
-        },
-        {
-          "type": "array",
-          "items": {}
-        }
-      ]
-    },
-    "changelog": {
-      "title": "Changelog",
-      "description": "changelog",
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "json-string"
-        },
-        {
-          "type": "object"
-        },
-        {
-          "type": "array",
-          "items": {}
-        }
-      ]
-    },
-    "metadata": {
-      "title": "Metadata",
-      "description": "metadata",
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "json-string"
-        },
-        {
-          "type": "object"
-        },
-        {
-          "type": "array",
-          "items": {}
-        }
-      ]
-    },
-    "version": {
-      "title": "Version",
-      "description": "version",
-      "default": "0.0.1",
-      "maxLength": 5,
-      "type": "string"
-    }
-  },
-  "required": [
-    "name"
-  ]
-}"""
-    assert ConfigurationSchema.schema_json(indent=2) == expected
 
 
 @pytest.mark.django_db

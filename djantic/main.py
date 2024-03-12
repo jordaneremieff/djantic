@@ -151,6 +151,7 @@ class ProxyGetterNestedObj:
 
         alias = self.schema_class.__alias_map__[key]
         field = self.schema_class.model_fields[alias]
+
         typing_args = get_args(field.annotation)
         typing_origin = get_origin(field.annotation)
         if typing_origin == Union:
@@ -198,8 +199,8 @@ class ProxyGetterNestedObj:
             if inspect.isclass(annotation) and issubclass(annotation, ModelSchema):
                 data[key] = self._get_annotation_objects(self.get(key), annotation)
             else:
+                key = fieldinfo.alias if fieldinfo.alias else key
                 data[key] = self.get(key)
-
         return data
 
 
