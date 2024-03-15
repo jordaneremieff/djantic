@@ -1,51 +1,47 @@
 <h1 style="text-align: center;">
-    Djantic
+    Djantic2
 </h1>
 <p style="text-align: center;">
     <em><a href="https://pydantic-docs.helpmanual.io/">Pydantic</a> model support for <a href="https://www.djangoproject.com/"> Django</a></em>
 </p>
 <p style="text-align: center;">
-    <a href="https://github.com/jordaneremieff/djantic/actions/workflows/test.yml">
-    <img src="https://img.shields.io/github/workflow/status/jordaneremieff/djantic/Test/main" alt="GitHub Workflow Status (Test)" >
+    <a href="https://github.com/jonathan-s/djantic2/actions/workflows/test.yml">
+    <img src="https://img.shields.io/github/workflow/status/jonathan-s/djantic2/Test/main" alt="GitHub Workflow Status (Test)" >
     </a>
-    <a href="https://pypi.org/project/djantic" target="_blank">
-        <img src="https://img.shields.io/pypi/v/djantic" alt="PyPi package">
+    <a href="https://pypi.org/project/djantic2" target="_blank">
+        <img src="https://img.shields.io/pypi/v/djantic2" alt="PyPi package">
     </a>
-    <a href="https://pypi.org/project/djantic" target="_blank">
-        <img src="https://img.shields.io/pypi/pyversions/djantic" alt="Supported Python versions">
+    <a href="https://pypi.org/project/djantic2" target="_blank">
+        <img src="https://img.shields.io/pypi/pyversions/djantic2" alt="Supported Python versions">
     </a>
-    <a href="https://pypi.org/project/djantic" target="_blank">
-        <img src="https://img.shields.io/pypi/djversions/djantic?label=django" alt="Supported Django versions">
+    <a href="https://pypi.org/project/djantic2" target="_blank">
+        <img src="https://img.shields.io/pypi/djversions/djantic2?label=django" alt="Supported Django versions">
     </a>
 </p>
 
 ---
 
-**Documentation**: https://jordaneremieff.github.io/djantic/
-
----
-
-Djantic is a library that provides a configurable utility class for automatically creating a Pydantic model instance for any Django model class. It is intended to support all of the underlying Pydantic model functionality such as JSON schema generation and introduces custom behaviour for exporting Django model instance data.
+Djantic2 is a fork of djantic which works with pydantic >2, it is a library that provides a configurable utility class for automatically creating a Pydantic model instance for any Django model class. It is intended to support all of the underlying Pydantic model functionality such as JSON schema generation and introduces custom behaviour for exporting Django model instance data.
 
 ## Quickstart
 
 Install using pip:
 
 ```shell
-pip install djantic
+pip install djantic2
 ```
 
 Create a model schema:
 
 ```python
 from users.models import User
+from pydantic import ConfigDict
 
 from djantic import ModelSchema
 
 class UserSchema(ModelSchema):
-    class Config:
-        model = User
-        
+    model_config = ConfigDict(model=User, include=["id", "first_name"])
+
 print(UserSchema.schema())
 ```
 
@@ -53,45 +49,25 @@ print(UserSchema.schema())
 
 ```python
 {
-        "title": "UserSchema",
-        "description": "A user of the application.",
-        "type": "object",
-        "properties": {
-            "profile": {"title": "Profile", "description": "None", "type": "integer"},
-            "id": {"title": "Id", "description": "id", "type": "integer"},
-            "first_name": {
-                "title": "First Name",
-                "description": "first_name",
-                "maxLength": 50,
-                "type": "string",
-            },
-            "last_name": {
-                "title": "Last Name",
-                "description": "last_name",
-                "maxLength": 50,
-                "type": "string",
-            },
-            "email": {
-                "title": "Email",
-                "description": "email",
-                "maxLength": 254,
-                "type": "string",
-            },
-            "created_at": {
-                "title": "Created At",
-                "description": "created_at",
-                "type": "string",
-                "format": "date-time",
-            },
-            "updated_at": {
-                "title": "Updated At",
-                "description": "updated_at",
-                "type": "string",
-                "format": "date-time",
-            },
+    "description": "A user of the application.",
+    "properties": {
+        "id": {
+            "anyOf": [{"type": "integer"}, {"type": "null"}],
+            "default": None,
+            "description": "id",
+            "title": "Id",
         },
-        "required": ["first_name", "email", "created_at", "updated_at"],
-    }
+        "first_name": {
+            "description": "first_name",
+            "maxLength": 50,
+            "title": "First Name",
+            "type": "string",
+        },
+    },
+    "required": ["first_name"],
+    "title": "UserSchema",
+    "type": "object",
+}
 ```
 
 See https://pydantic-docs.helpmanual.io/usage/models/ for more.
@@ -102,8 +78,8 @@ Use the `from_orm` method on the model schema to load a Django model instance fo
 
 ```python
 user = User.objects.create(
-    first_name="Jordan", 
-    last_name="Eremieff", 
+    first_name="Jordan",
+    last_name="Eremieff",
     email="jordan@eremieff.com"
 )
 
@@ -169,33 +145,33 @@ class OrderItemDetail(models.Model):
 ```python
 # schemas.py
 from djantic import ModelSchema
+from pydantic import ConfigDict
 
 from orders.models import OrderItemDetail, OrderItem, Order, OrderUserProfile
 
 
 class OrderItemDetailSchema(ModelSchema):
-    class Config:
-        model = OrderItemDetail
+    model_config = ConfigDict(model=OrderItemDetail)
+
 
 class OrderItemSchema(ModelSchema):
     details: List[OrderItemDetailSchema]
+    model_config = ConfigDict(model=OrderItem)
 
-    class Config:
-        model = OrderItem
 
 class OrderSchema(ModelSchema):
     items: List[OrderItemSchema]
+    model_config = ConfigDict(model=Order)
 
-    class Config:
-        model = Order
 
 class OrderUserProfileSchema(ModelSchema):
-    class Config:
-        model = OrderUserProfile
+    model_config = ConfigDict(model=OrderUserProfile)
+
 
 class OrderUserSchema(ModelSchema):
     orders: List[OrderSchema]
     profile: OrderUserProfileSchema
+    model_config = ConfigDict(model=OrderUser)
 ```
 
 Now let's assume you're interested in exporting the order and profile information for a particular user into a JSON format that contains the details accross all of the related item objects:
@@ -249,20 +225,21 @@ The fields exposed in the model instance may be configured using two options: `i
 For example, to include all of the fields from a user model <i>except</i> a field named `email_address`, you would use the `exclude` option:
 
 ```python
+from pydantic import ConfigDict
+
 class UserSchema(ModelSchema):
-    class Config:
-        exclude = ["email_address"]
+    model_config = ConfigDict(model=User, exclude=["email_address"])
 ```
 
 In addition to this, you may also limit the fields to <i>only</i> include annotations from the model schema class by setting the `include` option to a special string value: `"__annotations__"`.
 
 ```python
+from pydantic import ConfigDict
+
 class ProfileSchema(ModelSchema):
         website: str
+        model_config = ConfigDict(model=Profile, include="__annotations__")
 
-        class Config:
-            model = Profile
-            include = "__annotations__"
 
     assert ProfileSchema.schema() == {
         "title": "ProfileSchema",
